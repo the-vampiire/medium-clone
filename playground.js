@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+// const mongoose = require('mongoose');
 
 const {
   User,
@@ -10,7 +10,7 @@ const run = async () => {
   // run mongod (mongodb server)
   // run mongo shell and enter: use medium_clone to create the db
   // then run this script
-  mongoose.connect('mongodb://127.0.0.1:27017/medium_clone', (error) => { throw new Error(error); });
+  // mongoose.connect('mongodb://127.0.0.1:27017/medium_clone', (error) => { throw new Error(error); });
 
   const user = await User.create({
     username: 'the-vampiire',

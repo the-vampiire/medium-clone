@@ -3,24 +3,37 @@ const mongoose = require('mongoose');
 const userSchema = new mongoose.Schema({
   username: String,
   avatar_url: String,
-  stories: [{ type: mongoose.SchemaTypes.ObjectId, ref: 'Story' }],
-  responses: [{ type: mongoose.SchemaTypes.ObjectId, ref: 'Story' }],
-  claps: [{ type: mongoose.SchemaTypes.ObjectId, ref: 'Clap' }],
 });
 
-/**
- * with this design we are duplicating data
- * whenever a story is made we have to:
- * assign the user to the author field of the Story
- * assign the story into the stories array of the User
- * 
- * the problem with this is keeping things sychronized.
- * you always want to strive for 0 data duplication.
- * single sources of truth with pointers to that truth are preferable
- * whenever we want to mak a change we affect just the single truth and all
- * other entities that reference it will be synchronized
- */
+// -- VIRTUALS -- //
+userSchema.virtual('stories', {
+  ref: 'stories',
+  localField: '_id',
+  foreignField: 'author',
+});
 
-const User = mongoose.model('User', userSchema);
+userSchema.virtual('claps', {
+  ref: 'claps',
+  localField: '_id',
+  foreignField: 'user',
+});
+
+// -- INSTANCE METHODS -- //
+userSchema.methods.getStories = function getStories() {
+  return this.populate('stories').execPopulate().then(user => user.stories);
+}
+
+userSchema.methods.getResponses = function getResponses() {
+  return mongoose.model('stories').find({
+    parent: { $ne: null },
+    author: this._id,
+  });
+}
+
+userSchema.methods.getClaps = function getClaps() {
+  return this.populate('claps').execPopulate().then(user => user.claps);
+}
+
+const User = mongoose.model('users', userSchema);
 
 module.exports = User;
