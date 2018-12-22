@@ -64,7 +64,7 @@ describe('User Model', () => {
   describe('instance methods', () => {
     describe('getStories()', () => {
       let result;
-      beforeAll(async () => { result = await userOne.getStories({}); });
+      beforeAll(async () => { result = await userOne.getStories(); });
 
       test('returns the users stories', () => {
         expect(result).toBeDefined();
@@ -77,7 +77,7 @@ describe('User Model', () => {
       let result;
       beforeAll(async () => {
         response = await models.Story.create(storyMock({ author: userOne, parent: story }));
-        result = await userOne.getResponses({});
+        result = await userOne.getResponses();
       });
 
       test('returns the users responses', () => {
@@ -87,14 +87,14 @@ describe('User Model', () => {
       })
     });
 
-    describe('getClaps()', () => {
+    describe('getClappedStories()', () => {
       let result;
-      beforeAll(async () => { result = await userOne.getClaps({}); });
+      beforeAll(async () => { result = await userOne.getClappedStories(); });
 
-      test('returns the users claps', () => {
+      test('returns the users clapped stories', () => {
         expect(result).toBeDefined();
         expect(result.length).toBe(1);
-        expect(result[0].id).toEqual(clap.id);
+        expect(result[0].id).toEqual(story.id);
       })
     });
 

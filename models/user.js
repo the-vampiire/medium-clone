@@ -38,8 +38,17 @@ userSchema.methods.getStories = function getStories() {
 }
 
 // todo: getClappedStories refactor
-userSchema.methods.getClaps = function getClaps() {
-  return this.populate('claps').execPopulate().then(user => user.claps);
+userSchema.methods.getClappedStories = function getClappedStories() {
+  // retrieve the list of [Story] through the associated claps
+  return this.populate('claps').execPopulate()
+    // get the users claps
+    .then(user => user.claps)
+    // for each clap populate the 'story' field
+    .then(claps => Promise.all(claps.map(
+      clap => clap.populate('story').execPopulate()
+      // return the story
+      .then(clap => clap.story)
+    )));
 }
 
 userSchema.methods.getResponses = function getResponses() {
