@@ -59,33 +59,6 @@ describe('User Model', () => {
         expect(claps[0].id).toEqual(clap.id);
       });
     });
-
-    describe('followingList and followersList', () => {
-      let followingList;
-      let followersList;
-      beforeAll(async () => {
-        // userOne is followed by userTwo
-        await models.Follow.create({ followedUser: userOne, follower: userTwo });
-        
-        userOne = await userOne.populate('followersList').execPopulate();
-        followersList = userOne.followersList;
-  
-        userTwo = await userTwo.populate('followingList').execPopulate();
-        followingList = userTwo.followingList;
-      });
-
-      test('user.followingList returns a [Follow] list where the follower id is of the user', () => {
-        expect(followingList.length).toBe(1);
-        expect(followingList[0].follower).toEqual(userTwo._id);
-      });
-
-      test('user.followersList returns a [Follow] list where the followedUser id is of the user', () => {
-        expect(followersList.length).toBe(1);
-        // when comparing String types on both sides use the 'id' field
-        // when comparing ObjectID types use the '_id' field
-        expect(followersList[0].followedUser).toEqual(userOne._id);
-      });
-    });
   });
 
   describe('instance methods', () => {
@@ -125,54 +98,43 @@ describe('User Model', () => {
       })
     });
 
-    describe('getFollowers()', () => {
-      let result;
-      // userOne is the user being followed
-      beforeAll(async () => { result = await userOne.getFollowers({}); });
-
-      test('returns a [User] list of the user\'s followers', () => {
-        expect(result).toBeDefined();
-        expect(result.length).toBe(1);
-        expect(result[0].id).toEqual(userTwo.id);
-      });
-    });
-
-    describe('getFollowing()', () => {
-      let result;
-      // userTwo is the follower
-      beforeAll(async () => { result = await userTwo.getFollowing({}); });
-
-      test('returns a [User] list that the user follows', () => {
-        expect(result).toBeDefined();
-        expect(result.length).toBe(1);
-        expect(result[0].id).toEqual(userOne.id);
-      });
-    });
-
     describe('followUser()', () => {
+      let result;
       beforeAll(async () => {
-        await userOne.followUser
+        result = await userOne.followUser(userTwo.id);
+        // refresh the documents
+        userOne = await models.User.findById(userOne.id);
+        userTwo = await models.User.findById(userTwo.id);
+      });
+
+      test('returns the updated user', () => {
+        expect(result).toBeDefined();
+        expect(result.id).toEqual(userOne.id);
+      });
+
+      test('adds the followed user to the current user\'s following list', () => {
+        expect(userOne.following.length).toBe(1);
+        expect(userOne.following[0]).toEqual(userTwo._id);
+      });
+
+      test('adds the current user to the followed user\'s followers list', () => {
+        expect(userTwo.followers.length).toBe(1);
+        expect(userTwo.followers[0]).toEqual(userOne._id);
       });
     });
   });
 
   describe('pre-remove hook: cascade delete through associated collections', () => {
-    let userFollows;    
     let userStories;
     let userClaps;
     beforeAll(async () => {
       const userOneID = userOne.id;
       await userOne.remove();
-
-      userFollows = await models.Follow.find({
-        $or: [{ followedUser: userOneID }, { follower: userOneID }]
-      });
       userStories = await models.Story.find({ author: userOneID });
       userClaps = await models.Clap.find({ user: userOneID });
     });
 
     test('cascades to destroy authored stories', () => expect(userStories.length).toBe(0));
     test('cascades to destroy claps made by the user', () => expect(userClaps.length).toBe(0));
-    test('cascades to destroy related follow objects (following and followed)', () => expect(userFollows.length).toBe(0));
   });
 });
