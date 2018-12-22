@@ -13,7 +13,7 @@ storySchema.virtual('claps', {
   localField: '_id', // the ID to of this story
   foreignField: 'story', // the field on the Clap document to match with the ID
 });
-
+// todo: method to aggregate count of all user claps
 storySchema.virtual('clapsCount', {
   ref: 'claps', // collection name this [claps] field references
   localField: '_id', // the ID to of this story
