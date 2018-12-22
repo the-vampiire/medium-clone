@@ -121,6 +121,16 @@ describe('User Model', () => {
         expect(userTwo.followers.length).toBe(1);
         expect(userTwo.followers[0]).toEqual(userOne._id);
       });
+
+      test('returns null if the user tries to follow themself', async () => {
+        const nullResult = await userOne.followUser(userOne.id);
+        expect(nullResult).toBeNull();
+      });
+
+      test('returns null if the followed user does not exist', async () => {
+        const nullResult = await userOne.followUser(new mongoose.Types.ObjectId());
+        expect(nullResult).toBeNull();
+      });
     });
   });
 
