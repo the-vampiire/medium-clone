@@ -100,6 +100,9 @@ module.exports = User;
  * cleanup (deleting a User document) [0 loops]:
  *  both the follow and following lists are implicitly deleted as they exist on the document
  *  
+ * retrieving the user document:
+ *   heavy query, every follow and following ID will be queried since they exist on the document
+ * 
  * we could go with a more familiar (from a SQL perspective) approach to using an associative collection. here each document
  * represents a connection between two users, either as a follower or followedUser
  * 
@@ -122,7 +125,6 @@ module.exports = User;
  * check if current user is following another [1 loop over larger collection]:
  *   iterate over the Follow documents and find a match for { followedUser: otherUser.id, follower: currentUser.id }
  * 
- * the only real benefit of using an associative collection is in checking if a user follows another. this is a common case
- * that will appear on every story and user profile view by another user in order to control the 'follow' button rendering on the client
- * 
+ * retrieving the user document:
+ *   there is no additional document size because Follows are handled in a separate collection
  */
