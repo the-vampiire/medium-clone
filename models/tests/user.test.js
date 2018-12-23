@@ -1,6 +1,7 @@
 require('dotenv').config();
 
 const mongoose = require('mongoose');
+const { MAX_CLAP_COUNT } = require('../index');
 const models = require('../index');
 const {
   setup,
@@ -135,6 +136,66 @@ describe('User Model', () => {
       test('returns null if the user is already following the other', async () => {
         const nullResult = await userOne.followUser(userTwo.id);
         expect(nullResult).toBeNull();
+      });
+    });
+
+    describe('clapForStory()', () => {
+      const createUserClap = async (user, story, totalClaps) => {
+        await user.clapForStory(story.id, totalClaps);
+        const updatedUser = await userTwo.populate('claps').execPopulate();
+        const userClaps = updatedUser.claps;
+
+        return { user: updatedUser, userClaps };
+      }
+
+      describe('new story clap', () => {
+        let initialClapCount;
+        let userTwoClaps;
+        beforeAll(async () => {
+          initialClapCount = 15;
+          const data = await createUserClap(userTwo, story, initialClapCount);
+          userTwo = data.user;
+          userTwoClaps = data.userClaps;
+        });
+
+        test('creates a new story clap for the reader (user)', () => {
+          expect(userTwoClaps).toBeDefined();
+          expect(userTwoClaps.length).toBe(1);
+          expect(userTwoClaps[0].story).toEqual(story._id);
+        });
+
+        test('sets the total clap count', () => {
+          expect(userTwoClaps[0].count).toBe(initialClapCount);
+        });
+      });
+
+      describe('existing story clap: updating clap count', () => {
+        let updatedClapCount;
+        let userTwoClaps;
+        beforeAll(async () => {
+          updatedClapCount = 40;
+          const data = await createUserClap(userTwo, story, updatedClapCount);
+          userTwo = data.user;
+          userTwoClaps = data.userClaps;
+        });
+
+        test('does not create a new story clap', () => {
+          expect(userTwoClaps).toBeDefined();
+          expect(userTwoClaps.length).toBe(1);
+          expect(userTwoClaps[0].story).toEqual(story._id);
+        });
+
+        test('updates the clap count of the existing story clap', () => {
+          expect(userTwoClaps[0].count).toBe(updatedClapCount);
+        });
+
+        test(`limits the total clap count to MAX_CLAP_COUNT constant: ${MAX_CLAP_COUNT}`, async () => {
+          const excessClapCount = MAX_CLAP_COUNT + 100;
+          const { userClaps } = await createUserClap(userTwo, story, excessClapCount);
+          
+          expect(userClaps.length).toBe(1);
+          expect(userClaps[0].count).toBe(MAX_CLAP_COUNT);
+        });
       });
     });
   });

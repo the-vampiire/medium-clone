@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { MAX_CLAP_COUNT } = require('./clap');
 
 const userSchema = new mongoose.Schema({
   username: String,
@@ -37,7 +38,6 @@ userSchema.methods.getStories = function getStories() {
   return this.populate('stories').execPopulate().then(user => user.stories);
 }
 
-// todo: getClappedStories refactor
 userSchema.methods.getClappedStories = function getClappedStories() {
   // retrieve the list of [Story] through the associated claps
   return this.populate('claps').execPopulate()
@@ -82,6 +82,16 @@ userSchema.methods.followUser = async function followUser(followedUserID) {
     .then(followedUser => this.following.push(followedUser))
     // save and return the updated user
     .then(() => this.save());
+}
+
+userSchema.methods.clapForStory = function clapForStory(storyID, totalClaps) {
+  const count = totalClaps <= MAX_CLAP_COUNT ? totalClaps : MAX_CLAP_COUNT;
+  
+  return this.model('claps').update(
+    { user: this, story: storyID },
+    { $set: { count } },
+    { upsert: true },
+  );
 }
 
 const User = mongoose.model('users', userSchema);
