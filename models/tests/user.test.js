@@ -131,6 +131,11 @@ describe('User Model', () => {
         const nullResult = await userOne.followUser(new mongoose.Types.ObjectId());
         expect(nullResult).toBeNull();
       });
+
+      test('returns null if the user is already following the other', async () => {
+        const nullResult = await userOne.followUser(userTwo.id);
+        expect(nullResult).toBeNull();
+      });
     });
   });
 

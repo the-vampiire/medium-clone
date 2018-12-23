@@ -65,6 +65,12 @@ userSchema.methods.getResponses = function getResponses() {
 userSchema.methods.followUser = async function followUser(followedUserID) {
   // user can not follow themselves or the universe will implode from recursive nesting
   if (this.id === followedUserID) return null; // our savior, NullMan
+  
+  // check if the user is already following
+  // following is an array of ObjectId, convert to String before comparing
+  const isFollowing = this.following.some(id => String(id) === followedUserID);
+  if (isFollowing) return null;
+
   const followedUser = await User.findById(followedUserID);
   if (!followedUser) return null;
 
@@ -74,7 +80,7 @@ userSchema.methods.followUser = async function followUser(followedUserID) {
   return followedUser.save()
     // update 'this' current users following array field
     .then(followedUser => this.following.push(followedUser))
-    // return the updated user
+    // save and return the updated user
     .then(() => this.save());
 }
 
