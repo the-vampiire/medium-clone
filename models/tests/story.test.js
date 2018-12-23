@@ -78,8 +78,36 @@ describe('Story Model', () => {
   });
 
   describe('instance methods', () => {
-    describe('getClapsCount()', () => {
+    describe('getClapsCount()', async () => {
+      let clapsCount;
+      beforeAll(async () => {
+        clapsCount = await story.getClapsCount();
+      });
 
+      test('returns the total count of all claps from readers', () => {
+        const expectedCount = clapsPerUser * 2;
+        expect(clapsCount).toEqual(expectedCount);
+      });
+    });
+
+    describe('getClappedReaders()', () => {
+      let clappedReaders;
+      beforeAll(async () => {
+        clappedReaders = await story.getClappedReaders();
+      });
+
+      test('returns a list of the clapped readers [users]', () => {
+        expect(clappedReaders).toBeDefined();
+        expect(clappedReaders.length).toBe(2);
+      });
+    });
+
+    describe('publish()', () => {
+      beforeAll(async () => {
+        story = await story.publish();
+      });
+      test('sets the publishedDate', () => expect(story.publishedDate).not.toBeNull());
+      test('sets the published field to true', () => expect(story.published).toBe(true));
     });
   });
 });
