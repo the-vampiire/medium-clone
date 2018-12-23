@@ -72,7 +72,7 @@ describe('Story Model', () => {
 
       test('returns a URL safe slug generated from the story\'s title', () => {
         expect(slug).toBeDefined();
-        expect(slug).toEqual(story.title.toLowerCase().replace(' ', '-'));
+        expect(slug).toEqual(story.title.replace(' ', '-'));
       });
     });
   });
@@ -108,6 +108,10 @@ describe('Story Model', () => {
       });
       test('sets the publishedDate', () => expect(story.publishedDate).not.toBeNull());
       test('sets the published field to true', () => expect(story.published).toBe(true));
+      test('returns null if the story is already published', async () => {
+        const nullReturn = await story.publish();
+        expect(nullReturn).toBeNull();
+      });
     });
   });
 });

@@ -43,7 +43,7 @@ storySchema.virtual('replies', {
 // used for generating the url slug of the story
 // creates a virtual getter method for the 'slug' property
 storySchema.virtual('slug').get(function() {
-  return this.title.toLowerCase().replace(' ', '-');
+  return this.title.replace(' ', '-');
 });
 
 // -- INSTANCE METHODS -- //
@@ -64,6 +64,8 @@ storySchema.methods.getClappedReaders = function getClappedReaders() {
 
 // -- SETTERS -- //
 storySchema.methods.publish = function publish() {
+  if (this.published) return null;
+
   this.publishedDate = Date.now();
   this.published = true;
   return this.save();
