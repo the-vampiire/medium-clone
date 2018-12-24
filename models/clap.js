@@ -1,9 +1,14 @@
 const mongoose = require('mongoose');
+
 /* MAGIC NUMBER */
 const MAX_CLAP_COUNT = 50;
 
 const clapSchema = new mongoose.Schema({
-  count: Number, // todo: limit count
+  count: {
+    type: Number,
+    min: 1,
+    max: MAX_CLAP_COUNT,
+  },
   user: { type: mongoose.SchemaTypes.ObjectId, ref: 'users' },
   story: { type: mongoose.SchemaTypes.ObjectId, ref: 'stories' },
 });

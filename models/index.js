@@ -6,5 +6,7 @@ module.exports = {
   User,
   Story,
   Clap,
-  MAX_CLAP_COUNT,
+  constants: {
+    MAX_CLAP_COUNT,
+  },
 };
