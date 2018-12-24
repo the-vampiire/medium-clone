@@ -2,7 +2,10 @@ const mongoose = require('mongoose');
 const { MAX_CLAP_COUNT } = require('./clap');
 
 const userSchema = new mongoose.Schema({
-  username: String,
+  username: {
+    type: String,
+    unique: true,
+  },
   avatar_url: String,
   followers: [{ type: mongoose.SchemaTypes.ObjectId, ref: 'users' }],
   following: [{ type: mongoose.SchemaTypes.ObjectId, ref: 'users' }],
