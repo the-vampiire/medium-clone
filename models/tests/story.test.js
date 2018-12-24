@@ -36,8 +36,8 @@ describe('Story Model', () => {
     return teardown(mongoose, collections);
   });
 
-  describe('virtuals', () => {
-    describe('claps', () => {
+  describe('VIRTUALS', () => {
+    describe('.claps', () => {
       let claps;
       beforeAll(async () => {
         story = await story.populate('claps').execPopulate();
@@ -50,7 +50,7 @@ describe('Story Model', () => {
       });
     });
 
-    describe('replies', () => {
+    describe('.replies', () => {
       let replies;
       beforeAll(async () => {
         story = await story.populate('replies').execPopulate();
@@ -64,7 +64,7 @@ describe('Story Model', () => {
       });
     });
 
-    describe('slug', () => {
+    describe('.slug', () => {
       let slug;
       beforeAll(() => {
         slug = story.slug;
@@ -77,7 +77,7 @@ describe('Story Model', () => {
     });
   });
 
-  describe('instance methods', () => {
+  describe('INSTANCE METHODS', () => {
     describe('getClapsCount()', async () => {
       let clapsCount;
       beforeAll(async () => {

@@ -85,9 +85,12 @@ userSchema.methods.followUser = async function followUser(followedUserID) {
 }
 
 userSchema.methods.clapForStory = function clapForStory(storyID, totalClaps) {
+  // reject negative values
+  if (totalClaps < 1) return null;
+
   // limit the maximum count
   const count = totalClaps <= MAX_CLAP_COUNT ? totalClaps : MAX_CLAP_COUNT;
-  
+
   // creates or updates the count of a reader's (user) story clap
   return this.model('claps').update(
     { user: this, story: storyID }, // identifier for the update

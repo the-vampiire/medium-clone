@@ -1,8 +1,8 @@
 require('dotenv').config();
 
 const mongoose = require('mongoose');
-const { MAX_CLAP_COUNT } = require('../index');
 const models = require('../index');
+const { constants: { MAX_CLAP_COUNT } } = require('../index');
 const {
   setup,
   teardown,
@@ -30,8 +30,8 @@ describe('User Model', () => {
     return teardown(mongoose, collections);
   });
 
-  describe('virtuals', () => {
-    describe('stories', () => {
+  describe('VIRTUALS', () => {
+    describe('.stories', () => {
       let stories;
       beforeAll(async () => {
         story = await models.Story.create(storyMock({ author: userOne }));
@@ -46,7 +46,7 @@ describe('User Model', () => {
       });
     });
 
-    describe('claps', () => {
+    describe('.claps', () => {
       let claps;
       beforeAll(async () => {
         clap = await models.Clap.create(clapMock({ user: userOne, story }));
@@ -62,7 +62,7 @@ describe('User Model', () => {
     });
   });
 
-  describe('instance methods', () => {
+  describe('INSTANCE METHODS', () => {
     describe('getStories()', () => {
       let result;
       beforeAll(async () => { result = await userOne.getStories(); });
@@ -147,6 +147,11 @@ describe('User Model', () => {
 
         return { user: updatedUser, userClaps };
       }
+
+      test('returns null of totalClaps is negative', async () => {
+        const nullResult = await userTwo.clapForStory(story.id, -100);
+        expect(nullResult).toBeNull();
+      });
 
       describe('new story clap', () => {
         let initialClapCount;
