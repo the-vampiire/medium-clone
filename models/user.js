@@ -85,12 +85,14 @@ userSchema.methods.followUser = async function followUser(followedUserID) {
 }
 
 userSchema.methods.clapForStory = function clapForStory(storyID, totalClaps) {
+  // limit the maximum count
   const count = totalClaps <= MAX_CLAP_COUNT ? totalClaps : MAX_CLAP_COUNT;
   
+  // creates or updates the count of a reader's (user) story clap
   return this.model('claps').update(
-    { user: this, story: storyID },
-    { $set: { count } },
-    { upsert: true },
+    { user: this, story: storyID }, // identifier for the update
+    { $set: { count } }, // operation to perform on the found/created document
+    { upsert: true }, // upsert means update if exists or insert if not
   );
 }
 
