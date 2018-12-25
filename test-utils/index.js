@@ -1,7 +1,6 @@
-const { User } = require('../models');
 const mocks = require('./mocks');
 
-const setup = async ({ userCount }) => {
+const setup = async (models, { userCount }) => {
   const output = {
     users: null,
   };
@@ -9,7 +8,7 @@ const setup = async ({ userCount }) => {
   output.users = await Promise.all(
     Array(userCount)
     .fill(null)
-    .map(() => User.create(mocks.userMock())),
+    .map(() => models.User.create(mocks.userMock())),
   );
 
   return output;

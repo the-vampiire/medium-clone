@@ -17,10 +17,9 @@ describe('Story Model', () => {
   let reply;
   let clapsPerUser;
   beforeAll(async () => {
-    const { MONGO_URI, MONGO_DB } = process.env;
-    mongoose.connect(`${MONGO_URI}${MONGO_DB}`, { useNewUrlParser: true });
+    mongoose.connect(process.env.TEST_DB_URI, { useNewUrlParser: true });
 
-    const data = await setup({ userCount: 2 });
+    const data = await setup(models, { userCount: 2 });
     [userOne, userTwo] = data.users;
     story = await models.Story.create(storyMock({ author: userOne }));
     reply = await models.Story.create(storyMock({ author: userOne, parent: story }));
