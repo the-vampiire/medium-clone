@@ -1,16 +1,16 @@
-const exchangeSlugForUser = (req, _, next) => {
+const exchangeSlugForUser = async (req, _, next) => {
   const { params: { usernameSlug }, models } = req;
   const username = usernameSlug.replace('@', ''); // remove @ character
 
-  // look up with case insensitive search for username
   // add the 'pathUser' property to the req object for use downstream
-  // this is the user corresponding to the path /user/@username/
-  req.pathUser = models.User.findOne({ $ilike: { username } });
+  // this is the user with the username from the path /user/@username/
+  req.pathUser = await models.User.findOne({ username });
+  next();
 };
 
 const userNotFoundRedirect = (req, res, next) => {
   // if the path user is not found return a 404
-  if (!req.pathUser) return res.status(404);
+  if (!req.pathUser) return res.status(404).send('User not found');
   next(); // otherwise proceeed to next handler
 };
 
