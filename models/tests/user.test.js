@@ -18,10 +18,9 @@ describe('User Model', () => {
   let clap;
   let response;
   beforeAll(async () => {
-    const { MONGO_URI, MONGO_DB } = process.env;
-    mongoose.connect(`${MONGO_URI}${MONGO_DB}`, { useNewUrlParser: true });
+    mongoose.connect(process.env.TEST_DB_URI, { useNewUrlParser: true });
 
-    const data = await setup({ userCount: 2 });
+    const data = await setup(models, { userCount: 2 });
     [userOne, userTwo] = data.users;
   });
 
@@ -30,7 +29,22 @@ describe('User Model', () => {
     return teardown(mongoose, collections);
   });
 
+  test('usernames are persisted in lowercase', async () => {
+    const testUser = await models.User.create({ username: 'ALLCAPS' });
+    expect(testUser.username).toEqual('allcaps');
+  });
+
   describe('VIRTUALS', () => {
+    describe('.slug', () => {
+      let result;
+      let expected;
+      beforeAll(() => {
+        result = userOne.slug;
+        expected = `@${userOne.username}`;
+      });
+      test('returns @username slug', () => expect(result).toEqual(expected));
+    });
+
     describe('.stories', () => {
       let stories;
       beforeAll(async () => {
@@ -49,7 +63,7 @@ describe('User Model', () => {
     describe('.claps', () => {
       let claps;
       beforeAll(async () => {
-        clap = await models.Clap.create(clapMock({ user: userOne, story }));
+        clap = await models.Clap.create(clapMock({ user: userOne, story, count: 1 }));
         userOne = await userOne.populate('claps').execPopulate();
         claps = userOne.claps;
       });

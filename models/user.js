@@ -5,6 +5,7 @@ const userSchema = new mongoose.Schema({
   username: {
     type: String,
     unique: true,
+    set: val => val.toLowerCase(),
   },
   avatar_url: String,
   followers: [{ type: mongoose.SchemaTypes.ObjectId, ref: 'users' }],
@@ -22,6 +23,10 @@ userSchema.virtual('claps', {
   ref: 'claps',
   localField: '_id',
   foreignField: 'user',
+});
+
+userSchema.virtual('slug').get(function () {
+  return `@${this.username}`;
 });
 
 // == HOOKS -- //
