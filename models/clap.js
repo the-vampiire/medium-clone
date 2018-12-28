@@ -12,7 +12,7 @@ const clapSchema = new mongoose.Schema({
   },
   user: { type: mongoose.SchemaTypes.ObjectId, ref: 'users' },
   story: { type: mongoose.SchemaTypes.ObjectId, ref: 'stories' },
-});
+}, { timestamps: true });
 
 const Clap = mongoose.model('claps', clapSchema);
 

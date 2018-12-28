@@ -7,10 +7,10 @@ const userSchema = new mongoose.Schema({
     unique: true,
     set: val => val.toLowerCase(),
   },
-  avatar_url: String,
+  avatarURL: String,
   followers: [{ type: mongoose.SchemaTypes.ObjectId, ref: 'users' }],
   following: [{ type: mongoose.SchemaTypes.ObjectId, ref: 'users' }],
-});
+}, { timestamps: true });
 
 // -- VIRTUALS -- //
 userSchema.virtual('stories', {
