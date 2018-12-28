@@ -1,22 +1,7 @@
-const buildEndpoint = path => `${process.env.domain}/${path}`;
-
-const storyResourceLinks = (story) => ({
-  story_url: buildEndpoint(`story/${story.slug}`),
-  replies_url: buildEndpoint(`story/${story.slug}/replies?limit=5&page=0`),
-  clapped_users_url: buildEndpoint(`story/${story.slug}/clapped?limit=10&page=0`),
-});
-
-const userResourceLinks = (user) => {
-  const basePath = `user/${user.slug}`;
-  return {
-    user_url: buildEndpoint(basePath),
-    followers_url: buildEndpoint(`${basePath}/followers`),
-    following_url: buildEndpoint(`${basePath}/following`),
-    stories_url: buildEndpoint(`${basePath}/stories?limit=5&page=0`),
-    responses_url: buildEndpoint(`${basePath}/responses?limit=5&page=0`),
-    clapped_stories_url: buildEndpoint(`${basePath}/clapped?limit=5&page=0`),
-  };
-}
+const {
+  storyResourceLinks,
+  userResourceLinks,
+} = require('../resource-builders');
 
 const shapeUserStoriesResponse = (req, stories) => {
   const { pathUser } = req;
@@ -33,29 +18,29 @@ const shapeUserStoriesResponse = (req, stories) => {
 
       const storyResponse = populated.toJSON();
 
-      storyResponse.claps_count = await story.getClapsCount();
-
       // clean up ObjectId fields
       storyResponse.author.id = storyResponse.author._id.toHexString();
       delete storyResponse.author._id;
       storyResponse.id = storyResponse._id.toHexString();
       delete storyResponse._id;
 
-      if (populated.parent) {
-        const { parent } = await story.populate({ path: 'parent', select: { title: 1 } });
-        storyResponse.parentURL = populated.parent && buildEndpoint(`story/${parent.slug}`);
-      }
+      storyResponse.clapsCount = await story.getClapsCount();
+
+      // add the Story resources property for discovery
+      storyResponse.resources = await storyResourceLinks(story);
 
       storyResponse.author = Object.assign(
         storyResponse.author,
-        { links: userResourceLinks(populated.author) },
+        // merge with the User resources property for discovery
+        { resources: userResourceLinks(populated.author) },
       );
-      storyResponse.links = storyResourceLinks(story);
+
       return storyResponse;
     }),
   );
 }
 
+// todo: implement limit and pagination
 const userStoriesHandler = (req, res) => req.pathUser.getStories()
   // .then(stories => { console.log(stories); return stories; })
   .then(stories => shapeUserStoriesResponse(req, stories))

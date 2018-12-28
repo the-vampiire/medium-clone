@@ -17,37 +17,6 @@ const {
   },
 } = require('../../../test-utils');
 
-// const authorStories = (user, storiesCount) => Promise.all(
-//   Array(storiesCount)
-//   .fill(null)
-//   .map(storyData => storyMock({ author: user, ...storyData })),
-// );
-// const authorResponses = (user, stories) => Promise.all(
-//   Array(storiesCount)
-//   .fill(null)
-//   .map(() => storyMock({ author: user })),
-// );
-// const authorStories = (user, storiesData) => Promise.all(
-//   storiesData.map(storyData => storyMock({ author: user, ...storyData })),
-// );
-
-// const populateUser = async (
-//   user,
-//   {
-//     storiesCount = 0,
-//     responsesCount = 0,
-//     clapsData = 0,
-//     followingUserIDs = 0,
-//     userIDsToFollow = 0,
-//   },
-// ) => ({
-//   stories: await authorStories(user, storiesCount),
-//   responses: await authorResponses(user, responsesCount),
-//   claps: await createClaps(user, clapsData),
-//   followed: await followUser(user, followingUserIDs),
-//   following: await followOthers(user, userIDsToFollow),
-// });
-
 describe('[/user/@username/] Route Handlers', () => {
   let pathUser;
   let clapped;
@@ -59,15 +28,17 @@ describe('[/user/@username/] Route Handlers', () => {
 
     const data = await setup(models, { userCount: 4 }).catch(console.error);
     [pathUser, ...following] = data.users;
+
+    const storiesCount = 15;
     stories = await Promise.all(
-      Array(4)
+      Array(storiesCount)
       .fill(null)
       .map(() => models.Story.create(storyMock({ author: pathUser }))),
     );
 
     responses = await Promise.all(
       stories
-      .slice(0, 2)
+      .slice(0, storiesCount / 2)
       .map(story => models.Story.create(storyMock({ author: pathUser, parent: story }))),
     );
 
@@ -76,7 +47,7 @@ describe('[/user/@username/] Route Handlers', () => {
 
     clapped = await Promise.all(
       stories
-      .slice(0, 2)
+      .slice(0, storiesCount / 2)
       .map(story => pathUser.clapForStory(story.id, 10)),
     );
   });
@@ -93,11 +64,30 @@ describe('[/user/@username/] Route Handlers', () => {
       response = await userStoriesHandler({ pathUser }, mockRes);
     });
 
-    test('returns the user\'s [Story] Array', () => {
+    test('returns an Array of Story response shaped objects', () => {
+
+    });
+
+    test('includes the Story resource links object', () => {
+
+    });
+
+    test('includes the author\'s User resource links object', () => {
+
+    });
+
+    test('returns the first ten stories authored by the user', () => {
       expect(response).toBeDefined();
-      console.log(response[0].author);
-      // expect(response.length).toBe(stories.length);
-      // expect(response.every(story => story.author === pathUser._id));
+      expect(response.length).toBe(stories.length + responses.length);
+      expect(response.every(story => story.author.id === pathUser.id));
+    });
+
+    test('does not include unpublished stories', () => {
+      expect(true).toBe(true);
+    });
+
+    describe('paginating the user\'s stories', () => {
+
     });
   });
 });
