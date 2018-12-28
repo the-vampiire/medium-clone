@@ -1,12 +1,14 @@
 {
   "name": "medium-clone",
-  "version": "1.0.0",
-  "description": "",
+  "version": "0.0.1",
+  "description": "Medium API REST clone",
   "main": "index.js",
   "scripts": {
-    "test": "jest --runInBand --verbose"
+    "test": "jest --runInBand --verbose",
+    "dev": "NODE_ENV=development nodemon app.js",
+    "start": "NODE_ENV=production npm start"
   },
-  "author": "",
+  "author": "the-vampiire",
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.18.3",
@@ -18,6 +20,7 @@
     "mongoose": "^5.4.0"
   },
   "devDependencies": {
-    "jest": "^23.6.0"
+    "jest": "^23.6.0",
+    "nodemon": "^1.18.9"
   }
 }
