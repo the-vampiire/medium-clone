@@ -15,7 +15,10 @@ const mongoose = require('mongoose');
 const storySchema = new mongoose.Schema({
   title: String,
   body: String,
-  publishedDate: Date,
+  publishedDate: {
+    type: Date,
+    default: null,
+  },
   published: { // true: published, false: draft
     type: Boolean,
     default: false,

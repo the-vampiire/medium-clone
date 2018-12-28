@@ -65,13 +65,15 @@ describe('Story Model', () => {
 
     describe('.slug', () => {
       let slug;
+      let expected;
       beforeAll(() => {
         slug = story.slug;
+        expected = `${story.title.replace(/ /g, '-').toLowerCase()}-${story.id}`;
       });
 
       test('returns a URL safe slug generated from the story\'s title', () => {
         expect(slug).toBeDefined();
-        expect(slug).toEqual(story.title.replace(' ', '-'));
+        expect(slug).toEqual(expected);
       });
     });
   });
