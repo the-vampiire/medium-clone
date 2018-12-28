@@ -25,7 +25,7 @@ const storySchema = new mongoose.Schema({
   // idea: future
   // drafts: [draftSchema],
   // highlights: [highlightSchema],
-});
+}, { timestamps: true });
 
 // https://mongoosejs.com/docs/api.html#schema_Schema-virtual
 storySchema.virtual('claps', {
@@ -40,10 +40,20 @@ storySchema.virtual('replies', {
   foreignField: 'parent', // the field on the Clap document to match with the ID
 });
 
+storySchema.virtual('repliesCount', {
+  ref: 'stories', // collection name this [Story] field references
+  localField: '_id', // the ID to of this story
+  foreignField: 'parent', // the field on the Clap document to match with the ID
+  count: true,
+});
+
 // used for generating the url slug of the story
 // creates a virtual getter method for the 'slug' property
+// todo: update tests
 storySchema.virtual('slug').get(function() {
-  return this.title.replace(' ', '-');
+  // replaces ' ' with '-' and convert to lower case
+  const stripped = this.title.replace(/ /g, '-').toLowerCase();
+  return `${stripped}-${this.id}`;
 });
 
 // -- INSTANCE METHODS -- //

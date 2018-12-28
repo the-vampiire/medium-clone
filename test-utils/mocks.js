@@ -2,7 +2,7 @@ const f = require('faker');
 
 const userMock = () => ({
   username: f.name.firstName(),
-  avatar_url: f.internet.avatar(),
+  avatarURL: f.internet.avatar(),
 });
 
 const storyMock = ({ author, title, body, parent }) => ({
