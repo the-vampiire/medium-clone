@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { buildEndpoint, paginationDefault } = require('../controllers/utils');
+const { buildEndpoint } = require('../controllers/utils');
 // idea: future
 // const draftSchema = new mongoose.Schema({
 //   title: String,
@@ -130,8 +130,7 @@ storySchema.methods.toResponseShape = async function toResponseShape(author) {
     id: author.id,
     username: author.username,
     avatarURL: author.avatarURL,
-    // todo: implement and tests
-    // resources: author.buildResourceLinks(),
+    resources: author.buildResourceLinks(),
   };
 
   // clean up unused fields
