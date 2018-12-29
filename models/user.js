@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const { MAX_CLAP_COUNT } = require('./clap');
-const { buildEndpoint } = require('../controllers/utils');
+const { buildEndpoint, paginationQueryString } = require('../controllers/utils');
 
 const userSchema = new mongoose.Schema({
   username: {
@@ -43,13 +43,15 @@ userSchema.pre(
 
 // -- INSTANCE METHODS -- //
 // -- GETTERS -- //
-userSchema.methods.getPublishedStories = function getPublishedStories(limit, currentPage) {
+userSchema.methods.getPublishedStories = async function getPublishedStories(limit, currentPage) {
   const limitBy = limit || 10;
   const skipBy = (currentPage || 0) * limitBy;
+
   return this.model('stories')
-    .find({ published: true })
-    .limit(limitBy)
-    .skip(skipBy);
+    .find({ author: this, published: true })
+    .sort({ createdAt: -1 })
+    .skip(skipBy)
+    .limit(limitBy);
 }
 // todo: getClaps()? -> { count, story }
 userSchema.methods.getClappedStories = function getClappedStories(limit, currentPage) {
@@ -62,6 +64,7 @@ userSchema.methods.getClappedStories = function getClappedStories(limit, current
       options: {
         limit: limitBy,
         skip: skipBy,
+        sort: { createdAt: -1 },
       },
     })
     .execPopulate()
@@ -84,10 +87,11 @@ userSchema.methods.getPublishedResponses = function getPublishedResponses(limit,
   // because we need to apply a condition to our query 
   return this.model('stories')
     .find({
+      author: this,
       published: true,
       parent: { $ne: null }, // responses have parent fields defined
-      author: this._id,
     })
+    .sort({ createdAt: -1 })
     .limit(limitBy)
     .skip(skipBy);
 }
@@ -98,6 +102,7 @@ userSchema.methods.getAllStories = function getAllStories(limit, currentPage) {
 
   return this.model('stories')
     .find({ author: this })
+    .sort({ createdAt: -1 })
     .limit(limitBy)
     .skip(skipBy);
 }
@@ -113,6 +118,36 @@ userSchema.methods.buildResourceLinks = function buildResourceLinks() {
     clappedStoriesURL: buildEndpoint({ basePath, path: 'clapped', paginated: true }),
   };
 }
+// todo: tests
+userSchema.methods.addStoriesPagination = async function addStoriesPagination({
+  stories,
+  query,
+  published = false,
+}) {
+  const output = { stories };
+
+  const limit = query.limit || 10;
+  const currentPage = query.currentPage || 0;
+  output.pagination = {
+    limit,
+    currentPage
+  };
+
+  const nextPage = currentPage + 1;
+  const totalDocsCount = await this.model('stories')
+    .find({ author: this, published })
+    .estimatedDocumentCount()
+    .exec();
+
+  const hasNext = totalDocsCount > nextPage * limit;
+
+  output.pagination.nextPage = hasNext ? nextPage : null;
+  output.pagination.nextPageURL = hasNext
+    ? buildEndpoint({ basePath: `user/${this.slug}`, path: 'stories', limit, currentPage: nextPage })
+    : null;
+
+  return output;
+};
 
 // -- SETTERS -- //
 userSchema.methods.followUser = async function followUser(followedUserID) {
