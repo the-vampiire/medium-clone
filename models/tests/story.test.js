@@ -7,7 +7,7 @@ const {
   teardown,
   mocks: { storyMock, clapMock },
 } = require('../../test-utils');
-
+const { buildEndpoint, paginationDefault } = require('../../controllers/utils');
 // uncomment to see the mongodb queries themselves for debugging
 // mongoose.set('debug', true);
 describe('Story Model', () => {
@@ -49,6 +49,19 @@ describe('Story Model', () => {
       });
     });
 
+    describe('.clappedUserCount', () => {
+      let clappedUserCount;
+      beforeAll(async () => {
+        story = await story.populate('clappedUserCount').execPopulate();
+        clappedUserCount = story.toJSON().clappedUserCount;
+      });
+
+      test('returns the total number of users who clapped for the story', () => {
+        expect(clappedUserCount).toBeDefined();
+        expect(clappedUserCount).toBe(2);
+      });
+    });
+
     describe('.replies', () => {
       let replies;
       beforeAll(async () => {
@@ -61,6 +74,20 @@ describe('Story Model', () => {
         expect(replies.length).toBe(1);
         expect(replies[0].id).toEqual(reply.id);
       });
+    });
+
+    describe('.repliesCount', () => {
+      let repliesCount;
+      beforeAll(async () => {
+        story = await story.populate('repliesCount').execPopulate();
+        repliesCount = story.toJSON().repliesCount;
+      });
+
+      test('returns the total number of replies to the story', () => {
+        expect(repliesCount).toBeDefined();
+        expect(repliesCount).toBe(1);
+      });
+
     });
 
     describe('.slug', () => {
@@ -112,6 +139,83 @@ describe('Story Model', () => {
       test('returns null if the story is already published', async () => {
         const nullReturn = await story.publish();
         expect(nullReturn).toBeNull();
+      });
+    });
+
+    // describe('toResponseShape()', () => {
+
+    // });
+
+    describe('buildResourceLinks()', () => {
+      let storyOutput;
+      let replyOutput;
+      let expectedFields;
+      beforeAll(async () => {
+        storyOutput = await story.buildResourceLinks();
+        replyOutput = await reply.buildResourceLinks();
+
+        expectedFields = ['storyURL', 'parentURL', 'repliesURL', 'clappedUsersURL'];
+      });
+
+      describe('called on a Story', () => {
+        let basePath;
+        beforeAll(() => { basePath = `story/${story.slug}`});
+
+        test('returns the Story Resource Links shape, fields: ["storyURL", "parentURL", "repliesURL", "clappedUsersURL"]', () => {
+          expect(storyOutput).toBeDefined();
+          expectedFields.forEach(field => expect(storyOutput[field]).toBeDefined());
+        });
+
+        test('story has no parent: parentURL field is null', () => expect(storyOutput.parentURL).toBeNull());
+        
+        test('story has a reply: repliesURL field links to correct endpoint', () => {
+          const expected = buildEndpoint({ basePath, path: 'replies', paginated: true });
+          expect(storyOutput.repliesURL).toEqual(expected);
+        });
+        
+        test('story has clapped users: clappedUsersURL field links to correct endpoint', () => {
+          const expected = buildEndpoint({ basePath, path: 'clapped', paginated: true });
+          expect(storyOutput.clappedUsersURL).toEqual(expected);
+        });
+        
+        test(`paginated resources include pagination qs default: ${paginationDefault()}`, () => {
+          const hasQSDefault = resourceLink => expect(resourceLink.includes(`?${paginationDefault()}`));
+          expectedFields.slice(2).forEach(field => {
+            const url = storyOutput[field];
+            if (url) hasQSDefault(url);
+          });
+        });
+      });
+
+      describe('called on a reply Story', () => {
+        let basePath;
+        beforeAll(() => { basePath = `story/${reply.slug}`});
+
+        test('returns the Story Resource Links shape, fields: ["storyURL", "parentURL", "repliesURL", "clappedUsersURL"]', () => {
+          expect(replyOutput).toBeDefined();
+          expectedFields.forEach(field => expect(replyOutput[field]).toBeDefined());
+        });
+
+        test('reply has a Story parent: parentURL field links to correct endpoint', () => {
+          const expected = buildEndpoint({ basePath: `story/${story.slug}` });
+          expect(replyOutput.parentURL).toEqual(expected);
+        });
+        
+        test('reply has no replies: repliesURL field is null', () => {
+          expect(replyOutput.repliesURL).toBeNull();
+        });
+        
+        test('reply has no clapped users: clappedUsersURL field is null', () => {
+          expect(replyOutput.clappedUsersURL).toBeNull();
+        });
+        
+        test(`paginated resources include pagination qs default: ?${paginationDefault()}`, () => {
+          const hasQSDefault = resourceLink => expect(resourceLink.includes(`?${paginationDefault()}`));
+          expectedFields.slice(2).forEach(field => {
+            const url = replyOutput[field];
+            if (url) hasQSDefault(url);
+          });
+        });
       });
     });
   });
