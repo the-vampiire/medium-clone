@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const { MAX_CLAP_COUNT } = require('./clap');
+const { buildEndpoint } = require('../controllers/utils');
 
 const userSchema = new mongoose.Schema({
   username: {
@@ -42,13 +43,28 @@ userSchema.pre(
 
 // -- INSTANCE METHODS -- //
 // -- GETTERS -- //
-userSchema.methods.getStories = function getStories() {
-  return this.populate('stories').execPopulate().then(user => user.stories);
+userSchema.methods.getPublishedStories = function getPublishedStories(limit, currentPage) {
+  const limitBy = limit || 10;
+  const skipBy = (currentPage || 0) * limitBy;
+  return this.model('stories')
+    .find({ published: true })
+    .limit(limitBy)
+    .skip(skipBy);
 }
-
-userSchema.methods.getClappedStories = function getClappedStories() {
+// todo: getClaps()? -> { count, story }
+userSchema.methods.getClappedStories = function getClappedStories(limit, currentPage) {
+  const limitBy = limit || 10;
+  const skipBy = (currentPage || 0) * limitBy;
   // retrieve the list of [Story] through the associated claps
-  return this.populate('claps').execPopulate()
+  return this
+    .populate({
+      path: 'claps',
+      options: {
+        limit: limitBy,
+        skip: skipBy,
+      },
+    })
+    .execPopulate()
     // get the users claps
     .then(user => user.claps)
     // for each clap populate the 'story' field
@@ -59,14 +75,43 @@ userSchema.methods.getClappedStories = function getClappedStories() {
     )));
 }
 
-userSchema.methods.getResponses = function getResponses() {
+userSchema.methods.getPublishedResponses = function getPublishedResponses(limit, currentPage) {
+  const limitBy = limit || 10;
+  const skipBy = (currentPage || 0) * limitBy;
+
   // cant use simple virtual because responses are modeled as Story documents
   // they have a 'parent' field that references their parent story
-  // because we need to apply a condition t o our 
-  return mongoose.model('stories').find({
-    parent: { $ne: null }, // responses have parent fields defined
-    author: this._id,
-  });
+  // because we need to apply a condition to our query 
+  return this.model('stories')
+    .find({
+      published: true,
+      parent: { $ne: null }, // responses have parent fields defined
+      author: this._id,
+    })
+    .limit(limitBy)
+    .skip(skipBy);
+}
+
+userSchema.methods.getAllStories = function getAllStories(limit, currentPage) {
+  const limitBy = limit || 10;
+  const skipBy = (currentPage || 0) * limitBy;
+
+  return this.model('stories')
+    .find({ author: this })
+    .limit(limitBy)
+    .skip(skipBy);
+}
+
+userSchema.methods.buildResourceLinks = function buildResourceLinks() {
+  const basePath = `user/${this.slug}`;
+  return {
+    userURL: buildEndpoint({ basePath }),
+    followersURL: buildEndpoint({ basePath, path: 'followers', paginated: true }),
+    followingURL: buildEndpoint({ basePath, path: 'following', paginated: true }),
+    storiesURL: buildEndpoint({ basePath, path: 'stories', paginated: true }),
+    responsesURL: buildEndpoint({ basePath, path: 'responses', paginated: true }),
+    clappedStoriesURL: buildEndpoint({ basePath, path: 'clapped', paginated: true }),
+  };
 }
 
 // -- SETTERS -- //
@@ -92,19 +137,39 @@ userSchema.methods.followUser = async function followUser(followedUserID) {
     .then(() => this.save());
 }
 
-userSchema.methods.clapForStory = function clapForStory(storyID, totalClaps) {
+userSchema.methods.clapForStory = async function clapForStory(storyID, totalClaps) {
   // reject negative values
   if (totalClaps < 1) return null;
 
   // limit the maximum count
   const count = totalClaps <= MAX_CLAP_COUNT ? totalClaps : MAX_CLAP_COUNT;
 
+  const story = await this.model('stories').findById(storyID);
+  // reject if a story is not found
+  if (!story) return null;
+  // reject authors clapping for their own story
+  else if (String(story.author) === this.id) return null;
+
   // creates or updates the count of a reader's (user) story clap
   return this.model('claps').update(
-    { user: this, story: storyID }, // identifier for the update
+    { user: this, story }, // identifier for the update
     { $set: { count } }, // operation to perform on the found/created document
     { upsert: true }, // upsert means update if exists or insert if not
   );
+}
+
+userSchema.methods.respondToStory = async function respondToStory(storyID, body) {
+  const Story = this.model('stories');
+
+  const story = await Story.findOne({ _id: storyID }, '_id');
+  if (!story) return null; // does not exist
+
+  return Story.create({
+    body,
+    author: this,
+    parent: story,
+    published: true,
+  });
 }
 
 const User = mongoose.model('users', userSchema);
