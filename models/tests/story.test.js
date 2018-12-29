@@ -7,7 +7,7 @@ const {
   teardown,
   mocks: { storyMock, clapMock },
 } = require('../../test-utils');
-const { buildEndpoint, paginationDefault } = require('../../controllers/utils');
+const { buildEndpoint, paginationQueryString } = require('../../controllers/utils');
 // uncomment to see the mongodb queries themselves for debugging
 // mongoose.set('debug', true);
 describe('Story Model', () => {
@@ -148,7 +148,7 @@ describe('Story Model', () => {
       let output;
       let expectedFields;
       beforeAll(async () => {
-        output = await story.toResponseShape(author);
+        output = await story.toResponseShape({ author });
         expectedFields = ['id', 'createdAt', 'updatedAt', 'published', 'publishedDate', 'clapsCount', 'repliesCount', 'author', 'title', 'body', 'resources'];
       });
 
@@ -202,8 +202,8 @@ describe('Story Model', () => {
           expect(storyOutput.clappedUsersURL).toEqual(expected);
         });
         
-        test(`paginated resources include pagination qs default: ${paginationDefault()}`, () => {
-          const hasQSDefault = resourceLink => expect(resourceLink.includes(`?${paginationDefault()}`));
+        test(`paginated resources include pagination qs default: ${paginationQueryString({})}`, () => {
+          const hasQSDefault = resourceLink => expect(resourceLink.includes(`?${paginationQueryString({})}`));
           expectedFields.slice(2).forEach(field => {
             const url = storyOutput[field];
             if (url) hasQSDefault(url);

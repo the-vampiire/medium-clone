@@ -2,11 +2,18 @@ const buildEndpoint = ({
   basePath,
   path,
   paginated = false,
-}) => `${process.env.domain}/${basePath}/${path || ''}${paginated ? `?${paginationDefault()}` : ''}`;
+  limit,
+  currentPage,
+}) => {
+  let endpoint =  `${process.env.DOMAIN}/${basePath}`;
+  if (path) endpoint += `/${path}`;
+  if (paginated || limit) endpoint += `?${paginationQueryString({ limit, currentPage })}`;
+  return endpoint;
+};
 
-const paginationDefault = () => 'limit=10&page=0';
+const paginationQueryString = ({ limit = 10, currentPage = 0 }) => `limit=${limit}&currentPage=${currentPage}`;
 
 module.exports = {
   buildEndpoint,
-  paginationDefault,
+  paginationQueryString,
 };

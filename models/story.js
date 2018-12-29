@@ -81,36 +81,7 @@ storySchema.methods.getClappedReaders = function getClappedReaders() {
   return this.populate('claps').execPopulate().then(() => mapClappedUsers(this.claps));
 }
 
-/**
- * @param {User} author the pathUser who authored the Story 
- * @returns
- *  { id: '5c26a115dcc1c40354e18a20',
-      createdAt: 2018-12-28T22:17:57.174Z,
-      updatedAt: 2018-12-28T22:17:57.174Z,
-      publishedDate: null,
-      published: false,
-      clapsCount: 10,
-      repliesCount: 1,
-      author:
-       { id: '5c26a115dcc1c40354e18a1c',
-         username: 'houston',
-         avatarURL: 'https://s3.amazonaws.com/uifaces/faces/twitter/jasonmarkjones/128.jpg',
-         resources:
-          { userURL: 'http://localhost:8080/user/@houston',
-            followersURL: 'http://localhost:8080/user/@houston/followers',
-            followingURL: 'http://localhost:8080/user/@houston/following',
-            storiesURL: 'http://localhost:8080/user/@houston/stories?limit=10&page=0',
-            responsesURL: 'http://localhost:8080/user/@houston/responses?limit=10&page=0',
-            clappedStoriesURL: 'http://localhost:8080/user/@houston/clapped?limit=10&page=0' } },
-      title: 'Universal solution-oriented hardware',
-      body: 'Laudantium deserunt dicta aliquid blanditiis qui. Est ipsum earum possimus qui nemo ipsum et. Ut hic culpa. Eaque et perspiciatis quos esse. Quo beatae assumenda sequi. Eligendi molestiae facere.\n \rOdit non et ab qui reprehenderit dignissimos ex et veniam. Suscipit pariatur earum est. Consequuntur et ullam vel.',
-      resources:
-       { storyURL: 'http://localhost:8080/story/universal-solution-oriented-hardware-5c26a115dcc1c40354e18a20',
-         parentURL: null,
-         repliesURL: 'http://localhost:8080/story/universal-solution-oriented-hardware-5c26a115dcc1c40354e18a20/replies?limit=10&page=0',
-         clappedUsersURL: 'http://localhost:8080/story/universal-solution-oriented-hardware-5c26a115dcc1c40354e18a20/clapped?limit=10&page=0' } }
- */
-storySchema.methods.toResponseShape = async function toResponseShape(author) {
+storySchema.methods.toResponseShape = async function toResponseShape({ author, query = {} }) {
   const populated = await this.populate('repliesCount').execPopulate();
   const storyResponse = populated.toJSON();
 
@@ -138,7 +109,6 @@ storySchema.methods.toResponseShape = async function toResponseShape(author) {
   delete storyResponse._id;
   delete storyResponse.parent;
 
-  // todo: add next and next_page_url properties
   return storyResponse;
 }
 
@@ -191,5 +161,3 @@ storySchema.methods.publish = function publish() {
 const Story = mongoose.model('stories', storySchema);
 
 module.exports = Story;
-
-const fields = ["id", "createdAt", "updatedAt", "published", "publishedDate", "clapsCount", "repliesCount", "author", "title", "body", "resources"];
