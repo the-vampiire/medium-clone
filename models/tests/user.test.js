@@ -15,6 +15,8 @@ describe('User Model', () => {
   let userOne;
   let userTwo;
   let story;
+  let unpublishedStory;
+  let unpublishedResponse;
   let clap;
   let response;
   beforeAll(async () => {
@@ -77,29 +79,46 @@ describe('User Model', () => {
   });
 
   describe('INSTANCE METHODS', () => {
-    describe('getStories()', () => {
+    describe('getPublishedStories()', () => {
       let result;
-      beforeAll(async () => { result = await userOne.getStories(); });
+      beforeAll(async () => {
+        unpublishedStory = await models.Story.create(storyMock({ author: userOne }));
+        await story.publish();
+        result = await userOne.getPublishedStories();
+      });
 
-      test('returns the users stories', () => {
+      test('returns the user\'s published stories', () => {
         expect(result).toBeDefined();
         expect(result.length).toBe(1);
         expect(result[0].id).toEqual(story.id);
-      })
-    });
-
-    describe('getResponses()', () => {
-      let result;
-      beforeAll(async () => {
-        response = await models.Story.create(storyMock({ author: userOne, parent: story }));
-        result = await userOne.getResponses();
       });
 
-      test('returns the users responses', () => {
+      test('does not include unpublished stories', () => {
+        const includesUnpublished = result.map(story => story.id).includes(unpublishedStory.id);
+        expect(includesUnpublished).toBe(false);
+      });
+    });
+
+    describe('getPublishedResponses()', () => {
+      let result;
+      beforeAll(async () => {
+        unpublishedResponse = await models.Story.create(storyMock({ author: userTwo, parent: story }));
+        response = await models.Story.create(storyMock({ author: userTwo, parent: story }));
+        await response.publish();
+        
+        result = await userTwo.getPublishedResponses();
+      });
+
+      test('returns the user\'s published responses', () => {
         expect(result).toBeDefined();
         expect(result.length).toBe(1);
         expect(result[0].id).toEqual(response.id);
-      })
+      });
+
+      test('does not include unpublished responses', () => {
+        const includesUnpublished = result.map(response => response.id).includes(unpublishedResponse.id);
+        expect(includesUnpublished).toBe(false);
+      });
     });
 
     describe('getClappedStories()', () => {
@@ -110,7 +129,17 @@ describe('User Model', () => {
         expect(result).toBeDefined();
         expect(result.length).toBe(1);
         expect(result[0].id).toEqual(story.id);
-      })
+      });
+    });
+
+    describe('getAllStories()', () => {
+      let result;
+      beforeAll(async () => { result = await userOne.getAllStories(); });
+
+      test('returns all the user\'s published and unpublished stories', () => {
+        expect(result).toBeDefined();
+        expect(result.length).toBe(2);
+      });
     });
 
     describe('followUser()', () => {
@@ -215,6 +244,18 @@ describe('User Model', () => {
           expect(userClaps.length).toBe(1);
           expect(userClaps[0].count).toBe(MAX_CLAP_COUNT);
         });
+      });
+    });
+
+    describe('respondToStory()', () => {
+      let storyResponse;
+      beforeAll(async () => { storyResponse = await userOne.respondToStory(story.id, 'test body') });
+      afterAll(async () => { await storyResponse.remove(); });
+
+      test('creates and returns a new response Story', () => {
+        expect(storyResponse).toBeDefined();
+        expect(storyResponse.parent._id).toEqual(story._id);
+        expect(storyResponse.author._id).toEqual(userOne._id);
       });
     });
   });
