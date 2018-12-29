@@ -29,22 +29,25 @@ describe('[/user/@username/] Route Handlers', () => {
     const data = await setup(models, { userCount: 4 }).catch(console.error);
     [pathUser, ...following] = data.users;
 
-    const storiesCount = 15;
+    const storiesCount = 10;
     stories = await Promise.all(
-      Array(storiesCount)
+      Array(storiesCount) // 10 stories
       .fill(null)
-      .map(() => models.Story.create(storyMock({ author: pathUser }))),
+      .map(() => models.Story.create(storyMock({ author: pathUser, published: true }))),
     );
 
     responses = await Promise.all(
       stories
-      .slice(0, storiesCount / 2)
-      .map(story => models.Story.create(storyMock({ author: pathUser, parent: story }))),
+      .slice(0, storiesCount / 2) // 5 responses
+      .map(story => models.Story.create(
+        storyMock({ author: pathUser, parent: story, published: true }),
+      )),
     );
 
     pathUser.following = following;
     await pathUser.save();
 
+    // todo: refactor
     clapped = await Promise.all(
       stories
       .slice(0, storiesCount / 2)
@@ -59,35 +62,33 @@ describe('[/user/@username/] Route Handlers', () => {
 
   describe('[/stories] handler', () => {
     let response;
+    let mockRes;
     beforeAll(async () => {
-      const mockRes = { json: (data) => data };
-      response = await userStoriesHandler({ pathUser }, mockRes);
+      mockRes = { json: (data) => data };
+      response = await userStoriesHandler({ pathUser, query: {} }, mockRes);
     });
 
-    test('returns an Array of Story response shaped objects', () => {
-
-    });
-
-    test('includes the Story resource links object', () => {
-
-    });
-
-    test('includes the author\'s User resource links object', () => {
-
-    });
-
-    test('returns the first ten stories authored by the user', () => {
+    test('returns the User Stories Response shape, fields: ["stories", "pagination"]', () => {
       expect(response).toBeDefined();
-      expect(response.length).toBe(stories.length + responses.length);
-      expect(response.every(story => story.author.id === pathUser.id));
+      expect(response.pagination).toBeDefined();
+      expect(response.stories).toBeDefined();
     });
 
-    test('does not include unpublished stories', () => {
-      expect(true).toBe(true);
+    test('returns the first ten (default) published stories authored by the user', () => {
+      const { stories } = response;
+      expect(stories).toBeDefined();
+      expect(stories.length).toBe(10);
+      expect(stories.every(story => story.author.id === pathUser.id));
     });
 
-    describe('paginating the user\'s stories', () => {
-
+    test('pagination results can be followed until "nextPageURL" is null', async () => {
+      let limit = 10;
+      let currentPage = 0;
+      while (currentPage !== null) {
+        output = await userStoriesHandler({ pathUser, query: { limit, currentPage }}, mockRes);
+        expect(output.stories.length).toBeGreaterThan(0);
+        currentPage = output.pagination.nextPage;
+      }
     });
   });
 });
