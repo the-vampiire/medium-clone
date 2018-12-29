@@ -11,8 +11,8 @@ const { buildEndpoint, paginationDefault } = require('../../controllers/utils');
 // uncomment to see the mongodb queries themselves for debugging
 // mongoose.set('debug', true);
 describe('Story Model', () => {
-  let userOne;
-  let userTwo;
+  let author;
+  let replier;
   let story;
   let reply;
   let clapsPerUser;
@@ -20,14 +20,12 @@ describe('Story Model', () => {
     mongoose.connect(process.env.TEST_DB_URI, { useNewUrlParser: true });
 
     const data = await setup(models, { userCount: 2 });
-    [userOne, userTwo] = data.users;
-    story = await models.Story.create(storyMock({ author: userOne }));
-    reply = await models.Story.create(storyMock({ author: userOne, parent: story }));
+    [author, replier] = data.users;
+    story = await models.Story.create(storyMock({ author }));
+    reply = await models.Story.create(storyMock({ author: replier, parent: story }));
 
     clapsPerUser = 20;
-    await Promise.all(
-      [userOne, userTwo].map(user => models.Clap.create({ user, story, count: clapsPerUser })),
-    );
+    await replier.clapForStory(story.id, clapsPerUser);
   });
 
   afterAll(async () => {
@@ -45,7 +43,11 @@ describe('Story Model', () => {
 
       test('returns all the claps belonging to the story', () => {
         expect(claps).toBeDefined();
-        expect(claps.length).toBe(2);
+        expect(claps.length).toBe(1);
+
+        const [clap] = claps;
+        expect(String(clap.user)).toEqual(replier.id);
+        expect(String(clap.story)).toEqual(story.id);
       });
     });
 
@@ -58,7 +60,7 @@ describe('Story Model', () => {
 
       test('returns the total number of users who clapped for the story', () => {
         expect(clappedUserCount).toBeDefined();
-        expect(clappedUserCount).toBe(2);
+        expect(clappedUserCount).toBe(1);
       });
     });
 
@@ -113,7 +115,7 @@ describe('Story Model', () => {
       });
 
       test('returns the total count of all claps from readers', () => {
-        const expectedCount = clapsPerUser * 2;
+        const expectedCount = clapsPerUser * 1;
         expect(clapsCount).toEqual(expectedCount);
       });
     });
@@ -126,7 +128,7 @@ describe('Story Model', () => {
 
       test('returns a list of the clapped readers [users]', () => {
         expect(clappedReaders).toBeDefined();
-        expect(clappedReaders.length).toBe(2);
+        expect(clappedReaders.length).toBe(1);
       });
     });
 
@@ -142,9 +144,31 @@ describe('Story Model', () => {
       });
     });
 
-    // describe('toResponseShape()', () => {
+    describe('toResponseShape()', () => {
+      let output;
+      let expectedFields;
+      beforeAll(async () => {
+        output = await story.toResponseShape(author);
+        expectedFields = ['id', 'createdAt', 'updatedAt', 'published', 'publishedDate', 'clapsCount', 'repliesCount', 'author', 'title', 'body', 'resources'];
+      });
 
-    // });
+      test('returns the Story Response Shape, fields: ["id", "createdAt", "updatedAt", "published", "publishedDate", "clapsCount", "repliesCount", "author", "title", "body", "resources"]', () => {
+        expect(output).toBeDefined();
+        expectedFields.forEach(field => expect(output[field]).toBeDefined());
+      });
+
+      test('does not include unused fields: ["__v", "_id", "parent"]', () => {
+        ['__v', '_id', 'parent'].forEach(field => expect(output[field]).not.toBeDefined());
+      });
+
+      test('author field has correct shape, fields: ["id", "username", "avatarURL", "resources"]', () => {
+        const authorField = output.author;
+        expect(authorField).toBeDefined();
+
+        ["id", "username", "avatarURL", "resources"]
+          .forEach(field => expect(authorField[field]).toBeDefined());
+      });
+    });
 
     describe('buildResourceLinks()', () => {
       let storyOutput;
@@ -188,9 +212,6 @@ describe('Story Model', () => {
       });
 
       describe('called on a reply Story', () => {
-        let basePath;
-        beforeAll(() => { basePath = `story/${reply.slug}`});
-
         test('returns the Story Resource Links shape, fields: ["storyURL", "parentURL", "repliesURL", "clappedUsersURL"]', () => {
           expect(replyOutput).toBeDefined();
           expectedFields.forEach(field => expect(replyOutput[field]).toBeDefined());
@@ -207,14 +228,6 @@ describe('Story Model', () => {
         
         test('reply has no clapped users: clappedUsersURL field is null', () => {
           expect(replyOutput.clappedUsersURL).toBeNull();
-        });
-        
-        test(`paginated resources include pagination qs default: ?${paginationDefault()}`, () => {
-          const hasQSDefault = resourceLink => expect(resourceLink.includes(`?${paginationDefault()}`));
-          expectedFields.slice(2).forEach(field => {
-            const url = replyOutput[field];
-            if (url) hasQSDefault(url);
-          });
         });
       });
     });

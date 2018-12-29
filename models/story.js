@@ -111,21 +111,26 @@ storySchema.methods.getClappedReaders = function getClappedReaders() {
          clappedUsersURL: 'http://localhost:8080/story/universal-solution-oriented-hardware-5c26a115dcc1c40354e18a20/clapped?limit=10&page=0' } }
  */
 storySchema.methods.toResponseShape = async function toResponseShape(author) {
-  const populated = await this
-    .populate('repliesCount')
-    .populate('clappedUserCount')
-    .execPopulate();
-
+  const populated = await this.populate('repliesCount').execPopulate();
   const storyResponse = populated.toJSON();
+
+  // todo: get viewing user (reader) from request
+  // const readerClap = await this.model('claps').findOne(
+  //   { user: reader, story: this },
+  //   'count',
+  // );
 
   // shape response fields
   storyResponse.id = storyResponse._id.toHexString();
   storyResponse.clapsCount = await this.getClapsCount();
+  // todo: implement and tests
+  // storyResponse.readerClapsCount = readerClap ? readerClap.count : null;
   storyResponse.resources = await this.buildResourceLinks();
   storyResponse.author = {
     id: author.id,
     username: author.username,
     avatarURL: author.avatarURL,
+    // todo: implement and tests
     // resources: author.buildResourceLinks(),
   };
 
@@ -187,3 +192,5 @@ storySchema.methods.publish = function publish() {
 const Story = mongoose.model('stories', storySchema);
 
 module.exports = Story;
+
+const fields = ["id", "createdAt", "updatedAt", "published", "publishedDate", "clapsCount", "repliesCount", "author", "title", "body", "resources"];
