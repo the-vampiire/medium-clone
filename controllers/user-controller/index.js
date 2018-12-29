@@ -1,5 +1,5 @@
 const express = require('express');
-const UserFollowersController = require('./user-followers-controller');
+
 const {
   exchangeSlugForUser,
   userNotFoundRedirect,
@@ -10,6 +10,7 @@ const {
   userResponsesHandler,
   userClappedHandler,
 } = require('./user-route-handlers');
+const UserFollowersController = require('./user-followers-controller');
 
 // handles all requests prefixed by: /user/
 const UserController = express.Router();
