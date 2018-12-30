@@ -84,7 +84,7 @@ describe('User Model', () => {
       beforeAll(async () => {
         unpublishedStory = await models.Story.create(storyMock({ author: userOne }));
         await story.publish();
-        result = await userOne.getPublishedStories();
+        result = await userOne.getStories({ onlyStories: true });
       });
 
       test('returns the user\'s published stories', () => {
@@ -106,7 +106,7 @@ describe('User Model', () => {
         response = await models.Story.create(storyMock({ author: userTwo, parent: story }));
         await response.publish();
         
-        result = await userTwo.getPublishedResponses();
+        result = await userTwo.getStories({ onlyResponses: true });;
       });
 
       test('returns the user\'s published responses', () => {
@@ -129,16 +129,6 @@ describe('User Model', () => {
         expect(result).toBeDefined();
         expect(result.length).toBe(1);
         expect(result[0].id).toEqual(story.id);
-      });
-    });
-
-    describe('getAllStories()', () => {
-      let result;
-      beforeAll(async () => { result = await userOne.getAllStories(); });
-
-      test('returns all the user\'s published and unpublished stories', () => {
-        expect(result).toBeDefined();
-        expect(result.length).toBe(2);
       });
     });
 
