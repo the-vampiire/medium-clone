@@ -171,34 +171,50 @@ userSchema.methods.buildResourceLinks = function buildResourceLinks() {
     clappedStoriesURL: buildEndpoint({ basePath, path: 'clapped', paginated: true }),
   };
 }
-// todo: tests
+
+userSchema.methods.shapeAuthoredStories = function shapeAuthoredStories(stories) {
+  return Promise.all(
+    stories.map(story => story.toResponseShape({ author: this }))
+  );
+}
+
 userSchema.methods.addStoriesPagination = async function addStoriesPagination({
-  data,
-  path,
-  query, // req.query
-  published = false,
+  limit,
+  currentPage,
+  stories,
+  published = true,
+  responses = false,
 }) {
-  const output = {};
-  // ex: path = 'stories', output = { stories: [...] }
-  output[path] = data;
+  const match = { author: this, published };
+  if (responses) match.parent = { $ne: null };
+  else match.parent = null;
 
-  const limit = query.limit || 10;
-  const currentPage = query.currentPage || 0;
-  output.pagination = { limit, currentPage, nextPage: null, nextPageURL: null };
+  return this.addPagination({
+    limit,
+    currentPage,
+    path: 'stories',
+    output: { stories },
+    totalDocuments: await this.model('stories').countDocuments(match).exec(),
+  });
+}
 
-  const totalDocuments = await this.model(path)
-    // story, response: author and published, claps: user (ignored if unused)
-    .find({ author: this, user: this, published })
-    // not as precise but faster, collection-meta based count
-    .estimatedDocumentCount() 
-    .exec();
+// todo: tests
+userSchema.methods.addPagination = async function addPagination({
+  path,
+  output = {},
+  limit = 10,
+  currentPage = 0,
+  totalDocuments,
+}) {
+  const paginatedOutput = { ...output };
+  paginatedOutput.pagination = { limit, currentPage, hasNext: null, nextPageURL: null };
 
   const nextPage = currentPage + 1;
   const hasNext = totalDocuments > nextPage * limit;
 
   if (hasNext) {
-    output.pagination.nextPage = nextPage;
-    output.pagination.nextPageURL = buildEndpoint({
+    paginatedOutput.pagination.hasNext = hasNext;
+    paginatedOutput.pagination.nextPageURL = buildEndpoint({
       path,
       limit,
       currentPage: nextPage,
@@ -206,7 +222,7 @@ userSchema.methods.addStoriesPagination = async function addStoriesPagination({
     });
   }
 
-  return output;
+  return paginatedOutput;
 };
 
 const User = mongoose.model('users', userSchema);
