@@ -22,6 +22,7 @@ app.use(
 // -- ENDPOINTS -- //
 app.use('/user', UserController);
 
+mongoose.set('useCreateIndex', true);
 mongoose.connect(
   getDatabaseURI(),
   (err) => console.log(err || 'connected to mongo'),
