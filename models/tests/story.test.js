@@ -7,7 +7,7 @@ const {
   teardown,
   mocks: { storyMock, clapMock },
 } = require('../../test-utils');
-const { buildEndpoint, paginationQueryString } = require('../../controllers/utils');
+const { buildEndpoint, paginationQueryString } = require('../../controllers/controller-utils');
 // uncomment to see the mongodb queries themselves for debugging
 // mongoose.set('debug', true);
 describe('Story Model', () => {

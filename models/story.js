@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { buildEndpoint } = require('../controllers/utils');
+const { buildEndpoint } = require('../controllers/controller-utils');
 // idea: future
 // const draftSchema = new mongoose.Schema({
 //   title: String,
