@@ -29,16 +29,16 @@ describe('[/user/@username/] Route Handlers', () => {
     const data = await setup(models, { userCount: 4 }).catch(console.error);
     [pathUser, ...following] = data.users;
 
-    const storiesCount = 10;
+    const storiesCount = 20;
     stories = await Promise.all(
-      Array(storiesCount) // 10 stories
+      Array(storiesCount) // 20 stories
       .fill(null)
       .map(() => models.Story.create(storyMock({ author: pathUser, published: true }))),
     );
 
     responses = await Promise.all(
       stories
-      .slice(0, storiesCount / 2) // 5 responses
+      .slice(0, storiesCount / 2) // 10 responses
       .map(story => models.Story.create(
         storyMock({ author: pathUser, parent: story, published: true }),
       )),
@@ -79,16 +79,6 @@ describe('[/user/@username/] Route Handlers', () => {
       expect(stories).toBeDefined();
       expect(stories.length).toBe(10);
       expect(stories.every(story => story.author.id === pathUser.id));
-    });
-
-    test('pagination results can be followed until "nextPageURL" is null', async () => {
-      let limit = 10;
-      let currentPage = 0;
-      while (currentPage !== null) {
-        output = await userStoriesHandler({ pathUser, query: { limit, currentPage }}, mockRes);
-        expect(output.stories.length).toBeGreaterThan(0);
-        currentPage = output.pagination.nextPage;
-      }
     });
   });
 });

@@ -1,11 +1,7 @@
-const userStoriesHandler = (
-  { pathUser, query }, // todo: get viewingUser (requesting User) from req
-  res,
-) => pathUser.getPublishedStories(query.limit, query.currentPage)
-  .then(stories => Promise.all(
-    stories.map(story => story.toResponseShape({ author: pathUser, query })),
-  ))
-  .then(stories => pathUser.addStoriesPagination({ stories, query }))
+const userStoriesHandler = ({ query: { limit, currentPage }, pathUser }, res) => pathUser
+  .getStories({ limit, currentPage, onlyStories: true })
+  .then(stories => pathUser.shapeAuthoredStories(stories)) // shape for response
+  .then(stories => pathUser.addStoriesPagination({ stories, onlyStories: true, limit, currentPage }))
   .then(res.json)
   .catch(console.error);
 
