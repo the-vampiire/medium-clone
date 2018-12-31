@@ -1,4 +1,4 @@
-const { buildEndpoint } = require('../../../controllers/utils');
+const { buildEndpoint } = require('../../../controllers/controller-utils');
 
 function buildResourceLinks() {
   const basePath = `user/${this.slug}`;

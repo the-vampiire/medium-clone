@@ -2,7 +2,7 @@ require('dotenv').config();
 
 const mongoose = require('mongoose');
 const models = require('../../index');
-const { buildEndpoint } = require('../../../controllers/utils');
+const { buildEndpoint } = require('../../../controllers/controller-utils');
 const { setup, teardown, mocks: { storyMock } } = require('../../../test-utils');
 
 describe('User Model Instance Methods: Response Data Shapers', () => {

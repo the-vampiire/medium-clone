@@ -7,7 +7,10 @@ const buildEndpoint = ({
 }) => {
   let endpoint =  `${process.env.DOMAIN}/${basePath}`;
   if (path) endpoint += `/${path}`;
-  if (paginated || limit) endpoint += `?${paginationQueryString({ limit, currentPage })}`;
+
+  const shouldPaginate = paginated || (limit !== undefined) || (currentPage !== undefined);
+  if (shouldPaginate) endpoint += `?${paginationQueryString({ limit, currentPage })}`;
+  
   return endpoint;
 };
 
