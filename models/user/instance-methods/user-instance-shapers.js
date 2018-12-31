@@ -23,11 +23,13 @@ async function addStoriesPagination({
   currentPage,
   stories,
   published = true,
-  responses = false,
+  onlyStories = false,
+  onlyResponses = false,
 }) {
   const match = { author: this, published };
-  if (responses) match.parent = { $ne: null };
-  else match.parent = null;
+
+  if (onlyStories) match.parent = null;
+  else if (onlyResponses) match.parent = { $ne: null };
 
   return this.addPagination({
     limit,
@@ -39,15 +41,15 @@ async function addStoriesPagination({
 }
 
 // todo: tests
-async function addPagination({
-  path,
+function addPagination({
+  path = '',
   output = {},
   limit = 10,
   currentPage = 0,
-  totalDocuments,
+  totalDocuments = 0,
 }) {
   const paginatedOutput = { ...output };
-  paginatedOutput.pagination = { limit, currentPage, hasNext: null, nextPageURL: null };
+  paginatedOutput.pagination = { limit, currentPage, hasNext: false, nextPageURL: null };
 
   const nextPage = currentPage + 1;
   const hasNext = totalDocuments > nextPage * limit;

@@ -1,9 +1,9 @@
-const utils = require('./user-instance-utils');
+const shapers = require('./user-instance-shapers');
 const queries = require('./user-instance-queries');
 const mutations = require('./user-instance-mutations');
 
 module.exports = {
-  ...utils,
+  ...shapers,
   ...queries,
   ...mutations,
 };
