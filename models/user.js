@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const { MAX_CLAP_COUNT } = require('./clap');
-const { buildEndpoint, paginationQueryString } = require('../controllers/utils');
+const { buildEndpoint } = require('../controllers/utils');
 
 const userSchema = new mongoose.Schema({
   username: {
@@ -14,12 +14,6 @@ const userSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // -- VIRTUALS -- //
-userSchema.virtual('stories', {
-  ref: 'stories',
-  localField: '_id',
-  foreignField: 'author',
-});
-
 userSchema.virtual('claps', {
   ref: 'claps',
   localField: '_id',
@@ -46,26 +40,33 @@ userSchema.pre(
 /**
  * multi-purpose getter for authored stories
  * @param StoryQueryOptions
- * @property {Number} limit [10] pagination, max 20
+ * @property {Number} limit [10] pagination, MAX 20: use Story.find({ author }) for larger internal queries
  * @property {Number} currentPage [0] pagination
  * @property {Boolean} published [true] story's published field
  * @property {Boolean} onlyStories [false] only original stories
  * @property {Boolean} onlyResponses [false] only responses to stories
- * @property {object} sortBy [{ createdAt: -1 }] sort by story fields
+ * @property {object} sortBy [published: true -> { publishedDate: -1 }, published: false -> { updatedAt: -1 }] sort by Story field
  */
-userSchema.methods.getStories = function getStories({
+userSchema.methods.getStories = async function getStories({
   limit = 10,
   currentPage = 0,
   published = true,
   onlyStories = false,
   onlyResponses = false,
-  sortBy = { createdAt: -1 },
+  sortBy = {},
 }) {
   const match = { author: this, published };
   if (onlyStories) match.parent = null;
   else if (onlyResponses) match.parent = { $ne: null };
-  
-  const limitBy = Math.min(limit, 20);
+
+  const sortByEmpty = Object.keys(sortBy).length === 0;
+  // published stories and no sortBy option defined -> default sort by published date desc
+  if (published && sortByEmpty) sortBy.publishedAt = -1;
+  // unpublished stories and no sortBy option defined -> default sort by updated date desc
+  else if (!published && sortByEmpty) sortBy.updatedAt = -1;
+
+/* MAX STORY DOCUMENTS LIMIT: use Story.find({ author }) for larger internal queries */
+  const limitBy = Math.min(limit, 20); // limit max request to 20 documents
   const skipBy = currentPage * limitBy;
 
   return this.model('stories')
