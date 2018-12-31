@@ -136,7 +136,7 @@ describe('Story Model', () => {
       beforeAll(async () => {
         story = await story.publish();
       });
-      test('sets the publishedDate', () => expect(story.publishedDate).not.toBeNull());
+      test('sets the publishedAt', () => expect(story.publishedAt).not.toBeNull());
       test('sets the published field to true', () => expect(story.published).toBe(true));
       test('returns null if the story is already published', async () => {
         const nullReturn = await story.publish();
@@ -149,10 +149,10 @@ describe('Story Model', () => {
       let expectedFields;
       beforeAll(async () => {
         output = await story.toResponseShape({ author });
-        expectedFields = ['id', 'createdAt', 'updatedAt', 'published', 'publishedDate', 'clapsCount', 'repliesCount', 'author', 'title', 'body', 'resources'];
+        expectedFields = ['id', 'createdAt', 'updatedAt', 'published', 'publishedAt', 'clapsCount', 'repliesCount', 'author', 'title', 'body', 'links'];
       });
 
-      test('returns the Story Response Shape, fields: ["id", "createdAt", "updatedAt", "published", "publishedDate", "clapsCount", "repliesCount", "author", "title", "body", "resources"]', () => {
+      test('returns the Story Response Shape, fields: ["id", "createdAt", "updatedAt", "published", "publishedAt", "clapsCount", "repliesCount", "author", "title", "body", "links"]', () => {
         expect(output).toBeDefined();
         expectedFields.forEach(field => expect(output[field]).toBeDefined());
       });
@@ -161,11 +161,11 @@ describe('Story Model', () => {
         ['__v', '_id', 'parent'].forEach(field => expect(output[field]).not.toBeDefined());
       });
 
-      test('author field has correct shape, fields: ["id", "username", "avatarURL", "resources"]', () => {
+      test('author field has correct shape, fields: ["id", "username", "avatarURL", "links"]', () => {
         const authorField = output.author;
         expect(authorField).toBeDefined();
 
-        ["id", "username", "avatarURL", "resources"]
+        ["id", "username", "avatarURL", "links"]
           .forEach(field => expect(authorField[field]).toBeDefined());
       });
     });
@@ -202,7 +202,10 @@ describe('Story Model', () => {
           expect(storyOutput.clappedUsersURL).toEqual(expected);
         });
         
-        test(`paginated resources include pagination qs default: ${paginationQueryString({})}`, () => {
+        test(`paginated endpoints include pagination qs default: ${paginationQueryString({})}`, () => {
+          // idea: use regex (\?limit=[0-9]+&currentPage=[0-9]+)$
+          // more brittle than includes() but doesnt guarantee it appears at end of url
+          // can slice to `?` then test equality
           const hasQSDefault = resourceLink => expect(resourceLink.includes(`?${paginationQueryString({})}`));
           expectedFields.slice(2).forEach(field => {
             const url = storyOutput[field];

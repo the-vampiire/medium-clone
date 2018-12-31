@@ -15,7 +15,7 @@ const { buildEndpoint } = require('../controllers/utils');
 const storySchema = new mongoose.Schema({
   title: String,
   body: String,
-  publishedDate: {
+  publishedAt: {
     type: Date,
     default: null,
   },
@@ -81,7 +81,7 @@ storySchema.methods.getClappedReaders = function getClappedReaders() {
   return this.populate('claps').execPopulate().then(() => mapClappedUsers(this.claps));
 }
 
-storySchema.methods.toResponseShape = async function toResponseShape({ author, query = {} }) {
+storySchema.methods.toResponseShape = async function toResponseShape({ author }) {
   const populated = await this.populate('repliesCount').execPopulate();
   const storyResponse = populated.toJSON();
 
@@ -96,12 +96,12 @@ storySchema.methods.toResponseShape = async function toResponseShape({ author, q
   storyResponse.clapsCount = await this.getClapsCount();
   // todo: implement and tests
   // storyResponse.readerClapsCount = readerClap ? readerClap.count : null;
-  storyResponse.resources = await this.buildResourceLinks();
+  storyResponse.links = await this.buildResourceLinks();
   storyResponse.author = {
     id: author.id,
     username: author.username,
     avatarURL: author.avatarURL,
-    resources: author.buildResourceLinks(),
+    links: author.buildResourceLinks(),
   };
 
   // clean up unused fields
@@ -153,7 +153,7 @@ storySchema.methods.buildResourceLinks = async function buildResourceLinks() {
 storySchema.methods.publish = function publish() {
   if (this.published) return null;
 
-  this.publishedDate = Date.now();
+  this.publishedAt = Date.now();
   this.published = true;
   return this.save();
 }
