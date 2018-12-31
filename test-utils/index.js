@@ -17,7 +17,7 @@ const setup = async (models, { userCount }) => {
 const destroyDocuments = async (db, collectionName) => new Promise((res, rej) => {
   db.collection(collectionName, (error, collection) => {
     if (error) return rej(error);
-    return collection.remove({}, (err) => {
+    return collection.deleteMany({}, (err) => {
       if (err) return rej(err);
       return res(true);
     });
