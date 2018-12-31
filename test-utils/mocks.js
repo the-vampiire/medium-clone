@@ -5,12 +5,13 @@ const userMock = () => ({
   avatarURL: f.internet.avatar(),
 });
 
-const storyMock = ({ author, title, body, parent, published }) => ({
+const storyMock = ({ author, title, body, parent, published = false }) => ({
   author,
   title: title || f.company.catchPhrase(),
   body: body || f.lorem.paragraphs(2),
   parent: parent || null,
-  published: published || false,
+  published,
+  publishedAt: published ? Date.now() : null,
 });
 
 const clapMock = ({ user, story, count }) => ({
