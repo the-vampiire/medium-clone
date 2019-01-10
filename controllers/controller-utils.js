@@ -16,7 +16,35 @@ const buildEndpoint = ({
 
 const paginationQueryString = ({ limit = 10, currentPage = 0 }) => `limit=${limit}&currentPage=${currentPage}`;
 
+const buildPagination = ({
+  path,
+  basePath,
+  output= {},
+  limit = 10,
+  currentPage = 0,
+  totalDocuments,
+}) => {
+  const paginatedOutput = { ...output };
+  paginatedOutput.pagination = { limit, currentPage, hasNext: false, nextPageURL: null };
+
+  const nextPage = currentPage + 1;
+  const hasNext = totalDocuments > nextPage * limit;
+
+  if (hasNext) {
+    paginatedOutput.pagination.hasNext = hasNext;
+    paginatedOutput.pagination.nextPageURL = buildEndpoint({
+      path,
+      limit,
+      basePath,
+      currentPage: nextPage,
+    });
+  }
+
+  return paginatedOutput;
+};
+
 module.exports = {
   buildEndpoint,
+  buildPagination,
   paginationQueryString,
 };
