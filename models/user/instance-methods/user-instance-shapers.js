@@ -1,4 +1,13 @@
-const { buildEndpoint } = require('../../../controllers/controller-utils');
+const { buildEndpoint, buildPagination } = require('../../../controllers/controller-utils');
+
+function toResponseShape() {
+  return {
+    id: this._id.toHexString(),
+    username: this.username,
+    avatarURL: this.avatarURL,
+    links: this.buildResourceLinks(),
+  }
+}
 
 function buildResourceLinks() {
   const basePath = `user/${this.slug}`;
@@ -22,52 +31,35 @@ async function addStoriesPagination({
   limit,
   currentPage,
   stories,
+  responses,
   published = true,
-  onlyStories = false,
-  onlyResponses = false,
 }) {
+  const output = {};
   const match = { author: this, published };
 
-  if (onlyStories) match.parent = null;
-  else if (onlyResponses) match.parent = { $ne: null };
+  if (stories) {
+    output.stories = stories;
+    match.parent = null;
+  } else if (responses) {
+    output.responses = responses;
+    match.parent = { $ne: null };
+  }
 
   return this.addPagination({
+    output,
     limit,
     currentPage,
     path: 'stories',
-    output: { stories },
     totalDocuments: await this.model('stories').countDocuments(match).exec(),
   });
 }
 
-// todo: tests
-function addPagination({
-  path = '',
-  output = {},
-  limit = 10,
-  currentPage = 0,
-  totalDocuments = 0,
-}) {
-  const paginatedOutput = { ...output };
-  paginatedOutput.pagination = { limit, currentPage, hasNext: false, nextPageURL: null };
-
-  const nextPage = currentPage + 1;
-  const hasNext = totalDocuments > nextPage * limit;
-
-  if (hasNext) {
-    paginatedOutput.pagination.hasNext = hasNext;
-    paginatedOutput.pagination.nextPageURL = buildEndpoint({
-      path,
-      limit,
-      currentPage: nextPage,
-      basePath: `user/${this.slug}`,
-    });
-  }
-
-  return paginatedOutput;
-};
+function addPagination(options) {
+  return buildPagination({ ...options, basePath: `user/${this.slug}` });
+}
 
 module.exports = {
+  toResponseShape,
   buildResourceLinks,
   addPagination,
   addStoriesPagination,
