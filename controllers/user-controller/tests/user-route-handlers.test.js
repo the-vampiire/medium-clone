@@ -1,21 +1,14 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
 
+const models = require('../../../models');
+const { setup, teardown, mocks: { storyMock } } = require('../../../test-utils');
 const {
   userStoriesHandler,
   userFollowingHandler,
   userResponsesHandler,
   userClappedHandler,
 } = require('../user-route-handlers');
-const models = require('../../../models');
-const {
-  setup,
-  teardown,
-  mocks: {
-    storyMock,
-    clapMock,
-  },
-} = require('../../../test-utils');
 
 describe('[/user/@username/] Route Handlers', () => {
   let pathUser;
