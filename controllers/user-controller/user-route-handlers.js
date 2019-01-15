@@ -1,25 +1,30 @@
-const userStoriesHandler = ({ query: { limit, currentPage }, pathUser }, res) => pathUser
+// /user/@username/
+
+const stories = ({ query: { limit, currentPage }, pathUser }, res) => pathUser
   .getStories({ limit, currentPage, onlyStories: true })
-  .then(stories => pathUser.shapeAuthoredStories(stories)) // shape for response
-  .then(stories => pathUser.addStoriesPagination({ stories, onlyStories: true, limit, currentPage }))
+  .then(stories => pathUser.shapeAuthoredStories(stories))
+  .then(stories => pathUser.addStoriesPagination({ stories, limit, currentPage }))
+  .then(shapedStories => res.json(shapedStories))
+  .catch(console.error);
+
+const responses = ({ query: { limit, currentPage }, pathUser }, res) => pathUser
+  .getStories({ limit, currentPage, onlyResponses: true })
+  .then(responses => pathUser.shapeAuthoredStories(responses))
+  .then(responses => pathUser.addStoriesPagination({ responses, limit, currentPage }))
+  .then(shapedResponses => res.json(shapedResponses))
+  .catch(console.error);
+
+const following = ({ pathUser }, res) => pathUser.getFollowing()
   .then(res.json)
   .catch(console.error);
 
-const userFollowingHandler = ({ pathUser }, res) => pathUser.getFollowing()
-  .then(res.json)
-  .catch(console.error);
-
-const userResponsesHandler = ({ pathUser }, res) => pathUser.getResponses()
-  .then(res.json)
-  .catch(console.error);
-
-const userClappedHandler = ({ pathUser }, res) => pathUser.getClappedStories()
+const clappedStories = ({ pathUser }, res) => pathUser.getClappedStories()
   .then(res.json)
   .catch(console.error);
 
 module.exports = {
-  userStoriesHandler,
-  userFollowingHandler,
-  userResponsesHandler,
-  userClappedHandler,
+  stories,
+  following,
+  responses,
+  clappedStories,
 };
