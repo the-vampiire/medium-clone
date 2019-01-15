@@ -4,7 +4,7 @@ const mockRes = require('jest-mock-express').response
 
 const models = require('../../../models');
 const { setup, teardown } = require('../../../test-utils');
-const { exchangeSlugForUser, userNotFoundRedirect } = require('../user-controller-middleware');
+const [exchangeSlugForUser, userNotFoundRedirect] = require('../user-controller-middleware');
 
 const reqBase = { models }; // base request object
 describe('[/user/:@username] Middleware', () => {

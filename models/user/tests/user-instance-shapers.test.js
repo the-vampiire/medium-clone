@@ -142,8 +142,8 @@ describe('User Model Instance Methods: Response Data Shapers', () => {
       });
     });
 
-    describe('passing both "responses" and "stories" arguments', async () => {
-      test('gives precedence to stories, returns as if only "stories" arg', () => {
+    describe('passing both "responses" and "stories" arguments', () => {
+      test('gives precedence to stories, returns as if only "stories" arg', async () => {
         const mixed = await author.addStoriesPagination({ stories, responses });
         expect(mixed.stories).toBeDefined();
         expect(mixed.responses).not.toBeDefined();
