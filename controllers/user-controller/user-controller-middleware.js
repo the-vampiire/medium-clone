@@ -1,6 +1,6 @@
 const exchangeSlugForUser = async (req, _, next) => {
   const { params: { usernameSlug }, models } = req;
-  const username = usernameSlug.replace('@', ''); // remove @ character
+  const username = usernameSlug.replace('@', ''); // remove @ character from slug
 
   // add the 'pathUser' property to the req object for use downstream
   // this is the user with the username from the path /user/@username/
@@ -14,7 +14,7 @@ const userNotFoundRedirect = (req, res, next) => {
   next(); // otherwise proceeed to next handler
 };
 
-module.exports = {
+module.exports = [
   exchangeSlugForUser,
   userNotFoundRedirect,
-};
+];

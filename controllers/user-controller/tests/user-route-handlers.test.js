@@ -1,23 +1,11 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
 
-const {
-  userStoriesHandler,
-  userFollowingHandler,
-  userResponsesHandler,
-  userClappedHandler,
-} = require('../user-route-handlers');
 const models = require('../../../models');
-const {
-  setup,
-  teardown,
-  mocks: {
-    storyMock,
-    clapMock,
-  },
-} = require('../../../test-utils');
+const { setup, teardown, mocks: { storyMock } } = require('../../../test-utils');
+const routeHandlers = require('../user-route-handlers');
 
-describe('[/user/@username/] Route Handlers', () => {
+describe('[/user/@username] Route Handlers', () => {
   let pathUser;
   let clapped;
   let stories;
@@ -61,24 +49,46 @@ describe('[/user/@username/] Route Handlers', () => {
   });
 
   describe('[/stories] handler', () => {
-    let response;
     let mockRes;
+    let routeResponse;
     beforeAll(async () => {
       mockRes = { json: (data) => data };
-      response = await userStoriesHandler({ pathUser, query: {} }, mockRes);
+      routeResponse = await routeHandlers.stories({ pathUser, query: {} }, mockRes);
     });
 
     test('returns the User Stories Response shape, fields: ["stories", "pagination"]', () => {
-      expect(response).toBeDefined();
-      expect(response.pagination).toBeDefined();
-      expect(response.stories).toBeDefined();
+      expect(routeResponse).toBeDefined();
+      expect(routeResponse.stories).toBeDefined();
+      expect(routeResponse.pagination).toBeDefined();
     });
 
     test('returns the first ten (default) published stories authored by the user', () => {
-      const { stories } = response;
+      const { stories } = routeResponse;
       expect(stories).toBeDefined();
       expect(stories.length).toBe(10);
       expect(stories.every(story => story.author.id === pathUser.id));
+    });
+  });
+
+  describe('[/responses] handler', () => {
+    let mockRes;
+    let routeResponse;
+    beforeAll(async () => {
+      mockRes = { json: data => data };
+      routeResponse = await routeHandlers.responses({ pathUser, query: {} }, mockRes);
+    });
+
+    test('returns the User story Responses Response shape, fields: ["responses", "pagination"]', () => {
+      expect(routeResponse).toBeDefined();
+      expect(routeResponse.responses).toBeDefined();
+      expect(routeResponse.pagination).toBeDefined();
+    });
+
+    test('returns the first ten (default) published responses authored by the user', () => {
+      const { responses } = routeResponse;
+      expect(responses).toBeDefined();
+      expect(responses.length).toBe(10);
+      expect(responses.every(response => response.author.id === pathUser.id));
     });
   });
 });

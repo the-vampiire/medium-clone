@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { buildEndpoint } = require('../controllers/utils');
+const { buildEndpoint } = require('../controllers/controller-utils');
 // idea: future
 // const draftSchema = new mongoose.Schema({
 //   title: String,
@@ -90,19 +90,14 @@ storySchema.methods.toResponseShape = async function toResponseShape({ author })
   //   { user: reader, story: this },
   //   'count',
   // );
-
-  // shape response fields
-  storyResponse.id = storyResponse._id.toHexString();
-  storyResponse.clapsCount = await this.getClapsCount();
   // todo: implement and tests
   // storyResponse.readerClapsCount = readerClap ? readerClap.count : null;
+
+  // shape response fields
+  storyResponse.author = author.toResponseShape();
+  storyResponse.id = storyResponse._id.toHexString();
+  storyResponse.clapsCount = await this.getClapsCount();
   storyResponse.links = await this.buildResourceLinks();
-  storyResponse.author = {
-    id: author.id,
-    username: author.username,
-    avatarURL: author.avatarURL,
-    links: author.buildResourceLinks(),
-  };
 
   // clean up unused fields
   delete storyResponse.__v;
