@@ -1,20 +1,24 @@
 const express = require('express');
-const UserFollowersController = require('./user-followers-controller');
-const { exchangeSlugForUser, userNotFoundRedirect } = require('./user-controller-middleware');
+
+const UserFollowController = require('./user-follow-controller');
+const UserControllerMiddleware = require('./user-controller-middleware');
+const routeHandlers = require('./user-route-handlers');
 
 // handles all requests prefixed by: /user/
 const UserController = express.Router();
 
-// require all routes in the UserController to have a username slug (@username) prefix
-// use this slug to get the corresponding user or redirect if they dont exist
-// this middleware chain is executed for every request prefixed by: /user/@username/
-UserController.use('/:usernameSlug', exchangeSlugForUser, userNotFoundRedirect);
+// handles the GET/POST/DELETE routes of /user/@username/follow/
+// GET: no content, 200 if following, 404 if not
+UserController.use('/follow', UserFollowController);
 
-// handles the GET/POST/DELETE routes of /user/@username/followers/
-UserController.use('/followers', UserFollowersController);
+// UserController.get('/', userDiscoveryHandler);
+UserController.get('/stories', routeHandlers.stories);
+UserController.get('/responses', routeHandlers.responses);
+UserController.get('/following', routeHandlers.following);
+UserController.get('/clapped', routeHandlers.clappedStories);
+// UserController.get('/followers', userFollowersHandler);
 
-UserController.get('/stories', (req, res) => {});
-UserController.get('/following', (req, res) => {});
-UserController.get('/responses', (req, res) => {});
-
-module.exports = UserController;
+module.exports = {
+  UserController,
+  UserControllerMiddleware,
+};

@@ -2,14 +2,16 @@ const f = require('faker');
 
 const userMock = () => ({
   username: f.name.firstName(),
-  avatar_url: f.internet.avatar(),
+  avatarURL: f.internet.avatar(),
 });
 
-const storyMock = ({ author, title, body, parent }) => ({
+const storyMock = ({ author, title, body, parent, published = false }) => ({
   author,
   title: title || f.company.catchPhrase(),
-  body: f.lorem.paragraphs(2),
+  body: body || f.lorem.paragraphs(2),
   parent: parent || null,
+  published,
+  publishedAt: published ? Date.now() : null,
 });
 
 const clapMock = ({ user, story, count }) => ({

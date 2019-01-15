@@ -1,8 +1,11 @@
+require('dotenv').config();
 const mongoose = require('mongoose');
+
 const { Clap, MAX_CLAP_COUNT } = require('../clap');
+const { ObjectId } = mongoose.Types;
 
 describe('Clap Model', () => {
-  const { ObjectId } = mongoose.Types;
+  beforeAll(() => mongoose.connect(process.env.TEST_DB_URI, { useNewUrlParser: true }));
   afterAll(() => mongoose.disconnect());
 
   test('limits the minimum count value: 1',
