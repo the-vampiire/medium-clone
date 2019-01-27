@@ -1,7 +1,6 @@
-const { UserController, UserControllerMiddleware } = require('./user-controller');
+const UsersController = require('./users-controller');
 
 
 module.exports = {
-  UserController,
-  UserControllerMiddleware,
+  UsersController,
 };
