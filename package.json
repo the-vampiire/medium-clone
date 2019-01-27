@@ -1,6 +1,7 @@
 {
   "name": "medium-clone",
   "version": "0.0.1",
+  "repository": "https://github.com/the-vampiire/medium-clone",
   "description": "Medium API REST clone",
   "main": "index.js",
   "scripts": {
@@ -11,6 +12,7 @@
   "author": "the-vampiire",
   "license": "ISC",
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "body-parser": "^1.18.3",
     "cookie-parser": "^1.4.3",
     "dotenv": "^6.2.0",
