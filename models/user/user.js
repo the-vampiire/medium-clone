@@ -9,6 +9,7 @@ const SALT_ROUNDS = 12;
 
 const userSchema = new mongoose.Schema({
   username: {
+    required: true,
     type: String,
     unique: true,
     set: val => val.toLowerCase(),
@@ -17,6 +18,7 @@ const userSchema = new mongoose.Schema({
     ],
   },
   password: {
+    required: true,
     type: String,
     minlength: 6,
   },

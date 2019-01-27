@@ -21,7 +21,7 @@ describe('User Model: Schema, Virtuals and Hooks', () => {
   });
 
   test('usernames are persisted in lowercase', async () => {
-    author = await models.User.create({ username: 'ALLCAPS' });
+    author = await models.User.create({ username: 'ALLCAPS', password: 'irrelevant' });
     expect(author.username).toEqual('allcaps');
   });
 
