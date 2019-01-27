@@ -1,13 +1,10 @@
 const usernameValidator = {
   validator: (value) => {
-    // may not begin with '_' or '-'
     // may include any alpha-numeric, '-', '_'
-    // look at this face: [^_-] lol
-    return /^[^_-]([A-Za-z0-9_]){3,19}$/.test(value);
+    return /^([A-Za-z0-9_-]){3,20}$/.test(value);
   },
 
-  message: 'Invalid username. Usernames may only contain alpha-numeric characters.\
-    "-" and "_" characters are only allowed if not used as the first character',
+  message: 'Invalid username. Usernames may only contain alpha-numeric characters, "_", and "-".',
 };
 
 module.exports = {

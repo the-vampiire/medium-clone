@@ -1,6 +1,5 @@
 const {
-  validateUsername,
-  validatePassword,
+  usernameValidator: { validator: validateUsername },
 } = require('../validators');
 
 describe('User Model validators', () => {
@@ -14,16 +13,11 @@ describe('User Model validators', () => {
       const long = Array(21).fill('a').join('');
       expect(validateUsername(long)).toBe(false);
     });
-    
-    test(
-      'rejects usernames that begin with "_"',
-      () => expect(validateUsername('_aUsername')).toBe(false),
-    );
-    
-    test(
-      'rejects usernames that begin with "-"',
-      () => expect(validateUsername('-aUsername')).toBe(false),
-    );
+
+    test('allow usernames with "-" and "_" characters', () => {
+      expect(validateUsername('the-vampiire')).toBe(true);
+      expect(validateUsername('the_vampiire')).toBe(true);
+    });
 
     test('rejects usernames with characters that are not alpha, numeric, "-", or "_"', () => {
       const nonAlpha = ['@signsAnd-stuff', 'hash#tags','dollar$igns', 'per%cents', 'star**s'];
