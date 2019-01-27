@@ -1,3 +1,5 @@
+const bcrypt = require('bcryptjs');
+
 /**
  * multi-purpose getter for authored stories
  * @param StoryQueryOptions
@@ -62,7 +64,12 @@ function getClappedStories(limit, currentPage) {
     )));
 };
 
+function verifyPassword(attempt) {
+  return bcrypt.compare(attempt, this.password);
+}
+
 module.exports = {
   getStories,
   getClappedStories,
+  verifyPassword,
 };

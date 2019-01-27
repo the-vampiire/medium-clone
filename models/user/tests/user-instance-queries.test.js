@@ -117,4 +117,20 @@ describe('User Model Instance Methods: Queries', () => {
       expect(result[0].id).toEqual(story.id);
     });
   });
+
+  describe('validatePassword()', () => {
+    let user;
+    const password = 'the super secret one';
+    beforeAll(async () => { user = await models.User.create({ username: 'the-vampiire', password }); });
+
+    test('returns true if the correct password is passed', async () => {
+      const isValid = await user.verifyPassword(password);
+      expect(isValid).toBe(true);
+    });
+
+    test('returns false if the incorrect password is passed', async () => {
+      const isValid = await user.verifyPassword('this aint it chief');
+      expect(isValid).toBe(false);
+    });
+  });
 });
