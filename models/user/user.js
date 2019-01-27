@@ -1,6 +1,11 @@
+const bcrypt = require('bcryptjs');
 const mongoose = require('mongoose');
+
 const instanceMethods = require('./instance-methods');
 const { usernameValidator } = require('./validators');
+
+/* MAGIC NUMBER: controls number of salt rounds used during password hashing */
+const SALT_ROUNDS = 12;
 
 const userSchema = new mongoose.Schema({
   username: {
@@ -8,8 +13,12 @@ const userSchema = new mongoose.Schema({
     unique: true,
     set: val => val.toLowerCase(),
     validate: [
-      [usernameValidator.validator, usernameValidator.message],
+      { validator: usernameValidator.validator, msg: usernameValidator.message },
     ],
+  },
+  password: {
+    type: String,
+    minlength: 6,
   },
   avatarURL: String,
   followers: [{ type: mongoose.SchemaTypes.ObjectId, ref: 'users' }],
@@ -38,6 +47,15 @@ userSchema.pre(
   },
 );
 
+userSchema.pre(
+  'save',
+  async function hashPassword() {
+    if (this.password) {
+      this.password = await bcrypt.hash(this.password, SALT_ROUNDS);
+    }
+  }
+)
+
 // -- INSTANCE METHODS -- //
 for (const [methodName, method] of Object.entries(instanceMethods)) {
   // sets the external methods on the schema, userSchena.methods = methods fails
@@ -46,4 +64,7 @@ for (const [methodName, method] of Object.entries(instanceMethods)) {
 
 const User = mongoose.model('users', userSchema);
 
-module.exports = User;
+module.exports = {
+  User,
+  SALT_ROUNDS,
+};

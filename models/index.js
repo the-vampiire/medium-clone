@@ -1,5 +1,5 @@
 const { Clap, MAX_CLAP_COUNT } = require('./clap');
-const { User } = require('./user');
+const { User, SALT_ROUNDS } = require('./user');
 const Story = require('./story');
 
 module.exports = {
@@ -8,5 +8,6 @@ module.exports = {
   Clap,
   constants: {
     MAX_CLAP_COUNT,
+    SALT_ROUNDS,
   },
 };
