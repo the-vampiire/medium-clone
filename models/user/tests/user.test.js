@@ -63,4 +63,20 @@ describe('User Model: Schema, Virtuals and Hooks', () => {
     test('cascades to destroy authored stories', () => expect(userStories.length).toBe(0));
     test('cascades to destroy claps made by the user', () => expect(userClaps.length).toBe(0));
   });
+
+  describe('pre-save hook: converts passwords to salted hashes', () => {
+    let user;
+    const password = 'a difficult one';
+    beforeAll(async () => { user = await models.User.create({ username: 'the-vampiire', password }); });
+    
+    test('plain-text password is not persisted on create', async () => {
+      expect(user.password).not.toEqual(password);
+    });
+
+    test('plain-text password is not persisted on update', async () => {
+      const newPassword = 'a new one';
+      user = await user.update({ password: newPassword });
+      expect(user.password).not.toEqual(newPassword);
+    });
+  });
 });
