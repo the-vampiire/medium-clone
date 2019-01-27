@@ -1,11 +1,15 @@
 const mongoose = require('mongoose');
 const instanceMethods = require('./instance-methods');
+const { usernameValidator } = require('./validators');
 
 const userSchema = new mongoose.Schema({
   username: {
     type: String,
     unique: true,
     set: val => val.toLowerCase(),
+    validate: [
+      [usernameValidator.validator, usernameValidator.message],
+    ],
   },
   avatarURL: String,
   followers: [{ type: mongoose.SchemaTypes.ObjectId, ref: 'users' }],
