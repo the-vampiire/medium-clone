@@ -1,4 +1,3 @@
-// todo: tests!
 const verifyPayload = ({ body }, res, next) => {
   const { username, password, verifyPassword } = body;
   
@@ -23,7 +22,7 @@ const registerUser = async ({ body, models }, res) => {
     const newUser = await models.User.create({ username, password });
     return res.json(newUser.toResponseShape());
   } catch(registrationError) {
-    // better handling
+    // TODO: better handling
     return res.status(400).send(registrationError);
   }
 };

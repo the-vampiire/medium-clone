@@ -1,11 +1,10 @@
 const express = require('express');
-const UserController = require('./user-controller');
+const { exchangeSlugForUser, userNotFoundRedirect, UserController, } = require('./user-controller');
 const { verifyPayload, checkDuplicate, registerUser } = require('./user-registration');
-const { exchangeSlugForUser, userNotFoundRedirect } = require('./user-controller-middleware');
 
 const UsersController = express.Router();
 
-// POST /users (registration)
+// POST /users (registration) MW and handler
 UsersController.post(
   '/',
   verifyPayload,
@@ -13,7 +12,7 @@ UsersController.post(
   registerUser,
 );
 
-// /users/:usernameSlug MW and Controller
+// /users/:usernameSlug/ MW and Controller
 UsersController.use(
   '/:usernameSlug',
   exchangeSlugForUser,

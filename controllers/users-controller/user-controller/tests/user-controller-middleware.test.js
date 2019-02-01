@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 const mockRes = require('jest-mock-express').response
 
-const models = require('../../../models');
-const { setup, teardown, dbConnect } = require('../../../test-utils');
+const models = require('../../../../models');
+const { setup, teardown, dbConnect } = require('../../../../test-utils');
 const { exchangeSlugForUser, userNotFoundRedirect } = require('../user-controller-middleware');
 
 const reqBase = { models }; // base request object

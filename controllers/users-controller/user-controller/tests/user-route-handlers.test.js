@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
-const models = require('../../../models');
-const { dbConnect, setup, teardown, mocks: { storyMock } } = require('../../../test-utils');
+const models = require('../../../../models');
+const { dbConnect, setup, teardown, mocks: { storyMock } } = require('../../../../test-utils');
 const routeHandlers = require('../user-route-handlers');
 
 describe('[/user/@username] Route Handlers', () => {
