@@ -1,8 +1,6 @@
-require('dotenv').config();
-
 const mongoose = require('mongoose');
 const models = require('../../index');
-const { setup, teardown, mocks: { storyMock } } = require('../../../test-utils');
+const {  dbConnect, setup, teardown, mocks: { storyMock } } = require('../../../test-utils');
 
 describe('User Model Instance Methods: Response Data Shapers', () => {
   let author;
@@ -11,7 +9,7 @@ describe('User Model Instance Methods: Response Data Shapers', () => {
   let responses;
   beforeAll(async () => {
     mongoose.set('useCreateIndex', true);
-    mongoose.connect(process.env.TEST_DB_URI, { useNewUrlParser: true });
+    dbConnect(mongoose);
 
     const data = await setup(models, { userCount: 2 });
     [author, responder] = data.users;

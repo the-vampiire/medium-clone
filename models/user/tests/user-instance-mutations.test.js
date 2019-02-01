@@ -1,16 +1,14 @@
-require('dotenv').config();
-
 const mongoose = require('mongoose');
 const models = require('../../index');
 const { constants: { MAX_CLAP_COUNT } } = require('../../index');
-const { setup, teardown, mocks: { storyMock } } = require('../../../test-utils');
+const { dbConnect, setup, teardown, mocks: { storyMock } } = require('../../../test-utils');
 
 describe('User Model Instance Methods: Mutations', () => {
   let author;
   let responder;
   let story;
   beforeAll(async () => {
-    mongoose.connect(process.env.TEST_DB_URI, { useNewUrlParser: true });
+    dbConnect(mongoose);
 
     const data = await setup(models, { userCount: 2 });
     [author, responder] = data.users;

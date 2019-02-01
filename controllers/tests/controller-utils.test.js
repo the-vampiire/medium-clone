@@ -1,9 +1,9 @@
-require('dotenv').config();
 const { buildEndpoint, buildPagination, paginationQueryString } = require('../controller-utils');
 const { DOMAIN } = process.env;
 
 const basePath = 'test';
 const path = 'path/test';
+
 describe('Shared Controller Utilities', () => {
   describe('paginationQueryString({ limit, currentPage })', () => {
     test('default: limit=10&currentPage=0', () => {

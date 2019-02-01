@@ -1,8 +1,6 @@
-require('dotenv').config();
-
 const mongoose = require('mongoose');
 const models = require('../../index');
-const { setup, teardown, mocks: { storyMock, clapMock } } = require('../../../test-utils');
+const { dbConnect, setup, teardown, mocks: { storyMock, clapMock } } = require('../../../test-utils');
 
 describe('User Model Instance Methods: Queries', () => {
   let author;
@@ -15,7 +13,7 @@ describe('User Model Instance Methods: Queries', () => {
   let unpublishedAuthorResponse;
   beforeAll(async () => {
     mongoose.set('useCreateIndex', true);
-    mongoose.connect(process.env.TEST_DB_URI, { useNewUrlParser: true });
+    dbConnect(mongoose);
 
     const data = await setup(models, { userCount: 2 });
     [author, responder] = data.users;

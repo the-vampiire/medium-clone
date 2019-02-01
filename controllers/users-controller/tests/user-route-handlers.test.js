@@ -1,8 +1,7 @@
-require('dotenv').config();
 const mongoose = require('mongoose');
 
 const models = require('../../../models');
-const { setup, teardown, mocks: { storyMock } } = require('../../../test-utils');
+const { dbConnect, setup, teardown, mocks: { storyMock } } = require('../../../test-utils');
 const routeHandlers = require('../user-route-handlers');
 
 describe('[/user/@username] Route Handlers', () => {
@@ -12,7 +11,7 @@ describe('[/user/@username] Route Handlers', () => {
   let following;
   let responses;
   beforeAll(async () => {
-    mongoose.connect(process.env.TEST_DB_URI, { useNewUrlParser: true });
+    dbConnect(mongoose);
 
     const data = await setup(models, { userCount: 4 }).catch(console.error);
     [pathUser, ...following] = data.users;
