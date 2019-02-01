@@ -1,16 +1,15 @@
-require('dotenv').config();
 const mongoose = require('mongoose');
 const mockRes = require('jest-mock-express').response
 
 const models = require('../../../models');
-const { setup, teardown } = require('../../../test-utils');
-const [exchangeSlugForUser, userNotFoundRedirect] = require('../user-controller-middleware');
+const { setup, teardown, dbConnect } = require('../../../test-utils');
+const { exchangeSlugForUser, userNotFoundRedirect } = require('../user-controller-middleware');
 
 const reqBase = { models }; // base request object
 describe('[/user/:@username] Middleware', () => {
   let user;
   beforeAll(async () => {
-    mongoose.connect(process.env.TEST_DB_URI, { useNewUrlParser: true });
+    dbConnect(mongoose);
 
     const data = await setup(models, { userCount: 1 });
     [user] = data.users;
