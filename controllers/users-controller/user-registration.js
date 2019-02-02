@@ -21,9 +21,8 @@ const registerUser = async ({ body, models }, res) => {
   try {
     const newUser = await models.User.create({ username, password });
     return res.json(newUser.toResponseShape());
-  } catch(registrationError) {
-    // TODO: better handling
-    return res.status(400).send(registrationError);
+  } catch(validationError) {
+    return res.status(400).json({ error: validationError.message });
   }
 };
 
