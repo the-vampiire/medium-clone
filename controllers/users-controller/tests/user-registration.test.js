@@ -1,6 +1,73 @@
-const mongoose = require('mongoose');
 const { verifyPayload, checkDuplicate, registerUser } = require('../user-registration');
 
-describe('User registration middleware and handler', () => {
+const resMock = {
+  status() { return this; },
+  json: (message) => message,
+};
 
+const statusSpy = jest.spyOn(resMock, 'status');
+const jsonSpy = jest.spyOn(resMock, 'json');
+const nextSpy = jest.fn(() => {});
+
+const username = 'a-username';
+const password = 'a password';
+const verifyPassword = password;
+
+describe('User registration middleware and handler', () => {
+  describe('verifyPayload() middleware', () => {
+    afterEach(() => {
+      statusSpy.mockClear();
+      jsonSpy.mockClear();
+      nextSpy.mockClear();
+    });
+
+    test('valid body contents: calls next()', () => {
+      const body = { username, password, verifyPassword };
+      verifyPayload({ body }, resMock, nextSpy);
+      expect(statusSpy).not.toHaveBeenCalled();
+      expect(jsonSpy).not.toHaveBeenCalled();
+      expect(nextSpy).toHaveBeenCalled();
+    });
+    
+    [
+      { scenario: 'username missing', body: { password, verifyPassword }, expectedOutput: { error: 'username missing' } },
+      { scenario: 'password missing', body: { username, verifyPassword }, expectedOutput: { error: 'password missing' } },
+      { scenario: 'verifyPassword missing', body: { username, password }, expectedOutput: { error: 'verifyPassword missing' } },
+      { scenario: 'passwords do not match', body: { username, password: 'other', verifyPassword }, expectedOutput: { error: 'Passwords do not match' } },
+    ].forEach(({ scenario, body, expectedOutput }) => {
+        test(`${scenario}: { status: 400, body: { error: ${expectedOutput.error} } }`, () => {
+          verifyPayload({ body }, resMock, nextSpy);
+          expect(statusSpy).toHaveBeenCalledWith(400);
+          expect(jsonSpy).toHaveBeenCalledWith(expectedOutput);
+          expect(nextSpy).not.toHaveBeenCalled();
+        });
+      });
+  });
+
+  describe('checkDuplicate() middleware', () => {
+    afterEach(() => {
+      statusSpy.mockClear();
+      jsonSpy.mockClear();
+      nextSpy.mockClear();
+    });
+
+    test('username available: calls next()', async () => {
+      const body = { username };
+      const models = { User: { countDocuments: () => 0 } };
+      await checkDuplicate({ body, models }, resMock, nextSpy);
+      expect(nextSpy).toHaveBeenCalled();
+    });
+
+    test('username taken: { status: 409, body: { error: "Username already registered" } }', async () => {
+      const body = { username };
+      const models = { User: { countDocuments: () => 1 } };
+      await checkDuplicate({ body, models }, resMock, nextSpy); 
+      expect(statusSpy).toHaveBeenCalledWith(409);
+      expect(jsonSpy).toHaveBeenCalledWith({ error: 'Username already registered' });
+    });
+  });
+
+  describe('registerUser() POST handler', () => {
+
+  });
 });
