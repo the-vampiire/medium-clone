@@ -10,7 +10,7 @@ function toResponseShape() {
 }
 
 function buildResourceLinks() {
-  const basePath = `user/${this.slug}`;
+  const basePath = `users/${this.slug}`;
   return {
     userURL: buildEndpoint({ basePath }),
     followersURL: buildEndpoint({ basePath, path: 'followers', paginated: true }),
@@ -55,7 +55,7 @@ async function addStoriesPagination({
 }
 
 function addPagination(options) {
-  return buildPagination({ ...options, basePath: `user/${this.slug}` });
+  return buildPagination({ ...options, basePath: `users/${this.slug}` });
 }
 
 module.exports = {

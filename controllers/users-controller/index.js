@@ -1,6 +1,6 @@
 const express = require('express');
-const { exchangeSlugForUser, userNotFoundRedirect, UserController, } = require('./user-controller');
 const { verifyPayload, checkDuplicate, registerUser } = require('./user-registration');
+const { exchangeSlugForUser, userNotFoundRedirect, UserController, } = require('./user-controller');
 
 const UsersController = express.Router();
 
