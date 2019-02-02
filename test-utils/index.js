@@ -1,4 +1,13 @@
+require('dotenv').config();
+
+const { getDatabaseURI } = require('../utils');
 const mocks = require('./mocks');
+
+const dbConnect = (mongoose) => {
+  mongoose.set('useCreateIndex', true);
+  mongoose.set('useNewUrlParser', true);
+  mongoose.connect(getDatabaseURI('test'));
+}
 
 const setup = async (models, { userCount }) => {
   const output = {
@@ -37,4 +46,5 @@ module.exports = {
   setup,
   teardown,
   destroyDocuments,
+  dbConnect,
 };

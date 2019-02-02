@@ -14,7 +14,7 @@ const userNotFoundRedirect = (req, res, next) => {
   next(); // otherwise proceeed to next handler
 };
 
-module.exports = [
+module.exports = {
   exchangeSlugForUser,
   userNotFoundRedirect,
-];
+};

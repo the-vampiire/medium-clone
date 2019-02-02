@@ -1,8 +1,6 @@
-require('dotenv').config();
-
 const mongoose = require('mongoose');
 const models = require('../../index');
-const { teardown, mocks: { storyMock, clapMock } } = require('../../../test-utils');
+const { dbConnect, teardown, mocks: { storyMock, clapMock } } = require('../../../test-utils');
 
 describe('User Model: Schema, Virtuals and Hooks', () => {
   let author;
@@ -10,7 +8,7 @@ describe('User Model: Schema, Virtuals and Hooks', () => {
   let story;
   beforeAll(async () => {
     mongoose.set('useCreateIndex', true);
-    mongoose.connect(process.env.TEST_DB_URI, { useNewUrlParser: true });
+    dbConnect(mongoose);
 
     story = await models.Story.create(storyMock({ author }));
   });

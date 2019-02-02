@@ -1,12 +1,24 @@
 const express = require('express');
-const UserController = require('./user-controller');
-const UserControllerMiddleware = require('./user-controller-middleware');
+const { exchangeSlugForUser, userNotFoundRedirect, UserController, } = require('./user-controller');
+const { verifyPayload, checkDuplicate, registerUser } = require('./user-registration');
 
-// controls: /users
 const UsersController = express.Router();
 
-// UsersController.post('/', registerUser);
-UsersController.use('/:usernameSlug', ...UserControllerMiddleware, UserController);
+// POST /users (registration) MW and handler
+UsersController.post(
+  '/',
+  verifyPayload,
+  checkDuplicate,
+  registerUser,
+);
+
+// /users/:usernameSlug/ MW and Controller
+UsersController.use(
+  '/:usernameSlug',
+  exchangeSlugForUser,
+  userNotFoundRedirect,
+  UserController,
+);
 
 module.exports = UsersController;
 

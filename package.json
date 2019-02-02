@@ -5,7 +5,8 @@
   "description": "Medium API REST clone",
   "main": "index.js",
   "scripts": {
-    "test": "NODE_ENV=test jest --runInBand --verbose",
+    "test": "NODE_ENV=test jest --runInBand",
+    "test:verbose": "NODE_ENV=test jest --runInBand --verbose",
     "dev": "NODE_ENV=development nodemon app.js",
     "start": "NODE_ENV=production npm start"
   },

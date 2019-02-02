@@ -1,7 +1,7 @@
 const f = require('faker');
 
 const userMock = () => ({
-  username: f.name.firstName(),
+  username: f.name.firstName() + f.name.firstName(),
   avatarURL: f.internet.avatar(),
   password: f.internet.password(10),
 });

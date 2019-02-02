@@ -1,8 +1,7 @@
-require('dotenv').config();
-
 const mongoose = require('mongoose');
 const models = require('../index');
 const {
+  dbConnect,
   setup,
   teardown,
   mocks: { storyMock, clapMock },
@@ -17,7 +16,7 @@ describe('Story Model', () => {
   let reply;
   let clapsPerUser;
   beforeAll(async () => {
-    mongoose.connect(process.env.TEST_DB_URI, { useNewUrlParser: true });
+    dbConnect(mongoose);
 
     const data = await setup(models, { userCount: 2 });
     [author, replier] = data.users;
