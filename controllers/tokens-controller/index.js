@@ -1,5 +1,5 @@
 const express = require('express');
-const { createTokenHandler } = require('./token-utils');
+const createTokenHandler = require('./create-token-handler');
 const { verifyPayload, authenticateRequest } = require('./token-middleware');
 
 const TokensController = express.Router();
