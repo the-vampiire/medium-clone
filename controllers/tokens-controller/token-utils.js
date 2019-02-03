@@ -1,6 +1,29 @@
-const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { SALT_ROUNDS } = require('../../models/user');
+const cryptoJS = require('crypto-js');
+
+/**
+ * AES encryption of a User ID
+ * @param {string} id User ID to encrypt
+ * @requires process.env: ENCRYPTION_SECRET
+ * @returns {string} encrypted ID 
+ */
+const encryptID = (id) => {
+  const { ENCRYPTION_SECRET } = process.env;
+  const cipher = cryptoJS.AES.encrypt(id, ENCRYPTION_SECRET);
+  return cipher.toString();
+};
+
+/**
+ * AES decryption of an encrypted User ID
+ * @param {string} encryptedID Encrypted ID to decrypt
+ * @requires process.env: ENCRYPTION_SECRET
+ * @returns {string} decrypted ID 
+ */
+const decryptID = (encryptedID) => {
+  const { ENCRYPTION_SECRET } = process.env;
+  const bytes = cryptoJS.AES.decrypt(encryptedID, ENCRYPTION_SECRET);
+  return bytes.toString(cryptoJS.enc.Utf8);
+}
 
 /**
  * Parses the JWT_OPTIONS String from the process environment
@@ -20,50 +43,29 @@ const parseTokenOptions = stringOptions => stringOptions
 
 /**
  * Creates a JWT authentication token payload
- * - Payload can be used for instant client-side access to common fields
- *  - username
- *  - avatarURL
  * @param {User} authedUser Authenticated User from request 
- * @param {number} saltRounds Number of salt rounds used for hashing the User ID
- * @returns {object} { id, username, avatarURL }
+ * @returns {object} { id: <encrypted> }
  */
-const createTokenPayload = async (authedUser, saltRounds) => {
-  const { id, username, avatarURL } = authedUser;
-  const hashedID = await bcrypt.hash(id, saltRounds);
-
-  return { id: hashedID, username, avatarURL };
-};
+const createTokenPayload = authedUser => ({ id: encryptID(authedUser.id) }); 
 
 /**
  * Creates an authentication token
  * @param {User} authedUser the authenticated User
- * @requires SALT_ROUNDS constant from User model exports
  * @requires process.env: JWT_SECRET, JWT_OPTIONS
  * @returns JWT
  */
-const createToken = async (authedUser) => {
+const createToken = (authedUser) => {
   const { JWT_SECRET, JWT_OPTIONS } = process.env;
   const options = parseTokenOptions(JWT_OPTIONS);
-  const payload = await createTokenPayload(authedUser, SALT_ROUNDS);
-  
+  const payload = createTokenPayload(authedUser);
+
   return jwt.sign(payload, JWT_SECRET, options);
 }
 
-/**
- * Responds with an authentication JWT
- * @param {Response} res the Response object
- * @param {Request} req the Request object
- * @param {User} req.authedUser the authenticated User
- * @returns a 200 JSON response with the JWT as content: { token } 
- */
-const createTokenHandler = async (req, res) => {
-  const token = await createToken(req.authedUser);
-  return res.json({ token });
-};
-
 module.exports = {
+  encryptID,
+  decryptID,
   parseTokenOptions,
   createTokenPayload,
   createToken,
-  createTokenHandler,
 };
