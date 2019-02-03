@@ -21,7 +21,7 @@ describe('Token Controller Middleware', () => {
   });
 
   describe('verifyPayload(): verifies the contents of the authentication payload', () => {
-    test('calls next() with valid payload', () => {
+    test('valid payload: calls next()', () => {
       const body = { username, password };
       verifyPayload({ body }, resMock, nextSpy);
       expect(nextSpy).toBeCalled();
@@ -42,8 +42,8 @@ describe('Token Controller Middleware', () => {
     });
   });
 
-  describe('authenticateRequest(): authenciates the User', () => {
-    test.only('successful authentication: adds req.authedUser and calls next()', async () => {
+  describe('authenticateRequest(): authenticates the User', () => {
+    test('successful authentication: adds req.authedUser and calls next()', async () => {
       const body = { username, password };
       const userMock = new User({ username, password });
       userMock.verifyPassword = function () { return true; }
