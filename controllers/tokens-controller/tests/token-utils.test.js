@@ -1,6 +1,8 @@
+const jwt = require('jsonwebtoken');
 const {
   parseTokenOptions,
   createTokenPayload,
+  createToken,
   createTokenHandler,
 } = require('../token-utils');
 
@@ -23,18 +25,29 @@ describe('Authentication Token utilities', () => {
     expect(output.id).not.toBe(authedUserMock.id);
   });
 
-  test('createToken(): creates and returns a 200 JSON content response { token }', async () => {
+  test('createToken(): creates an authentication JWT', async () => {
+    // load JWT_SECRET, JWT_OPTIONS mocks into process environment
+    const secret = 'super secret';
+    process.env.JWT_SECRET = secret;
+    process.env.JWT_OPTIONS = stringOptions;
+
+    const output = await createToken(authedUserMock);
+    const token = await jwt.verify(output, secret);
+
+    expect(token.id).toBeDefined();
+    expect(token.username).toBe(authedUserMock.username);
+    expect(token.avatarURL).toBe(authedUserMock.avatarURL);
+    expect(token.iss).toBe('Medium REST Clone');
+  });
+
+  test('createTokenHandler(): returns a 200 JSON content response { token }', async () => {
     const reqMock = { authedUser: authedUserMock };
     const resMock = { json: content => content };
     const jsonSpy = jest.spyOn(resMock, 'json');
 
-    // load JWT_SECRET, JWT_OPTIONS mocks into process environment
-    process.env.JWT_SECRET = 'super secret';
-    process.env.JWT_OPTIONS = stringOptions;
-
     const output = await createTokenHandler(reqMock, resMock);
     expect(jsonSpy).toHaveBeenCalled();
-    expect(output).toHaveProperty('token');
+    expect(output.token).toBeDefined();
 
     // clean process environment
     delete process.env.JWT_SECRET;
