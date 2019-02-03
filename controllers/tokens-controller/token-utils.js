@@ -35,27 +35,35 @@ const createTokenPayload = async (authedUser, saltRounds) => {
 };
 
 /**
- * Creates and responds with an authentication JWT
- * @param {Request} req the Request object
- * @param {User} req.authedUser the authenticated User
- * @param {Response} res the Response object
+ * Creates an authentication token
+ * @param {User} authedUser the authenticated User
  * @requires SALT_ROUNDS constant from User model exports
  * @requires process.env: JWT_SECRET, JWT_OPTIONS
+ * @returns JWT
+ */
+const createToken = async (authedUser) => {
+  const { JWT_SECRET, JWT_OPTIONS } = process.env;
+  const options = parseTokenOptions(JWT_OPTIONS);
+  const payload = await createTokenPayload(authedUser, SALT_ROUNDS);
+  
+  return jwt.sign(payload, JWT_SECRET, options);
+}
+
+/**
+ * Responds with an authentication JWT
+ * @param {Response} res the Response object
+ * @param {Request} req the Request object
+ * @param {User} req.authedUser the authenticated User
  * @returns a 200 JSON response with the JWT as content: { token } 
  */
 const createTokenHandler = async (req, res) => {
-  const { authedUser } = req;
-  const { JWT_SECRET, JWT_OPTIONS } = process.env;
-
-  const payload = await createTokenPayload(authedUser, SALT_ROUNDS);
-  const options = parseTokenOptions(JWT_OPTIONS);
-  const token = jwt.sign(payload, JWT_SECRET, options);
-
+  const token = await createToken(req.authedUser);
   return res.json({ token });
 };
 
 module.exports = {
   parseTokenOptions,
   createTokenPayload,
+  createToken,
   createTokenHandler,
 };
