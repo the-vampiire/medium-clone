@@ -5,10 +5,9 @@ const mongoose = require('mongoose');
 
 const models = require('./models');
 const { getDatabaseURI } = require('./utils');
-const { UsersController } = require('./controllers');
+const { UsersController, TokensController} = require('./controllers');
 
 const app = express();
-
 
 // -- SERVERWIDE MIDDLEWARE -- //
 app.use(
@@ -23,13 +22,14 @@ app.use(
 
 // -- ENDPOINTS -- //
 app.use('/users', UsersController);
+app.use('/tokens', TokensController);
 
 // -- DATABASE INIT -- //
 mongoose.set('useCreateIndex', true);
 mongoose.set('useNewUrlParser', true);
 
 mongoose.connect(
-  getDatabaseURI(),
+  getDatabaseURI(process.env.NODE_ENV),
   (err) => console.log(err || 'connected to mongo'),
 );
 

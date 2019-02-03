@@ -1,4 +1,4 @@
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
 
 /**
  * multi-purpose getter for authored stories
@@ -64,8 +64,13 @@ function getClappedStories(limit, currentPage) {
     )));
 };
 
-function verifyPassword(attempt) {
-  return bcrypt.compare(attempt, this.password);
+/**
+ * Compares a plaintext password attempt against the hashed password
+ * @param {string} passwordAttempt password to compare
+ * @returns resolves true or false
+ */
+async function verifyPassword(passwordAttempt) {
+  return bcrypt.compare(passwordAttempt, this.password);
 }
 
 module.exports = {
