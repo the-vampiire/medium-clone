@@ -58,7 +58,7 @@ const createToken = (authedUser) => {
   const { JWT_SECRET, JWT_OPTIONS } = process.env;
   const options = parseTokenOptions(JWT_OPTIONS);
   const payload = createTokenPayload(authedUser);
-
+  
   return jwt.sign(payload, JWT_SECRET, options);
 }
 /**

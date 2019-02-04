@@ -30,7 +30,7 @@ const authenticateRequest = async (req, res, next) => {
   const { body: { username, password }, models } = req;
 
   const user = await models.User.findOne({ username });
-  const authenticated = user && await user.verifyPassword(password)
+  const authenticated = user && await user.verifyPassword(password);
 
   if (!authenticated) {
     // do not provide any additional details
