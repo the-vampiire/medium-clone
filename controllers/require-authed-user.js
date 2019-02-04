@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const { decryptID } = require('./tokens-controller/token-utils');
+const { decryptID, verifyToken } = require('./tokens-controller/token-utils');
 
 /**
  * Extracts the Bearer token from the Authorization header
@@ -31,11 +31,8 @@ const notAuthedResponse = res => res.status(401).json({ error: 'not authenticate
  * @returns null if token verification fails or User is not found
  */
 const getAuthedUser = async (bearerToken, models) => {
-  const { JWT_SECRET } = process.env;
-
-  let token;
-  try { token = await jwt.verify(bearerToken, JWT_SECRET); }
-  catch(error) { return null; }
+  const token = verifyToken(bearerToken);
+  if (!token) return null;
 
   const userID = decryptID(token.id);
   return models.User.findById(userID);
