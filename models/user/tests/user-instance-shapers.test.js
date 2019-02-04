@@ -73,7 +73,7 @@ describe('User Model Instance Methods: Response Data Shapers', () => {
     });
   });
 
-  describe('addPagination(): general [/user/@username] pagination util, see buildPagination() controller-util tests', () => {
+  describe('addPagination(): general [/user/@username] pagination util, see injectPagination() controller-util tests', () => {
     let output;
     beforeAll(() => {
       const options = { output: { payload: 'payload' }, path: 'test', totalDocuments: stories.length };

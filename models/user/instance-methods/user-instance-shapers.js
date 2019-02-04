@@ -1,4 +1,4 @@
-const { buildEndpoint, buildPagination } = require('../../../controllers/controller-utils');
+const { buildEndpoint, injectPagination } = require('../../../controllers/controller-utils');
 
 function toResponseShape() {
   return {
@@ -55,7 +55,7 @@ async function addStoriesPagination({
 }
 
 function addPagination(options) {
-  return buildPagination({ ...options, basePath: `users/${this.slug}` });
+  return injectPagination({ ...options, basePath: `users/${this.slug}` });
 }
 
 module.exports = {
