@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
-const models = require('../../index');
-const { dbConnect, setup, teardown, mocks: { storyMock, clapMock } } = require('../../../test-utils');
+const models = require('../../../index');
+const { dbConnect, setup, teardown, mocks: { storyMock, clapMock } } = require('../../../../test-utils');
 
 describe('User Model Instance Methods: Queries', () => {
   let author;

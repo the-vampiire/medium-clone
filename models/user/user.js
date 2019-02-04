@@ -1,7 +1,7 @@
 const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
 
-const instanceMethods = require('./instance-methods');
+const instanceMethods = require('./user-instance-methods');
 const { usernameValidator } = require('./validators');
 
 /* MAGIC NUMBER: controls number of salt rounds used during password hashing */
