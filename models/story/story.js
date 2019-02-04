@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const sanitizeHTML = require('sanitize-html');
-const { buildEndpoint } = require('../../controllers/controller-utils');
+
+const instanceMethods = require('./story-instance-methods');
+
 // idea: future
 // const draftSchema = new mongoose.Schema({
 //   title: String,
@@ -73,91 +75,9 @@ storySchema.pre('save', function sanitizeBody() {
 });
 
 // -- INSTANCE METHODS -- //
-// -- GETTERS -- //
-storySchema.methods.getClapsCount = function getClapsCount() {
-  const reduceClapsCount = claps => claps.reduce((total, clap) => total + clap.count, 0);
-  
-  return this.populate('claps').execPopulate()
-    .then(() => reduceClapsCount(this.claps));
-}
-
-storySchema.methods.getClappedReaders = function getClappedReaders() {
-  const mapClappedUsers = claps => Promise.all(
-    claps.map(clap => clap.populate('user').execPopulate().then(clap => clap.user)),
-  );
-  return this.populate('claps').execPopulate().then(() => mapClappedUsers(this.claps));
-}
-
-storySchema.methods.toResponseShape = async function toResponseShape() {
-  const populated = await this.populate('repliesCount').populate('author').execPopulate();
-  const storyResponse = populated.toJSON();
-
-  // todo: get viewing user (reader) from request
-  // const readerClap = await this.model('claps').findOne(
-  //   { user: reader, story: this },
-  //   'count',
-  // );
-  // todo: implement and tests
-  // storyResponse.readerClapsCount = readerClap ? readerClap.count : null;
-
-  // shape response fields
-  storyResponse.slug = this.slug;
-  storyResponse.author = this.author.toResponseShape();
-  storyResponse.clapsCount = await this.getClapsCount();
-  storyResponse.links = await this.buildResourceLinks();
-
-  // clean up unused fields
-  delete storyResponse.__v;
-  delete storyResponse._id;
-  delete storyResponse.parent;
-
-  return storyResponse;
-}
-
-storySchema.methods.buildResourceLinks = async function buildResourceLinks() {
-  const basePath = `stories/${this.slug}`;
-  
-  const populated = await this
-    .populate('repliesCount')
-    .populate('clappedUserCount')
-    .populate('parent', 'title')
-    .execPopulate();
-
-  // 'count' virtuals are only accessible after converting to JSON
-  const { repliesCount, clappedUserCount } = populated.toJSON();
-
-  // need parent Story object to call .slug virtual, cant access from JSON
-  const parent = populated.parent;
-
-  const storyURL = buildEndpoint({ basePath });
-
-  const parentURL = parent 
-    ? buildEndpoint({ basePath: `story/${parent.slug}` })
-    : null;
-
-  const repliesURL = repliesCount
-    ? buildEndpoint({ basePath, path: 'replies', paginated: true })
-    : null;
-
-  const clappedUsersURL = clappedUserCount
-    ? buildEndpoint({ basePath, path: 'clapped', paginated: true })
-    : null;
-
-  return {
-    storyURL,
-    parentURL,
-    repliesURL,
-    clappedUsersURL,
-  };
-};
-
-// -- SETTERS -- //
-storySchema.methods.publish = function publish() {
-  if (this.published) return null;
-
-  this.publishedAt = Date.now();
-  this.published = true;
-  return this.save();
+for (const [methodName, method] of Object.entries(instanceMethods)) {
+  // sets the external methods on the schema, userSchena.methods = methods fails
+  storySchema.methods[methodName] = method;
 }
 
 // -- STATIC METHODS -- //
