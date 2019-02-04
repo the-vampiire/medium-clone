@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const sanitizeHTML = require('sanitize-html');
 const { buildEndpoint } = require('../controllers/controller-utils');
 // idea: future
 // const draftSchema = new mongoose.Schema({
@@ -65,6 +66,12 @@ storySchema.virtual('slug').get(function() {
   return `${stripped}-${this.id}`;
 });
 
+// -- HOOKS -- //
+// TODO: tests
+storySchema.pre('save', function sanitizeBody() {
+  this.body = sanitizeHTML(this.body);
+});
+
 // -- INSTANCE METHODS -- //
 // -- GETTERS -- //
 storySchema.methods.getClapsCount = function getClapsCount() {
@@ -81,8 +88,8 @@ storySchema.methods.getClappedReaders = function getClappedReaders() {
   return this.populate('claps').execPopulate().then(() => mapClappedUsers(this.claps));
 }
 
-storySchema.methods.toResponseShape = async function toResponseShape({ author }) {
-  const populated = await this.populate('repliesCount').execPopulate();
+storySchema.methods.toResponseShape = async function toResponseShape() {
+  const populated = await this.populate('repliesCount').populate('author').execPopulate();
   const storyResponse = populated.toJSON();
 
   // todo: get viewing user (reader) from request
@@ -94,8 +101,8 @@ storySchema.methods.toResponseShape = async function toResponseShape({ author })
   // storyResponse.readerClapsCount = readerClap ? readerClap.count : null;
 
   // shape response fields
-  storyResponse.author = author.toResponseShape();
-  storyResponse.id = storyResponse._id.toHexString();
+  storyResponse.slug = this.slug;
+  storyResponse.author = this.author.toResponseShape();
   storyResponse.clapsCount = await this.getClapsCount();
   storyResponse.links = await this.buildResourceLinks();
 
@@ -108,7 +115,7 @@ storySchema.methods.toResponseShape = async function toResponseShape({ author })
 }
 
 storySchema.methods.buildResourceLinks = async function buildResourceLinks() {
-  const basePath = `story/${this.slug}`;
+  const basePath = `stories/${this.slug}`;
   
   const populated = await this
     .populate('repliesCount')
@@ -152,6 +159,24 @@ storySchema.methods.publish = function publish() {
   this.published = true;
   return this.save();
 }
+
+// -- STATIC METHODS -- //
+// storySchema.statics.getLatestStories = async function getLatestStories(query) {
+//   const { limit = 10, currentPage = 0 } = query;
+
+//   // limit to max of 20 results per page
+//   const limitBy = Math.max(limit, 20);
+//   const skipBy = limitBy * currentPage;
+
+//   const latestStories = await models.Story
+//     .find({ published: true })
+//     .sort({ publishedAt: -1 })
+//     .limit(limitBy)
+//     .skip(skipBy);
+
+//   const stories = await Promise.all(latestStories.map(story => story.toResponseShape()));
+//   return { stories, pagination };
+// }
 
 const Story = mongoose.model('stories', storySchema);
 

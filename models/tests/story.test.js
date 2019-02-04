@@ -4,7 +4,7 @@ const {
   dbConnect,
   setup,
   teardown,
-  mocks: { storyMock, clapMock },
+  mocks: { storyMock },
 } = require('../../test-utils');
 const { buildEndpoint, paginationQueryString } = require('../../controllers/controller-utils');
 // uncomment to see the mongodb queries themselves for debugging
@@ -147,11 +147,11 @@ describe('Story Model', () => {
       let output;
       let expectedFields;
       beforeAll(async () => {
-        output = await story.toResponseShape({ author });
-        expectedFields = ['id', 'createdAt', 'updatedAt', 'published', 'publishedAt', 'clapsCount', 'repliesCount', 'author', 'title', 'body', 'links'];
+        output = await story.toResponseShape();
+        expectedFields = ['slug', 'createdAt', 'updatedAt', 'published', 'publishedAt', 'clapsCount', 'repliesCount', 'author', 'title', 'body', 'links'];
       });
 
-      test('returns the Story Response Shape, fields: ["id", "createdAt", "updatedAt", "published", "publishedAt", "clapsCount", "repliesCount", "author", "title", "body", "links"]', () => {
+      test('returns the Story Response Shape, fields: ["slug", "createdAt", "updatedAt", "published", "publishedAt", "clapsCount", "repliesCount", "author", "title", "body", "links"]', () => {
         expect(output).toBeDefined();
         expectedFields.forEach(field => expect(output[field]).toBeDefined());
       });
@@ -160,11 +160,11 @@ describe('Story Model', () => {
         ['__v', '_id', 'parent'].forEach(field => expect(output[field]).not.toBeDefined());
       });
 
-      test('author field has correct shape, fields: ["id", "username", "avatarURL", "links"]', () => {
+      test('author field has correct shape, fields: ["slug", "username", "avatarURL", "links"]', () => {
         const authorField = output.author;
         expect(authorField).toBeDefined();
 
-        ["id", "username", "avatarURL", "links"]
+        ["slug", "username", "avatarURL", "links"]
           .forEach(field => expect(authorField[field]).toBeDefined());
       });
     });
@@ -182,7 +182,7 @@ describe('Story Model', () => {
 
       describe('called on a Story', () => {
         let basePath;
-        beforeAll(() => { basePath = `story/${story.slug}`});
+        beforeAll(() => { basePath = `stories/${story.slug}`});
 
         test('returns the Story Resource Links shape, fields: ["storyURL", "parentURL", "repliesURL", "clappedUsersURL"]', () => {
           expect(storyOutput).toBeDefined();
@@ -234,4 +234,20 @@ describe('Story Model', () => {
       });
     });
   });
+
+  // describe('STATIC METHODS', () => {
+  //   describe('getLatestStories(): returns a { stories, pagination } object', () => {
+  //     let publishedStories;
+  //     beforeAll(async () => {
+  //       // creates 30 published stories
+  //       publishedStories = await Promise.all(
+  //         Array(30).fill(null).map(() => Story.create(storyMock({ author, published: true }))),
+  //       );
+  //     });
+
+  //     test('empty query string: returns the first 10 { stories, pagination }', () => {
+
+  //     });
+  //   });
+  // });
 });
