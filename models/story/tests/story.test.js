@@ -1,12 +1,12 @@
 const mongoose = require('mongoose');
-const models = require('../index');
+const models = require('../../index');
 const {
   dbConnect,
   setup,
   teardown,
   mocks: { storyMock },
-} = require('../../test-utils');
-const { buildEndpoint, paginationQueryString } = require('../../controllers/controller-utils');
+} = require('../../../test-utils');
+const { buildEndpoint, paginationQueryString } = require('../../../controllers/controller-utils');
 // uncomment to see the mongodb queries themselves for debugging
 // mongoose.set('debug', true);
 describe('Story Model', () => {

@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const sanitizeHTML = require('sanitize-html');
-const { buildEndpoint } = require('../controllers/controller-utils');
+const { buildEndpoint } = require('../../controllers/controller-utils');
 // idea: future
 // const draftSchema = new mongoose.Schema({
 //   title: String,
