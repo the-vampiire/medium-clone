@@ -14,6 +14,7 @@ const {
   parseTokenOptions,
   createTokenPayload,
   createToken,
+  verifyToken,
 } = require('../token-utils');
 
 describe('Authentication Token utilities', () => {
@@ -49,5 +50,19 @@ describe('Authentication Token utilities', () => {
 
     expect(token.id).toBeDefined();
     expect(token.iss).toBe('Medium REST Clone');
+  });
+
+  describe('verifyToken(): verifies a Bearer JWT', () => {
+    test('verification fails: returns null', () => {
+      const badToken = 'iAmABadTokie';
+      expect(verifyToken(badToken)).toBeNull();
+    });
+
+    test('verification passes: returns token', () => {
+      const token = createToken(authedUserMock);
+      const output = verifyToken(token);
+      const id = decryptID(output.id);
+      expect(id).toBe(authedUserMock.id);
+    });
   });
 });
