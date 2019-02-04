@@ -2,7 +2,7 @@ const express = require('express');
 // all route handlers that requireAuthedUser will have this middleware executed first
 // if there is no authenticated user then the request will be rejected before reaching
 // the route handler
-const { requireAuthedUser } = require('../../../shared-middleware');
+const { requireAuthedUser } = require('../../require-authed-user');
 
 const UserFollowersController = express.Router();
 
