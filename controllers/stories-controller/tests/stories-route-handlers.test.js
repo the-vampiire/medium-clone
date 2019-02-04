@@ -1,4 +1,4 @@
-const { createNewStory } = require('../stories-route-handlers');
+const { newStoryHandler } = require('../stories-route-handlers');
 
 const resMock = {
   status() { return this; },
@@ -20,19 +20,19 @@ describe('/stories Route Handlers', () => {
     statusSpy.mockClear();
   });
 
-  describe('createNewStory(): handler for new stories', () => {
+  describe('newStoryHandler(): handler for new stories', () => {
     test('valid Story payload: creates a story and returns a Story Response Shape', async () => {
       const models = { Story: { create: () => storyMock } };
       const reqMock = { body: { title, body }, authedUser: authedUserMock, models };
 
-      await createNewStory(reqMock, resMock);
+      await newStoryHandler(reqMock, resMock);
       expect(jsonSpy).toHaveBeenCalledWith(storyMock.toResponseShape());
     });
 
     test('missing title: returns 400 JSON response { error }', async () => {
       const reqMock = { body: { body } };
       
-      await createNewStory(reqMock, resMock);
+      await newStoryHandler(reqMock, resMock);
       expect(statusSpy).toHaveBeenCalledWith(400);
       expect(jsonSpy).toHaveBeenCalledWith({ error: 'title missing' });
     });
