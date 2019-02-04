@@ -1,9 +1,9 @@
-const shapers = require('./user-instance-shapers');
-const queries = require('./user-instance-queries');
-const mutations = require('./user-instance-mutations');
+const queryMethods = require('./user-instance-queries');
+const shaperMethods = require('./user-instance-shapers');
+const mutationMethods = require('./user-instance-mutations');
 
 module.exports = {
-  ...shapers,
-  ...queries,
-  ...mutations,
+  ...queryMethods,
+  ...shaperMethods,
+  ...mutationMethods,
 };
