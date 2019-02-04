@@ -61,6 +61,25 @@ const createToken = (authedUser) => {
 
   return jwt.sign(payload, JWT_SECRET, options);
 }
+/**
+ * Verifies the JWT
+ * @param {string} bearerToken Authorization Bearer JWT to verify
+ * @requires process.env: JWT_SECRET, JWT_OPTIONS
+ * @returns null if token fails verification
+ * @returns token if verification succeeds
+ */
+const verifyToken = (bearerToken) => {
+  const { JWT_SECRET, JWT_OPTIONS } = process.env;
+ 
+  const { issuer, algorithm } = parseTokenOptions(JWT_OPTIONS);
+  const verifyOptions = { issuer, algorithms: [algorithm] };
+
+  try {
+    return jwt.verify(bearerToken, JWT_SECRET, verifyOptions);
+  } catch(error) {
+    return null;
+  }
+};
 
 module.exports = {
   encryptID,
@@ -68,4 +87,5 @@ module.exports = {
   parseTokenOptions,
   createTokenPayload,
   createToken,
+  verifyToken,
 };
