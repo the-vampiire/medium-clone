@@ -36,9 +36,9 @@ describe('User Model Instance Methods: Response Data Shapers', () => {
     let output;
     beforeAll(async () => { output = author.toResponseShape(); });
     
-    test('returns the User Response Shape, fields: ["id", "username", "avatarURL", "links"]', () => {
+    test('returns the User Response Shape, fields: ["slug", "username", "avatarURL", "links"]', () => {
       const expected = {
-        id: author.id,
+        slug: author.slug,
         username: author.username,
         avatarURL: author.avatarURL,
         links: author.buildResourceLinks(),

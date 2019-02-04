@@ -2,7 +2,7 @@ const { buildEndpoint, buildPagination } = require('../../../controllers/control
 
 function toResponseShape() {
   return {
-    id: this._id.toHexString(),
+    slug: this.slug,
     username: this.username,
     avatarURL: this.avatarURL,
     links: this.buildResourceLinks(),
@@ -23,7 +23,7 @@ function buildResourceLinks() {
 
 function shapeAuthoredStories(stories) {
   return Promise.all(
-    stories.map(story => story.toResponseShape({ author: this }))
+    stories.map(story => story.toResponseShape()),
   );
 }
 
