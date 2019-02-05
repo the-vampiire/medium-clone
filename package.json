@@ -23,7 +23,7 @@
     "faker": "^4.1.0",
     "jest-mock-express": "^0.1.1",
     "jsonwebtoken": "^8.4.0",
-    "mongoose": "^5.4.0",
+    "mongoose": "^5.4.9",
     "sanitize-html": "^1.20.0"
   },
   "devDependencies": {
