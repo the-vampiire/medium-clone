@@ -33,30 +33,6 @@ describe('Story Model', () => {
   });
 
   describe('INSTANCE METHODS', () => {
-    describe('getClapsCount()', async () => {
-      let clapsCount;
-      beforeAll(async () => {
-        clapsCount = await story.getClapsCount();
-      });
-
-      test('returns the total count of all claps from readers', () => {
-        const expectedCount = clapsPerUser * 1;
-        expect(clapsCount).toEqual(expectedCount);
-      });
-    });
-
-    describe('getClappedReaders()', () => {
-      let clappedReaders;
-      beforeAll(async () => {
-        clappedReaders = await story.getClappedReaders();
-      });
-
-      test('returns a list of the clapped readers [users]', () => {
-        expect(clappedReaders).toBeDefined();
-        expect(clappedReaders.length).toBe(1);
-      });
-    });
-
     describe('publish()', () => {
       beforeAll(async () => {
         story = await story.publish();
@@ -160,20 +136,4 @@ describe('Story Model', () => {
       });
     });
   });
-
-  // describe('STATIC METHODS', () => {
-  //   describe('getLatestStories(): returns a { stories, pagination } object', () => {
-  //     let publishedStories;
-  //     beforeAll(async () => {
-  //       // creates 30 published stories
-  //       publishedStories = await Promise.all(
-  //         Array(30).fill(null).map(() => Story.create(storyMock({ author, published: true }))),
-  //       );
-  //     });
-
-  //     test('empty query string: returns the first 10 { stories, pagination }', () => {
-
-  //     });
-  //   });
-  // });
 });
