@@ -33,18 +33,6 @@ describe('Story Model', () => {
   });
 
   describe('INSTANCE METHODS', () => {
-    describe('publish()', () => {
-      beforeAll(async () => {
-        story = await story.publish();
-      });
-      test('sets the publishedAt', () => expect(story.publishedAt).not.toBeNull());
-      test('sets the published field to true', () => expect(story.published).toBe(true));
-      test('returns null if the story is already published', async () => {
-        const nullReturn = await story.publish();
-        expect(nullReturn).toBeNull();
-      });
-    });
-
     describe('toResponseShape()', () => {
       let output;
       let expectedFields;
