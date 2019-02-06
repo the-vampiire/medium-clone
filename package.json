@@ -16,12 +16,10 @@
   "dependencies": {
     "bcrypt": "^3.0.3",
     "body-parser": "^1.18.3",
-    "cookie-parser": "^1.4.3",
     "crypto-js": "^3.1.9-1",
     "dotenv": "^6.2.0",
     "express": "^4.16.4",
     "faker": "^4.1.0",
-    "jest-mock-express": "^0.1.1",
     "jsonwebtoken": "^8.4.0",
     "mongoose": "^5.4.9",
     "sanitize-html": "^1.20.0"
