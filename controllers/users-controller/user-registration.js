@@ -1,5 +1,5 @@
-const verifyPayload = ({ body }, res, next) => {
-  const { username, password, verifyPassword } = body;
+const verifyPayload = (req, res, next) => {
+  const { username, password, verifyPassword } = req.body;
   
   if (!username) return res.status(400).json({ error: 'username missing' });
   if (!password) return res.status(400).json({ error: 'password missing' });
@@ -9,15 +9,18 @@ const verifyPayload = ({ body }, res, next) => {
   next();
 };
 
-const checkDuplicate = async ({ body, models }, res, next) => {
+const checkDuplicate = async (req, res, next) => {
+  const { body, models } = req;
+ 
   const existingUser = await models.User.countDocuments({ username: body.username });
   if (existingUser !== 0) return res.status(409).json({ error: 'Username already registered' });
 
   next();
 };
 
-const registerUser = async ({ body, models }, res) => {
-  const { username, password } = body;
+const registerUser = async (req, res) => {
+  const { body: { username, password }, models } = req;
+
   try {
     const newUser = await models.User.create({ username, password });
     return res.json(newUser.toResponseShape());

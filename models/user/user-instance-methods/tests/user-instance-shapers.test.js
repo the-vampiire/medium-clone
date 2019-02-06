@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
-const models = require('../../index');
-const {  dbConnect, setup, teardown, mocks: { storyMock } } = require('../../../test-utils');
+const models = require('../../../index');
+const { dbConnect, setup, teardown, mocks: { storyMock } } = require('../../../../test-utils');
 
 describe('User Model Instance Methods: Response Data Shapers', () => {
   let author;
@@ -8,7 +8,6 @@ describe('User Model Instance Methods: Response Data Shapers', () => {
   let stories;
   let responses;
   beforeAll(async () => {
-    mongoose.set('useCreateIndex', true);
     dbConnect(mongoose);
 
     const data = await setup(models, { userCount: 2 });
@@ -36,9 +35,9 @@ describe('User Model Instance Methods: Response Data Shapers', () => {
     let output;
     beforeAll(async () => { output = author.toResponseShape(); });
     
-    test('returns the User Response Shape, fields: ["id", "username", "avatarURL", "links"]', () => {
+    test('returns the User Response Shape, fields: ["slug", "username", "avatarURL", "links"]', () => {
       const expected = {
-        id: author.id,
+        slug: author.slug,
         username: author.username,
         avatarURL: author.avatarURL,
         links: author.buildResourceLinks(),
@@ -73,7 +72,7 @@ describe('User Model Instance Methods: Response Data Shapers', () => {
     });
   });
 
-  describe('addPagination(): general [/user/@username] pagination util, see buildPagination() controller-util tests', () => {
+  describe('addPagination(): general [/user/@username] pagination util, see injectPagination() controller-util tests', () => {
     let output;
     beforeAll(() => {
       const options = { output: { payload: 'payload' }, path: 'test', totalDocuments: stories.length };

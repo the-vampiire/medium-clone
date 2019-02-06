@@ -1,8 +1,8 @@
-const { buildEndpoint, buildPagination } = require('../../../controllers/controller-utils');
+const { buildEndpoint, injectPagination } = require('../../../controllers/controller-utils');
 
 function toResponseShape() {
   return {
-    id: this._id.toHexString(),
+    slug: this.slug,
     username: this.username,
     avatarURL: this.avatarURL,
     links: this.buildResourceLinks(),
@@ -23,7 +23,7 @@ function buildResourceLinks() {
 
 function shapeAuthoredStories(stories) {
   return Promise.all(
-    stories.map(story => story.toResponseShape({ author: this }))
+    stories.map(story => story.toResponseShape()),
   );
 }
 
@@ -55,7 +55,7 @@ async function addStoriesPagination({
 }
 
 function addPagination(options) {
-  return buildPagination({ ...options, basePath: `users/${this.slug}` });
+  return injectPagination({ ...options, basePath: `users/${this.slug}` });
 }
 
 module.exports = {

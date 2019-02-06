@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const mockRes = require('jest-mock-express').response
 
 const models = require('../../../../models');
 const { setup, teardown, dbConnect } = require('../../../../test-utils');
@@ -21,7 +20,7 @@ describe('[/user/:@username] Middleware', () => {
   });
 
   describe('exchangeSlugForUser', () => {
-    test('adds .pathUser property when matching User is found', async () => {
+    test('user is found for @username slug: req.pathUser contains matching User', async () => {
       const req = { ...reqBase };
       req.params = { usernameSlug: `@${user.username}` };
 
@@ -33,7 +32,7 @@ describe('[/user/:@username] Middleware', () => {
       await exchangeSlugForUser(req, null, next);
     });
 
-    test('req.pathUser is null when no matching User is found', async () => {
+    test('no user found for @username slug: req.pathUser is null', async () => {
       const req = { ...reqBase };
       req.params = { usernameSlug: `@doesntexist` };
 
@@ -44,7 +43,7 @@ describe('[/user/:@username] Middleware', () => {
   });
 
   describe('userNotFoundRedirect', () => {
-    test('calls next() if req.pathUser is defined', async () => {
+    test('req.pathUser is defined: calls next()', async () => {
       const req = { ...reqBase };
       req.pathUser = user;
       const next = jest.fn().mockImplementation(() => {});
@@ -53,13 +52,16 @@ describe('[/user/:@username] Middleware', () => {
       expect(next).toHaveBeenCalled();
     });
 
-    test('returns a 404 response if req.pathUser is null', async () => {
-      const req = { ...reqBase };
-      req.params = { usernameSlug: `@doesntexist` };
-      const res = mockRes();
+    test('req.pathUser is null: returns a 404 JSON response { error: "user not found" }', async () => {
+      const req = { ...reqBase, params: { usernameSlug: `@doesntexist` } };
+      const resMock = {
+        status: jest.fn(() => resMock),
+        json: jest.fn(),
+      };
       
-      const response = await userNotFoundRedirect(req, res);
-      expect(response.status).toHaveBeenCalledWith(404);
+      await userNotFoundRedirect(req, resMock);
+      expect(resMock.status).toHaveBeenCalledWith(404);
+      expect(resMock.json).toHaveBeenCalledWith({ error: 'user not found' });
     });
   });
 });

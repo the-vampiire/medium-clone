@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 
 const models = require('./models');
 const { getDatabaseURI } = require('./utils');
-const { UsersController, TokensController} = require('./controllers');
+const { UsersController, TokensController, StoriesController } = require('./controllers');
 
 const app = express();
 
@@ -23,6 +23,7 @@ app.use(
 // -- ENDPOINTS -- //
 app.use('/users', UsersController);
 app.use('/tokens', TokensController);
+app.use('/stories', StoriesController);
 
 // -- DATABASE INIT -- //
 mongoose.set('useCreateIndex', true);

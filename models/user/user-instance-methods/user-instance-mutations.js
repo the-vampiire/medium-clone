@@ -50,6 +50,7 @@ async function respondToStory(storyID, body) {
   if (!story) return null; // does not exist
 
   return Story.create({
+    title: body.split('.')[0], // first sentence of response
     body,
     author: this,
     parent: story,

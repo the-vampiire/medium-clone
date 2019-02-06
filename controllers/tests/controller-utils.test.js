@@ -1,4 +1,4 @@
-const { buildEndpoint, buildPagination, paginationQueryString } = require('../controller-utils');
+const { buildEndpoint, injectPagination, paginationQueryString } = require('../controller-utils');
 const { DOMAIN } = process.env;
 
 const basePath = 'test';
@@ -54,12 +54,12 @@ describe('Shared Controller Utilities', () => {
     });
   });
 
-  describe('buildPagination({ path, basePath, output, limit, currentPage, totalDocuments })', () => {
+  describe('injectPagination({ path, basePath, output, limit, currentPage, totalDocuments })', () => {
     test(
       'returns the output object with "pagination" property and shape, \
 fields: ["limit", "currentPage", "hasNext", "nextPageURL"]',
       () => {
-        const output = buildPagination({ basePath, totalDocuments: 20 });
+        const output = injectPagination({ basePath, totalDocuments: 20 });
         expect(output.pagination).toBeDefined();
         ["limit", "currentPage", "hasNext", "nextPageURL"].forEach(
           field => expect(output.pagination[field]).toBeDefined(),
@@ -77,7 +77,7 @@ fields: ["limit", "currentPage", "hasNext", "nextPageURL"]',
           hasNext: true,
           nextPageURL: buildEndpoint({ basePath, currentPage: 1 }),
         };
-        const output = buildPagination({ basePath, totalDocuments: 100 });
+        const output = injectPagination({ basePath, totalDocuments: 100 });
         expect(output.pagination).toEqual(expected);
       },
     );
@@ -87,7 +87,7 @@ fields: ["limit", "currentPage", "hasNext", "nextPageURL"]',
 { limit: 10, currentPage: 0, hasNext: false, nextPageURL: null }',
       () => {
         const expected = { limit: 10, currentPage: 0, hasNext: false, nextPageURL: null };
-        const output = buildPagination({ basePath, totalDocuments: 2 });
+        const output = injectPagination({ basePath, totalDocuments: 2 });
         expect(output.pagination).toEqual(expected);
       },
     );
@@ -101,7 +101,7 @@ fields: ["limit", "currentPage", "hasNext", "nextPageURL"]',
         let currentPage = 0;
         let paginationCycles = 0;
         while (currentPage !== null) {
-          const paginatedResult = buildPagination({
+          const paginatedResult = injectPagination({
             path,
             limit,
             basePath,
