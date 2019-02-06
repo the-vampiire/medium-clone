@@ -34,7 +34,7 @@ const storySchema = new mongoose.Schema({
   // highlights: [highlightSchema],
 }, { timestamps: true });
 
-// https://mongoosejs.com/docs/api.html#schema_Schema-virtual
+// -- VIRTUALS -- //
 storySchema.virtual('claps', {
   ref: 'claps', // collection name this [claps] field references
   localField: '_id', // the ID to of this story
