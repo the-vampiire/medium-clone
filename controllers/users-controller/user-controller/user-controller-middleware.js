@@ -10,7 +10,7 @@ const exchangeSlugForUser = async (req, _, next) => {
 
 const userNotFoundRedirect = (req, res, next) => {
   // if the path user is not found return a 404
-  if (!req.pathUser) return res.status(404).send('User not found');
+  if (!req.pathUser) return res.status(404).json({ error: 'user not found' });
   next(); // otherwise proceeed to next handler
 };
 
