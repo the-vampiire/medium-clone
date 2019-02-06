@@ -43,18 +43,18 @@ function buildEndpoint (options) {
 };
 
 /**
- * Injects a pagination property into a response payload
+ * Injects a pagination property into a response output
  * - pagination shape: { limit, currentPage, hasNext, nextPageURL }
  * - uses totalDocuments count to determine if there is an available nextPage
  * - if there is not a nextPage marks hasNext: false and nextPageURL: null
  * - if there is a nextPage marks hasNext: true and nextPageURL has its endpoint built
  * @param {PaginationOptions} options
- * @returns {object} { ...payload, pagination }
+ * @returns {object} { ...output, pagination }
  * 
  * @type PaginationOptions
  * @property {string} basePath base path of pagination
  * @property {string} path sub-path(s) of pagination
- * @property {object} payload original response payload
+ * @property {object} output original response output
  * @property {number} totalDocuments total number of documents associated with resource
  * @property {number} limit [10] pagination LIMIT
  * @property {number} currentPage [0] pagination CURRENT_PAGE
@@ -64,12 +64,12 @@ const injectPagination = (options) => {
     path,
     basePath,
     limit = 10,
-    payload = {},
+    output = {},
     totalDocuments,
     currentPage = 0,
   } = options;
   
-  const paginatedOutput = { ...payload };
+  const paginatedOutput = { ...output };
   paginatedOutput.pagination = { limit, currentPage, hasNext: false, nextPageURL: null };
 
   const nextPage = currentPage + 1;

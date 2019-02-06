@@ -1,5 +1,5 @@
 const { User, SALT_ROUNDS } = require('./user');
-const instanceMethods = require('./instance-methods');
+const instanceMethods = require('./user-instance-methods');
 
 module.exports = {
   User,

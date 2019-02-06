@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
-const models = require('../../index');
-const { constants: { MAX_CLAP_COUNT } } = require('../../index');
-const { dbConnect, setup, teardown, mocks: { storyMock } } = require('../../../test-utils');
+const models = require('../../../index');
+const { constants: { MAX_CLAP_COUNT } } = require('../../../index');
+const { dbConnect, setup, teardown, mocks: { storyMock } } = require('../../../../test-utils');
 
 describe('User Model Instance Methods: Mutations', () => {
   let author;

@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
-const models = require('../../index');
-const {  dbConnect, setup, teardown, mocks: { storyMock } } = require('../../../test-utils');
+const models = require('../../../index');
+const { dbConnect, setup, teardown, mocks: { storyMock } } = require('../../../../test-utils');
 
 describe('User Model Instance Methods: Response Data Shapers', () => {
   let author;
@@ -8,7 +8,6 @@ describe('User Model Instance Methods: Response Data Shapers', () => {
   let stories;
   let responses;
   beforeAll(async () => {
-    mongoose.set('useCreateIndex', true);
     dbConnect(mongoose);
 
     const data = await setup(models, { userCount: 2 });
