@@ -1,0 +1,15 @@
+language: node_js
+node_js:
+  - "node"
+before_install:
+  - npm i
+cache:
+  - directories:
+    - node_modules
+services:
+  - mongodb
+jobs:
+  include:
+    - stage: test
+      script:
+        - npm test
