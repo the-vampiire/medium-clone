@@ -2,32 +2,30 @@ const { buildEndpoint } = require('../../../controllers/controller-utils');
 
 async function toResponseShape() {
   const populated = await this.populate('repliesCount').populate('author').execPopulate();
+  const output = populated.toJSON(); // Story object is not modifiable directly, convert to JSON
 
-  // shape response fields
-  populated.slug = populated.slug;
-  populated.author = populated.author.toResponseShape();
-  populated.clapsCount = await populated.getClapsCount();
-  populated.links = await populated.buildResourceLinks();
+  // add custom response fields
+  output.slug = populated.slug;
+  output.author = populated.author.toResponseShape();
+  output.clapsCount = await populated.getClapsCount();
+  output.links = await populated.buildResourceLinks();
 
   // clean up unused fields
-  delete populated.__v;
-  delete populated._id;
-  delete populated.parent;
+  delete output.__v;
+  delete output._id;
+  delete output.parent;
 
-  return populated;
+  return output;
 }
 
 async function buildResourceLinks() {
-  const basePath = `stories/${this.slug}`;
-  
-  const populated = await this
+  const { parent, repliesCount, clappedUserCount } = await this
     .populate('repliesCount')
     .populate('clappedUserCount')
     .populate('parent', 'title')
     .execPopulate();
-
-  // 'count' virtuals are only accessible after converting to JSON
-  const { parent, repliesCount, clappedUserCount } = populated;
+  
+  const basePath = `stories/${this.slug}`;
 
   const parentURL = parent 
     ? buildEndpoint({ basePath: `stories/${parent.slug}` })
@@ -37,7 +35,7 @@ async function buildResourceLinks() {
     ? buildEndpoint({ basePath, path: 'replies', paginated: true })
     : null;
 
-  // TODO: rename to clappedMembersURL
+  // TODO: rename to clappedReadersURL
   const clappedUsersURL = clappedUserCount
     ? buildEndpoint({ basePath, path: 'clapped', paginated: true })
     : null;
