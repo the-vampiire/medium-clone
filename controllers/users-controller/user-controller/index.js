@@ -1,7 +1,7 @@
 const express = require('express');
 const routeHandlers = require('./user-route-handlers');
 const UserFollowersController = require('./user-follow-controller');
-const { exchangeSlugForUser, userNotFoundRedirect } = require('./user-controller-middleware');
+const { exchangeSlugForUser } = require('./user-controller-middleware');
 
 // controls: /users/:usernameSlug/
 const UserController = express.Router();
@@ -15,6 +15,5 @@ UserController.get('/clapped', routeHandlers.clappedStories);
 
 module.exports = {
   exchangeSlugForUser,
-  userNotFoundRedirect,
   UserController,
 };
