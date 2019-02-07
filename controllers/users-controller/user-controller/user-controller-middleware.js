@@ -9,7 +9,6 @@
  * @returns {error} 400 JSON response if username slug is invalid
  * @returns {error} 404 JSON response if a corresponding user is not found
  */
-const 
 const exchangeSlugForUser = async (req, res, next) => {
   const { params: { usernameSlug }, models } = req;
 
