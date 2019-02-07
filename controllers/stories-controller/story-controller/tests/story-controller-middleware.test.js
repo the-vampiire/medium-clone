@@ -1,5 +1,6 @@
+const { User, Story } = require('../../../../models');
 const { extractStoryID } = require('../story-controller-utils');
-const { exchangeSlugForStory } = require('../story-controller-middleware');
+const { exchangeSlugForStory, requireAuthorship } = require('../story-controller-middleware');
 
 jest.mock('../story-controller-utils', () => ({ extractStoryID: jest.fn() }));
 
@@ -8,6 +9,8 @@ const resMock = {
   json: jest.fn(),
 };
 
+const nextMock = jest.fn();
+
 const StoryMock = { findById: jest.fn() };
 
 const reqMockBase = { models: { Story: StoryMock } };
@@ -15,7 +18,7 @@ const reqMockBase = { models: { Story: StoryMock } };
 describe('Story Controller middleware', () => {
   afterEach(() => jest.clearAllMocks());
 
-  describe('exchangeSlugForStory', () => {
+  describe('exchangeSlugForStory(): exchanges a path story slug for its corresponding story', () => {
     test('storySlug does not contain a valid story ID: 400 JSON response { error: "invalid story slug" }', async () => {
       const reqMock = { ...reqMockBase, params: { storySlug: 'im-a-bad-sluggie' } };
       extractStoryID.mockImplementation(() => null);
@@ -42,12 +45,31 @@ describe('Story Controller middleware', () => {
       extractStoryID.mockImplementation(() => mockStory.id);
       StoryMock.findById.mockImplementation(() => mockStory);
 
-      const nextMock = jest.fn();
-
       await exchangeSlugForStory(reqMock, null, nextMock);
       expect(StoryMock.findById).toHaveBeenCalledWith(mockStory.id);
       expect(nextMock).toHaveBeenCalled();
       expect(reqMock.pathStory).toBe(mockStory)
+    });
+  });
+
+  describe('requireAuthorship(): enforces authorship authorization of protected Story endpoints', () => {
+    const author = new User({ username: 'the-vampiire', password: 'a tough one' });
+    const story = new Story({ author: author.id });
+
+    test('authedUser is the author: calls next()', () => {
+      const reqMock = { authedUser: author, pathStory: story };
+      
+      requireAuthorship(reqMock, resMock, nextMock);
+      expect(nextMock).toHaveBeenCalled();
+    });
+
+    test('authedUser is not the author: returns 401 JSON response { error: "authorship required" }', () => {
+      const notAuthor = new User({ username: 'the-werewolf', password: 'a tough one' });
+      const reqMock = { authedUser: notAuthor, pathStory: story };
+      
+      requireAuthorship(reqMock, resMock);
+      expect(resMock.status).toHaveBeenCalledWith(401);
+      expect(resMock.json).toHaveBeenCalledWith({ error: 'authorship required' });
     });
   });
 });
