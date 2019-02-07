@@ -20,7 +20,7 @@ const userSchema = new mongoose.Schema({
   password: {
     required: true,
     type: String,
-    minlength: 6,
+    minlength: [6, "password must be at least 6 characters long"],
   },
   avatarURL: String,
   followers: [{ type: mongoose.SchemaTypes.ObjectId, ref: 'users' }],
