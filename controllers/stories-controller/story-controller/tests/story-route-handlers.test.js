@@ -3,7 +3,6 @@ const {
   storyDiscoveryHandler,
   storyUpdateHandler,
   storyDeleteHandler,
-  storyPublishHandler,
 } = require('../story-route-handlers');
 
 const resMock = {
@@ -16,7 +15,7 @@ const storyMock = {
 };
 
 describe('Story Controller route handlers', () => {
-  afterEach(() => jest.resetAllMocks());
+  afterEach(() => jest.clearAllMocks());
 
   test('storyDiscoveryHandler(): returns JSON response of pathStory in Story Response Shape', async () => {
     const reqMock = { pathStory: storyMock };
@@ -72,6 +71,38 @@ describe('Story Controller route handlers', () => {
       await storyUpdateHandler(reqMock, resMock);
       expect(updated.toResponseShape).toHaveBeenCalled();
       expect(resMock.json).toHaveBeenCalledWith(updated.toResponseShape());
+    });
+  });
+
+  describe('storyDeleteHandler(): deletes a Story', () => {
+    const authedUserMock = { verifyPassword: jest.fn() };
+    const toDeleteMock = { destroy: jest.fn() };
+
+    test('no password provided: returns 401 JSON response with { error: "failed to authenticate" }', async () => {
+      const reqMock = { pathStory: toDeleteMock, authedUser: authedUserMock, body: {} };
+      authedUserMock.verifyPassword.mockImplementation(() => false);
+
+      await storyDeleteHandler(reqMock, resMock);
+      expect(resMock.status).toHaveBeenCalledWith(401);
+      expect(resMock.json).toHaveBeenCalledWith({ error: 'failed to authenticate' });
+    });
+
+    test('invalid password provided: returns 401 JSON response with { error: "failed to authenticate" }', async () => {
+      const reqMock = { pathStory: toDeleteMock, authedUser: authedUserMock, body: {} };
+      authedUserMock.verifyPassword.mockImplementation(() => false);
+
+      await storyDeleteHandler(reqMock, resMock);
+      expect(resMock.status).toHaveBeenCalledWith(401);
+      expect(resMock.json).toHaveBeenCalledWith({ error: 'failed to authenticate' });
+    });
+
+    test('valid password provided: deletes the story and responds with a 201 status code', async () => {
+      const reqMock = { pathStory: toDeleteMock, authedUser: authedUserMock, body: { password: 'a secret one' } };
+      authedUserMock.verifyPassword.mockImplementation(() => true);
+
+      await storyDeleteHandler(reqMock, resMock);
+      expect(toDeleteMock.destroy).toHaveBeenCalled();
+      expect(resMock.status).toHaveBeenCalledWith(204);
     });
   });
 });
