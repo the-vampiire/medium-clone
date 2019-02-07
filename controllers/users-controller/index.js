@@ -1,6 +1,6 @@
 const express = require('express');
 const { verifyPayload, checkDuplicate, registerUser } = require('./user-registration');
-const { exchangeSlugForUser, userNotFoundRedirect, UserController, } = require('./user-controller');
+const { exchangeSlugForUser, UserController, } = require('./user-controller');
 
 const UsersController = express.Router();
 
@@ -16,7 +16,6 @@ UsersController.post(
 UsersController.use(
   '/:usernameSlug',
   exchangeSlugForUser,
-  userNotFoundRedirect,
   UserController,
 );
 

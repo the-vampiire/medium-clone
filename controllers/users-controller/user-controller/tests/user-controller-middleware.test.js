@@ -1,67 +1,47 @@
-const mongoose = require('mongoose');
+const { exchangeSlugForUser } = require('../user-controller-middleware');
 
-const models = require('../../../../models');
-const { setup, teardown, dbConnect } = require('../../../../test-utils');
-const { exchangeSlugForUser, userNotFoundRedirect } = require('../user-controller-middleware');
+const resMock = {
+  status: jest.fn(() => resMock),
+  json: jest.fn(),
+};
 
-const reqBase = { models }; // base request object
-describe('[/user/:@username] Middleware', () => {
-  let user;
-  beforeAll(async () => {
-    dbConnect(mongoose);
+const UserMock = { findOne: jest.fn() };
 
-    const data = await setup(models, { userCount: 1 });
-    [user] = data.users;
-  });
+const reqMockBase = { models: { User: UserMock } };
 
-  afterAll(async () => {
-    const collections = ['users'];
-    return teardown(mongoose, collections);
-  });
+describe('User Controller middleware', () => {
+  afterEach(() => jest.clearAllMocks());
 
   describe('exchangeSlugForUser', () => {
-    test('user is found for @username slug: req.pathUser contains matching User', async () => {
-      const req = { ...reqBase };
-      req.params = { usernameSlug: `@${user.username}` };
+    test('usernameSlug does not begin with @: 400 JSON response { error: "invalid username" }', async () => {
+      const reqMock = { ...reqMockBase, params: { usernameSlug: 'the-vampiire' } };
 
-      const next = () => {
-        expect(req.pathUser).toBeDefined();
-        expect(req.pathUser.id).toEqual(user.id);
-      };
-
-      await exchangeSlugForUser(req, null, next);
+      await exchangeSlugForUser(reqMock, resMock);
+      expect(resMock.status).toHaveBeenCalledWith(400);
+      expect(resMock.json).toHaveBeenCalledWith({ error: 'invalid username' });
     });
 
-    test('no user found for @username slug: req.pathUser is null', async () => {
-      const req = { ...reqBase };
-      req.params = { usernameSlug: `@doesntexist` };
+    test('user is not found: 404 JSON response { error: "user not found" }', async () => {
+      const reqMock = { ...reqMockBase, params: { usernameSlug: '@the-vampiire' } };
+      UserMock.findOne.mockImplementation(() => null);
 
-      const next = () => expect(req.pathUser).toBeNull();
-      
-      await exchangeSlugForUser(req, null, next);
-    });
-  });
-
-  describe('userNotFoundRedirect', () => {
-    test('req.pathUser is defined: calls next()', async () => {
-      const req = { ...reqBase };
-      req.pathUser = user;
-      const next = jest.fn().mockImplementation(() => {});
-      
-      await userNotFoundRedirect(req, null, next);
-      expect(next).toHaveBeenCalled();
-    });
-
-    test('req.pathUser is null: returns a 404 JSON response { error: "user not found" }', async () => {
-      const req = { ...reqBase, params: { usernameSlug: `@doesntexist` } };
-      const resMock = {
-        status: jest.fn(() => resMock),
-        json: jest.fn(),
-      };
-      
-      await userNotFoundRedirect(req, resMock);
+      await exchangeSlugForUser(reqMock, resMock);
       expect(resMock.status).toHaveBeenCalledWith(404);
       expect(resMock.json).toHaveBeenCalledWith({ error: 'user not found' });
+
+    });
+
+    test('user is found for @username slug: next() called and req.pathUser contains matching User', async () => {
+      const mockUser = { username: 'the-vampiire' };
+      const reqMock = { ...reqMockBase, params: { usernameSlug: '@the-vampiire' } };
+      UserMock.findOne.mockImplementation(() => mockUser);
+
+      const nextMock = jest.fn();
+
+      await exchangeSlugForUser(reqMock, null, nextMock);
+      expect(UserMock.findOne).toHaveBeenCalledWith({ username: mockUser.username });
+      expect(nextMock).toHaveBeenCalled();
+      expect(reqMock.pathUser).toBe(mockUser)
     });
   });
 });

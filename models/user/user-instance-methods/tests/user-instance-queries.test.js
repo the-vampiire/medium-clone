@@ -130,5 +130,11 @@ describe('User Model Instance Methods: Queries', () => {
       const isValid = await user.verifyPassword('this aint it chief');
       expect(isValid).toBe(false);
     });
+
+    test('returns false if undefined is passed as a password', async () => {
+      let undefinedPassword;
+      const isValid = await user.verifyPassword(undefinedPassword);
+      expect(isValid).toBe(false);
+    });
   });
 });

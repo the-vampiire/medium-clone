@@ -1,20 +1,30 @@
-const exchangeSlugForUser = async (req, _, next) => {
+/**
+ * Processes a user slug from the path
+ * - injects req.pathUser property on success
+ * @requires req.usernameSlug: the slug to exchange
+ * @requires req.models DB models
+ * @param {Request} req Request object
+ * @param {Response} res Response object
+ * @param {Function} next next step function
+ * @returns {error} 400 JSON response if username slug is invalid
+ * @returns {error} 404 JSON response if a corresponding user is not found
+ */
+const exchangeSlugForUser = async (req, res, next) => {
   const { params: { usernameSlug }, models } = req;
-  const username = usernameSlug.replace('@', ''); // remove @ character from slug
 
-  // add the 'pathUser' property to the req object for use downstream
-  // this is the user with the username from the path /user/@username/
-  req.pathUser = await models.User.findOne({ username });
+  const username = usernameSlug.replace('@', '');
+  if (username.length !== usernameSlug.length - 1) {
+    // usernameSlug did not begin with @ or had multiple @ chars: invalid
+    return res.status(400).json({ error: 'invalid username' });
+  }
+
+  const user = await models.User.findOne({ username });
+  if (!user) return res.status(404).json({ error: 'user not found' });
+  
+  req.pathUser = user;
   next();
-};
-
-const userNotFoundRedirect = (req, res, next) => {
-  // if the path user is not found return a 404
-  if (!req.pathUser) return res.status(404).json({ error: 'user not found' });
-  next(); // otherwise proceeed to next handler
 };
 
 module.exports = {
   exchangeSlugForUser,
-  userNotFoundRedirect,
 };

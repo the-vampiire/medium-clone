@@ -1,4 +1,3 @@
-const jwt = require('jsonwebtoken');
 const { decryptID, verifyToken } = require('./tokens-controller/token-utils');
 
 /**
