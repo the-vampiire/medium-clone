@@ -32,9 +32,9 @@ describe('POST /users: User registration middleware and handler', () => {
     
     // runs through each failure scenario and tests the behavior
     [
-      { scenario: 'username missing', body: { password, verifyPassword }, expectedOutput: { error: 'username missing' } },
-      { scenario: 'password missing', body: { username, verifyPassword }, expectedOutput: { error: 'password missing' } },
-      { scenario: 'verifyPassword missing', body: { username, password }, expectedOutput: { error: 'verifyPassword missing' } },
+      { scenario: 'username missing', body: { password, verifyPassword }, expectedOutput: { error: 'username required' } },
+      { scenario: 'password missing', body: { username, verifyPassword }, expectedOutput: { error: 'password required' } },
+      { scenario: 'verifyPassword missing', body: { username, password }, expectedOutput: { error: 'verifyPassword required' } },
       { scenario: 'passwords do not match', body: { username, password: 'other', verifyPassword }, expectedOutput: { error: 'Passwords do not match' } },
     ].forEach(({ scenario, body, expectedOutput }) => {
         test(`${scenario}: { status: 400, body: { error: ${expectedOutput.error} } }`, () => {

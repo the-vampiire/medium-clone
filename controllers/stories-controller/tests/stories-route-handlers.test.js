@@ -37,7 +37,7 @@ describe('/stories Route Handlers', () => {
       
       await newStoryHandler(reqMock, resMock);
       expect(statusSpy).toHaveBeenCalledWith(400);
-      expect(jsonSpy).toHaveBeenCalledWith({ error: 'title missing' });
+      expect(jsonSpy).toHaveBeenCalledWith({ error: 'title required' });
     });
   });
 
