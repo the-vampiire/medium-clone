@@ -6,7 +6,7 @@ const {
   storyDiscoveryHandler,
   storyUpdateHandler,
   storyDeleteHandler,
-} = require('./story-controller-handlers');
+} = require('./story-route-handlers');
 
 // Story Controller: /stories/:storySlug/
 const StoryController = express.Router();
