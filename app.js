@@ -10,6 +10,8 @@ const { UsersController, TokensController, StoriesController } = require('./cont
 const app = express();
 
 // -- SERVERWIDE MIDDLEWARE -- //
+// TODO: export from app middleware
+// add errorHandler to req object
 app.use(
   bodyParser.json(),
   bodyParser.urlencoded({ extended: false }),
