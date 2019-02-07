@@ -14,7 +14,8 @@ const newStoryHandler = async (req, res) => {
   
   const newStory = await models.Story.create({ title, body, author: authedUser });
   const responseShape = await newStory.toResponseShape();
-
+// TODO: 201 and location header to support REST spec
+// 
   return res.json(responseShape);
 };
 
