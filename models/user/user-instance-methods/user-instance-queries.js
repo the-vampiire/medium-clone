@@ -70,6 +70,7 @@ function getClappedStories(limit, currentPage) {
  * @returns resolves true or false
  */
 async function verifyPassword(passwordAttempt) {
+  if (!passwordAttempt) return false;
   return bcrypt.compare(passwordAttempt, this.password);
 }
 
