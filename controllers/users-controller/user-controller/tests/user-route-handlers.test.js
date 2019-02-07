@@ -4,6 +4,7 @@ const models = require('../../../../models');
 const { dbConnect, setup, teardown, mocks: { storyMock } } = require('../../../../test-utils');
 const routeHandlers = require('../user-route-handlers');
 
+// TODO: Refactor using mocks
 describe('[/user/@username] Route Handlers', () => {
   let pathUser;
   let clapped;
@@ -52,7 +53,7 @@ describe('[/user/@username] Route Handlers', () => {
     let routeResponse;
     beforeAll(async () => {
       mockRes = { json: (data) => data };
-      routeResponse = await routeHandlers.stories({ pathUser, query: {} }, mockRes);
+      routeResponse = await routeHandlers.userStoriesHandler({ pathUser, query: {} }, mockRes);
     });
 
     test('returns the User Stories Response shape, fields: ["stories", "pagination"]', () => {
@@ -74,7 +75,7 @@ describe('[/user/@username] Route Handlers', () => {
     let routeResponse;
     beforeAll(async () => {
       mockRes = { json: data => data };
-      routeResponse = await routeHandlers.responses({ pathUser, query: {} }, mockRes);
+      routeResponse = await routeHandlers.userResponsesHandler({ pathUser, query: {} }, mockRes);
     });
 
     test('returns the User story Responses Response shape, fields: ["responses", "pagination"]', () => {
