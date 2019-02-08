@@ -1,33 +1,31 @@
-const { User } = require('../../../models');
-const { verifyPayload, checkDuplicate, registerUser } = require('../user-registration');
+const {
+  verifyRegistrationPayload,
+  checkDuplicateRegistration,
+  registerUserHandler,
+} = require('../user-registration');
 
 const resMock = {
-  status() { return this; },
-  json: output => output,
+  status: jest.fn(() => resMock),
+  json: jest.fn(),
+  set: jest.fn(),
 };
 
-const statusSpy = jest.spyOn(resMock, 'status');
-const jsonSpy = jest.spyOn(resMock, 'json');
-const nextSpy = jest.fn(() => {});
+const nextMock = jest.fn(() => {});
 
 const username = 'a-username';
 const password = 'a password';
 const verifyPassword = password;
 
 describe('POST /users: User registration middleware and handler', () => {
-  afterEach(() => {
-    statusSpy.mockClear();
-    jsonSpy.mockClear();
-    nextSpy.mockClear();
-  });
-
-  describe('verifyPayload() middleware', () => {
+  describe('verifyRegistrationPayload() middleware', () => {
+    beforeEach(() => jest.clearAllMocks());
+    
     test('valid body contents: calls next()', () => {
       const body = { username, password, verifyPassword };
-      verifyPayload({ body }, resMock, nextSpy);
-      expect(statusSpy).not.toHaveBeenCalled();
-      expect(jsonSpy).not.toHaveBeenCalled();
-      expect(nextSpy).toHaveBeenCalled();
+      verifyRegistrationPayload({ body }, resMock, nextMock);
+      expect(resMock.status).not.toHaveBeenCalled();
+      expect(resMock.json).not.toHaveBeenCalled();
+      expect(nextMock).toHaveBeenCalled();
     });
     
     // runs through each failure scenario and tests the behavior
@@ -35,56 +33,71 @@ describe('POST /users: User registration middleware and handler', () => {
       { scenario: 'username missing', body: { password, verifyPassword }, expectedOutput: { error: 'username required' } },
       { scenario: 'password missing', body: { username, verifyPassword }, expectedOutput: { error: 'password required' } },
       { scenario: 'verifyPassword missing', body: { username, password }, expectedOutput: { error: 'verifyPassword required' } },
-      { scenario: 'passwords do not match', body: { username, password: 'other', verifyPassword }, expectedOutput: { error: 'Passwords do not match' } },
+      { scenario: 'passwords do not match', body: { username, password: 'other', verifyPassword }, expectedOutput: { error: 'passwords do not match' } },
     ].forEach(({ scenario, body, expectedOutput }) => {
         test(`${scenario}: { status: 400, body: { error: ${expectedOutput.error} } }`, () => {
-          verifyPayload({ body }, resMock, nextSpy);
-          expect(statusSpy).toHaveBeenCalledWith(400);
-          expect(jsonSpy).toHaveBeenCalledWith(expectedOutput);
-          expect(nextSpy).not.toHaveBeenCalled();
+          verifyRegistrationPayload({ body }, resMock, nextMock);
+          expect(resMock.status).toHaveBeenCalledWith(400);
+          expect(resMock.json).toHaveBeenCalledWith(expectedOutput);
+          expect(nextMock).not.toHaveBeenCalled();
         });
       });
   });
 
-  describe('checkDuplicate() middleware', () => {
+  describe('checkDuplicateRegistration() middleware', () => {
+    beforeEach(() => jest.clearAllMocks());
+
     test('username available: calls next()', async () => {
       const body = { username };
       const models = { User: { countDocuments: () => 0 } };
 
-      await checkDuplicate({ body, models }, resMock, nextSpy);
-      expect(nextSpy).toHaveBeenCalled();
+      await checkDuplicateRegistration({ body, models }, resMock, nextMock);
+      expect(nextMock).toHaveBeenCalled();
     });
 
-    test('username taken: { status: 409, body: { error: "Username already registered" } }', async () => {
+    test('username taken: { status: 409, body: { error: "username already registered" } }', async () => {
       const body = { username };
       const models = { User: { countDocuments: () => 1 } };
 
-      await checkDuplicate({ body, models }, resMock, nextSpy); 
-      expect(statusSpy).toHaveBeenCalledWith(409);
-      expect(jsonSpy).toHaveBeenCalledWith({ error: 'Username already registered' });
+      await checkDuplicateRegistration({ body, models }, resMock, nextMock); 
+      expect(resMock.status).toHaveBeenCalledWith(409);
+      expect(resMock.json).toHaveBeenCalledWith({ error: 'username already registered' });
     });
   });
 
-  describe('registerUser() POST handler', () => {
-    test('registers a user and returns the User Response Shape', async () => {
-      const userMock = new User({ id: 1, username, password, avatarURL: 'url' });
+  describe('registerUserHandler() POST handler', () => {
+    describe('valid username and password', () => {
       const body = { username, password };
-      const models = { User: { create: () => userMock } };
-      const createSpy = jest.spyOn(models.User, 'create');
-      
-      await registerUser({ body, models }, resMock);
-      expect(createSpy).toHaveBeenCalledWith(body);
-      expect(jsonSpy).toHaveBeenCalledWith(userMock.toResponseShape());
-    });
+      const UserMock = { create: jest.fn(() => userMock) };
+      const responseShapeMock = { links: { userURL: 'this is a url' } };
+      const userMock = { username, password, toResponseShape: jest.fn(() => responseShapeMock) };
+      const models = { User: UserMock };
 
-    test("invalid username or password: { status: 400, error: <Model Validation Error Message> }", async () => {
-      const errorMessage = 'Validation Error';
-      const validationError = new Error(errorMessage);
+      beforeAll(() => registerUserHandler({ body, models }, resMock));
+      afterAll(() => jest.clearAllMocks());
+
+      test('creates a new User and converts it to the User Response Shape', async () => {
+        expect(UserMock.create).toHaveBeenCalledWith(body);
+        expect(userMock.toResponseShape).toHaveBeenCalled();
+      });
+
+      test('sets Location header to the newly created User resource URL', () => {
+        expect(resMock.set).toHaveBeenCalledWith({ Location: responseShapeMock.links.userURL });
+      });
+
+      test('returns a 201 JSON response with the User Response Shape', () => {
+        expect(resMock.status).toHaveBeenCalledWith(201);
+        expect(resMock.json).toHaveBeenCalledWith(userMock.toResponseShape());
+      });
+    });
+    
+    test("invalid username or password: 400 JSON response with { error: 'validation failed', fields: { ... } }", async () => {
+      const validationError = new Error(JSON.stringify({ errors: {} }));
       const models = { User: { create: () => { throw validationError } } };
 
-      await registerUser({ body: {}, models }, resMock);
-      expect(statusSpy).toHaveBeenCalledWith(400);
-      expect(jsonSpy).toHaveBeenCalledWith({ error: errorMessage });
+      await registerUserHandler({ body: {}, models }, resMock);
+      expect(resMock.status).toHaveBeenCalledWith(400);
+      expect(resMock.json).toHaveBeenCalledWith({ error: 'validation failed', fields: {} });
     });
   });
 });
