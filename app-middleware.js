@@ -12,5 +12,5 @@ const addRequestContext = (context) => (req, _, next) => {
 module.exports = [
   bodyParser.json(),
   bodyParser.urlencoded({ extended: false }),
-  addRequestContext(models),
+  addRequestContext({ models }),
 ];
