@@ -10,7 +10,7 @@ const populaterStub = {
 const author = new User(mocks.userMock());
 
 describe('Story instance shaper methods', () => {
-  describe('buildResourceLinks(): { storyURL, parentURL, repliesURL, clappedUsersURL }', () => {
+  describe('buildResourceLinks(): { storyURL, parentURL, repliesURL, clappedReadersURL }', () => {
     const buildLinksStub = ({ parent = null, repliesCount = 0, clappedUserCount = 0 }) => Object.assign(
       {},
       new Story(mocks.storyMock({ author })),
@@ -25,26 +25,26 @@ describe('Story instance shaper methods', () => {
       expect(output.storyURL.length).toBeGreaterThan(1);
       expect(output.parentURL).toBeNull();    
       expect(output.repliesURL).toBeNull();    
-      expect(output.clappedUsersURL).toBeNull();    
+      expect(output.clappedReadersURL).toBeNull();    
     });
 
-    test('story with claps: storyURL and clappedUsersURL are not null', async () => {
+    test('story with claps: storyURL and clappedReadersURL are not null', async () => {
       const storyMock = buildLinksStub({ clappedUserCount: 1 });
 
       const output = await storyMock.buildResourceLinks();
       expect(output.storyURL.length).toBeGreaterThan(1);
-      expect(output.clappedUsersURL.length).toBeGreaterThan(1);
+      expect(output.clappedReadersURL.length).toBeGreaterThan(1);
       expect(output.parentURL).toBeNull();    
       expect(output.repliesURL).toBeNull();    
     });
 
-    test('story with claps and replies: storyURL, clappedUsersURL, and repliesURL are not null', async () => {
+    test('story with claps and replies: storyURL, clappedReadersURL, and repliesURL are not null', async () => {
       const storyMock = buildLinksStub({ clappedUserCount: 1, repliesCount: 1 });
 
       const output = await storyMock.buildResourceLinks();
       expect(output.storyURL.length).toBeGreaterThan(1);
       expect(output.repliesURL.length).toBeGreaterThan(1);    
-      expect(output.clappedUsersURL.length).toBeGreaterThan(1);
+      expect(output.clappedReadersURL.length).toBeGreaterThan(1);
       expect(output.parentURL).toBeNull();
     });
 
@@ -59,7 +59,7 @@ describe('Story instance shaper methods', () => {
         expect(output.storyURL.length).toBeGreaterThan(1);
         expect(output.parentURL.length).toBeGreaterThan(1);
         expect(output.repliesURL).toBeNull();    
-        expect(output.clappedUsersURL).toBeNull();
+        expect(output.clappedReadersURL).toBeNull();
       });
 
       test('parentURL uses the parent Story\'s slug', () => {

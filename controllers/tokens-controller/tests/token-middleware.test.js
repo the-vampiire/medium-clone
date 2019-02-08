@@ -27,18 +27,18 @@ describe('Token Controller Middleware', () => {
       expect(nextSpy).toBeCalled();
     });
 
-    test('no username: responds with 400 status and { error: "username missing" }', () => {
+    test('no username: responds with 400 status and { error: "username required" }', () => {
       const body = { password };
       verifyPayload({ body }, resMock, nextSpy);
       expect(statusSpy).toHaveBeenCalledWith(400);
-      expect(jsonSpy).toHaveBeenCalledWith({ error: 'username missing' });
+      expect(jsonSpy).toHaveBeenCalledWith({ error: 'username required' });
     });
   
-    test('no password: responds with 400 status and { error: "password missing" }', () => {
+    test('no password: responds with 400 status and { error: "password required" }', () => {
       const body = { username };
       verifyPayload({ body }, resMock, nextSpy);
       expect(statusSpy).toHaveBeenCalledWith(400);
-      expect(jsonSpy).toHaveBeenCalledWith({ error: 'password missing' });
+      expect(jsonSpy).toHaveBeenCalledWith({ error: 'password required' });
     });
   });
 

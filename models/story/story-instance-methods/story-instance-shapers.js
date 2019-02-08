@@ -35,8 +35,7 @@ async function buildResourceLinks() {
     ? buildEndpoint({ basePath, path: 'replies', paginated: true })
     : null;
 
-  // TODO: rename to clappedReadersURL
-  const clappedUsersURL = clappedUserCount
+  const clappedReadersURL = clappedUserCount
     ? buildEndpoint({ basePath, path: 'clapped', paginated: true })
     : null;
 
@@ -44,7 +43,7 @@ async function buildResourceLinks() {
     storyURL: buildEndpoint({ basePath }),
     parentURL,
     repliesURL,
-    clappedUsersURL,
+    clappedReadersURL,
   };
 };
 

@@ -10,8 +10,8 @@
  */
 const verifyPayload = (req, res, next) => {
   const { username, password } = req.body;
-  if (!username) return res.status(400).json({ error: 'username missing' });
-  if (!password) return res.status(400).json({ error: 'password missing' });
+  if (!username) return res.status(400).json({ error: 'username required' });
+  if (!password) return res.status(400).json({ error: 'password required' });
 
   next();
 };

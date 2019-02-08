@@ -6,13 +6,13 @@ const {
   storyDiscoveryHandler,
   storyUpdateHandler,
   storyDeleteHandler,
-} = require('./story-controller-handlers');
+} = require('./story-route-handlers');
 
 // Story Controller: /stories/:storySlug/
 const StoryController = express.Router();
 
 StoryController.get('/', storyDiscoveryHandler);
-StoryController.put('/', requireAuthedUser, requireAuthorship, storyUpdateHandler);
+StoryController.patch('/', requireAuthedUser, requireAuthorship, storyUpdateHandler);
 StoryController.delete('/', requireAuthedUser, requireAuthorship, storyDeleteHandler);
 
 

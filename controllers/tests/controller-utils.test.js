@@ -1,10 +1,19 @@
-const { buildEndpoint, injectPagination, paginationQueryString } = require('../controller-utils');
-const { DOMAIN } = process.env;
+const {
+  buildEndpoint,
+  injectPagination,
+  paginationQueryString,
+  extractFieldErrors,
+} = require('../controller-utils');
 
+const DOMAIN = 'http://localhost:8008';
 const basePath = 'test';
 const path = 'path/test';
 
+
 describe('Shared Controller Utilities', () => {
+  beforeAll(() => { process.env.DOMAIN = DOMAIN; });
+  afterAll(() => { delete process.env.DOMAIN });
+
   describe('paginationQueryString({ limit, currentPage })', () => {
     test('default: limit=10&currentPage=0', () => {
       const output = paginationQueryString({});
@@ -115,6 +124,44 @@ fields: ["limit", "currentPage", "hasNext", "nextPageURL"]',
 
         expect(paginationCycles).toEqual(expectedCycles);
       });
+    });
+  });
+
+  describe('extractFieldErrors(): extracts Mongo ValidationError messages for field(s)', () => {
+    const validationError = {
+      errors: { 
+        username: {
+          message: 'Invalid username. Usernames may only contain alpha-numeric characters, "_", and "-".',
+          name: 'ValidatorError',
+          properties: [Object],
+          kind: 'user defined',
+          path: 'username',
+          value: 'b@dname',
+          reason: undefined,
+        },
+        password: { 
+          message: 'password must be at least 6 characters long',
+          name: 'ValidatorError',
+          properties: [Object],
+          kind: 'minlength',
+          path: 'password',
+          value: 'test',
+          reason: undefined,
+        },
+      }
+    };
+
+    test('errors defined: returns a fieldErrors object { fieldName: errorMessage, ...}', () => {
+      const fieldErrors = extractFieldErrors(validationError.errors);
+      expect(fieldErrors).toEqual({
+        username: validationError.errors.username.message,
+        password: validationError.errors.password.message,
+      });
+    });
+
+    test('errors undefined or null: returns an empty object {}', () => {
+      const fieldErrors = extractFieldErrors();
+      expect(fieldErrors).toEqual({});
     });
   });
 });

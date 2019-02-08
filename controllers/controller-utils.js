@@ -88,8 +88,24 @@ const injectPagination = (options) => {
   return paginatedOutput;
 };
 
+/**
+ * Extracts Mongo field errors from a Validation Error
+ * @param {object} errors the errors object on the ValidationError instanc
+ * @returns {object} a field errors object containing { field: errorMessage, ... }
+ */
+const extractFieldErrors = (errors) => {
+  if (!errors) return {};
+
+  return Object.keys(errors)
+    .reduce((fieldErrors, field) => {
+      fieldErrors[field] = errors[field].message;
+      return fieldErrors
+    }, {});
+}
+
 module.exports = {
   buildEndpoint,
   injectPagination,
   paginationQueryString,
+  extractFieldErrors,
 };

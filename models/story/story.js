@@ -70,7 +70,6 @@ storySchema.virtual('slug').get(function() {
 });
 
 // -- HOOKS -- //
-// TODO: tests
 storySchema.pre('save', function sanitizeBody() {
   this.body = sanitizeHTML(this.body);
 });

@@ -10,13 +10,13 @@
 const newStoryHandler = async (req, res) => {
   const { body: { title, body }, authedUser, models } = req;
 
-  if (!title) return res.status(400).json({ error: 'title missing' });
+  if (!title) return res.status(400).json({ error: 'title required' });
   
   const newStory = await models.Story.create({ title, body, author: authedUser });
   const responseShape = await newStory.toResponseShape();
-// TODO: 201 and location header to support REST spec
-// 
-  return res.json(responseShape);
+
+  res.set({ Location: responseShape.links.storyURL });
+  return res.status(201).json(responseShape);
 };
 
 /**

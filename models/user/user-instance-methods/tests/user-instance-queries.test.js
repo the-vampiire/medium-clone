@@ -1,3 +1,4 @@
+const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
 const models = require('../../../index');
 const { dbConnect, setup, teardown, mocks: { storyMock, clapMock } } = require('../../../../test-utils');
@@ -43,6 +44,7 @@ describe('User Model Instance Methods: Queries', () => {
         const hasCorrectIDs = result.every(story => [story.id, authorResponse.id].includes(story.id));
         expect(hasCorrectIDs).toBe(true);
       });
+
       test('[DEFAULT - sort published]: descending "publishedAt" order', () => {
         const [first, second] = result;
         expect(Number(first.publishedAt) > Number(second.publishedAt)).toBe(true);
@@ -63,6 +65,7 @@ describe('User Model Instance Methods: Queries', () => {
         expect(Number(first.updatedAt) > Number(second.updatedAt)).toBe(true);
       })
     });
+    
     describe('only published stories - queryOptions: { onlyStories: true }', () => {
       let result;
       beforeAll(async () => { result = await author.getStories({ onlyStories: true }); });
@@ -103,23 +106,27 @@ describe('User Model Instance Methods: Queries', () => {
   });
 
   describe('getClappedStories()', () => {
-    let result;
-    beforeAll(async () => {
-      await models.Clap.create(clapMock({ user: author, story, count: 20 }));
-      result = await author.getClappedStories();
-    });
+    test('returns the users clapped stories: [{ count, story }, ...]', async () => {
+      const clapCount = 20;
+      await models.Clap.create(clapMock({ user: author, story, count: clapCount }));
+      
+      const output = await author.getClappedStories({});
+      expect(output).toBeDefined();
+      expect(output.length).toBe(1);
 
-    test('returns the users clapped stories', () => {
-      expect(result).toBeDefined();
-      expect(result.length).toBe(1);
-      expect(result[0].id).toEqual(story.id);
+      const [clappedStory] = output;
+      expect(clappedStory.count).toBe(clapCount);
+      expect(clappedStory.story.id).toBe(story.id);
     });
   });
 
   describe('validatePassword()', () => {
     let user;
     const password = 'the super secret one';
-    beforeAll(async () => { user = await models.User.create({ username: 'the-vampiire', password }); });
+    beforeAll(async () => {
+      const hashedPassword = await bcrypt.hash(password, 1);
+      user = await models.User.create({ username: 'the-vampiire', password: hashedPassword });
+    });
 
     test('returns true if the correct password is passed', async () => {
       const isValid = await user.verifyPassword(password);
