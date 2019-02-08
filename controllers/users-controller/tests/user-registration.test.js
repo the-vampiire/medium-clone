@@ -1,3 +1,4 @@
+const bcrypt = require('bcrypt');
 const {
   verifyRegistrationPayload,
   checkDuplicateRegistration,
@@ -67,17 +68,33 @@ describe('POST /users: User registration middleware and handler', () => {
 
   describe('registerUserHandler() POST handler', () => {
     describe('valid username and password', () => {
+      jest.mock('bcrypt');
+      const hashedPassword = 'a hashed one';
+      bcrypt.hash = jest.fn(() => hashedPassword);
+
       const body = { username, password };
       const UserMock = { create: jest.fn(() => userMock) };
       const responseShapeMock = { links: { userURL: 'this is a url' } };
       const userMock = { username, password, toResponseShape: jest.fn(() => responseShapeMock) };
       const models = { User: UserMock };
 
-      beforeAll(() => registerUserHandler({ body, models }, resMock));
-      afterAll(() => jest.clearAllMocks());
+      beforeAll(() => {
+        process.env.SALT_ROUNDS = 1;
+        registerUserHandler({ body, models }, resMock);
+      });
+
+      afterAll(() => {
+        delete process.env.SALT_ROUNDS;
+        jest.clearAllMocks();
+      });
+
+      test('hashes the user password before creation', () => {
+        // process.env vars are loaded as strings, use string "1"
+        expect(bcrypt.hash).toHaveBeenCalledWith(body.password, '1');
+      });
 
       test('creates a new User and converts it to the User Response Shape', async () => {
-        expect(UserMock.create).toHaveBeenCalledWith(body);
+        expect(UserMock.create).toHaveBeenCalledWith({ ...body, password: hashedPassword });
         expect(userMock.toResponseShape).toHaveBeenCalled();
       });
 

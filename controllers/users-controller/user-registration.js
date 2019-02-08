@@ -1,3 +1,4 @@
+const bcrypt = require('bcrypt');
 const { extractFieldErrors } = require('../controller-utils');
 
 /**
@@ -46,8 +47,10 @@ const checkDuplicateRegistration = async (req, res, next) => {
 
 /**
  * POST handler for registering a new User
+ * - hashes the user's password
  * - registers a new user
  * - sets the Location header for the newly created User URL
+ * @requires process.env.SALT_ROUNDS: the number of salt rounds to use for hashing
  * @param {Request} req Request object
  * @param {string} req.body.username the username to register
  * @param {string} req.body.password the password to register
@@ -59,9 +62,12 @@ const checkDuplicateRegistration = async (req, res, next) => {
 const registerUserHandler = async (req, res) => {
   const { body: { username, password }, models } = req;
 
+  const { SALT_ROUNDS } = process.env;
+  const encryptedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+
   let newUser;
   try {
-    newUser = await models.User.create({ username, password });
+    newUser = await models.User.create({ username, password: encryptedPassword });
   } catch(validationError) {
     const fields = extractFieldErrors(validationError.errors);
     return res.status(400).json({ error: 'validation failed', fields });
