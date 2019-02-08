@@ -151,12 +151,17 @@ fields: ["limit", "currentPage", "hasNext", "nextPageURL"]',
       }
     };
 
-    test('returns a fieldErrors object: { fieldName: errorMessage, ...}', () => {
+    test('errors defined: returns a fieldErrors object { fieldName: errorMessage, ...}', () => {
       const fieldErrors = extractFieldErrors(validationError.errors);
       expect(fieldErrors).toEqual({
         username: validationError.errors.username.message,
         password: validationError.errors.password.message,
-      })
+      });
+    });
+
+    test('errors undefined or null: returns an empty object {}', () => {
+      const fieldErrors = extractFieldErrors();
+      expect(fieldErrors).toEqual({});
     });
   });
 });

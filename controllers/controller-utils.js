@@ -93,12 +93,15 @@ const injectPagination = (options) => {
  * @param {object} errors the errors object on the ValidationError instanc
  * @returns {object} a field errors object containing { field: errorMessage, ... }
  */
-const extractFieldErrors = (errors) => Object
-  .keys(errors)
-  .reduce((fieldErrors, field) => {
-    fieldErrors[field] = errors[field].message;
-    return fieldErrors
-  }, {});
+const extractFieldErrors = (errors) => {
+  if (!errors) return {};
+
+  return Object.keys(errors)
+    .reduce((fieldErrors, field) => {
+      fieldErrors[field] = errors[field].message;
+      return fieldErrors
+    }, {});
+}
 
 module.exports = {
   buildEndpoint,
