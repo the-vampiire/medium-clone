@@ -27,16 +27,16 @@ async function clapForStory(storyID, totalClaps) {
   if (totalClaps < 1) return null;
 
   // limit the maximum count
-  const count = totalClaps <= MAX_CLAP_COUNT ? totalClaps : MAX_CLAP_COUNT;
+  const count = Math.min(totalClaps, MAX_CLAP_COUNT);
 
   const story = await this.model('stories').findById(storyID);
-  // reject if a story is not found
-  if (!story) return null;
-  // reject authors clapping for their own story
-  else if (String(story.author) === this.id) return null;
+  // some cases the author is populated - access ID, otherwise author is the ObjectID itself
+  const authorID = story.author.id || story.author.toString();
+  // reject if a story is not found or author is attempting to smell their own farts
+  if (!story || authorID === this.id) return null;
 
   // creates or updates the count of a reader's (user) story clap
-  return this.model('claps').updateMany(
+  return this.model('claps').updateOne(
     { user: this, story }, // identifier for the update
     { $set: { count } }, // operation to perform on the found/created document
     { upsert: true }, // upsert means update if exists or insert if not
