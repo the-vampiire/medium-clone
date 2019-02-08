@@ -1,3 +1,4 @@
+const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
 const models = require('../../../index');
 const { dbConnect, setup, teardown, mocks: { storyMock, clapMock } } = require('../../../../test-utils');
@@ -122,7 +123,10 @@ describe('User Model Instance Methods: Queries', () => {
   describe('validatePassword()', () => {
     let user;
     const password = 'the super secret one';
-    beforeAll(async () => { user = await models.User.create({ username: 'the-vampiire', password }); });
+    beforeAll(async () => {
+      const hashedPassword = await bcrypt.hash(password, 1);
+      user = await models.User.create({ username: 'the-vampiire', password: hashedPassword });
+    });
 
     test('returns true if the correct password is passed', async () => {
       const isValid = await user.verifyPassword(password);
