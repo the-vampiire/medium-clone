@@ -1,94 +1,86 @@
-const mongoose = require('mongoose');
+const {
+  userDiscoveryHandler,
+  userStoriesHandler,
+  userResponsesHandler,
+} = require('../user-route-handlers');
 
-const models = require('../../../../models');
-const { dbConnect, setup, teardown, mocks: { storyMock } } = require('../../../../test-utils');
-const routeHandlers = require('../user-route-handlers');
+const resMock = { json: jest.fn() };
 
-// TODO: Refactor using mocks
-describe('[/user/@username] Route Handlers', () => {
-  let pathUser;
-  let clapped;
-  let stories;
-  let following;
-  let responses;
-  beforeAll(async () => {
-    dbConnect(mongoose);
+describe('User Controller route handlers', () => {
+  describe('userDiscoveryHandler(): access an individual User for discovery', () => {
+    afterAll(() => jest.clearAllMocks());
 
-    const data = await setup(models, { userCount: 4 }).catch(console.error);
-    [pathUser, ...following] = data.users;
+    const pathUserMock = { toResponseShape: jest.fn() };
+    const reqMock = { pathUser: pathUserMock };
 
-    const storiesCount = 20;
-    stories = await Promise.all(
-      Array(storiesCount) // 20 stories
-      .fill(null)
-      .map(() => models.Story.create(storyMock({ author: pathUser, published: true }))),
-    );
-
-    responses = await Promise.all(
-      stories
-      .slice(0, storiesCount / 2) // 10 responses
-      .map(story => models.Story.create(
-        storyMock({ author: pathUser, parent: story, published: true }),
-      )),
-    );
-
-    pathUser.following = following;
-    await pathUser.save();
-
-    // todo: refactor
-    clapped = await Promise.all(
-      stories
-      .slice(0, storiesCount / 2)
-      .map(story => pathUser.clapForStory(story.id, 10)),
-    );
-  });
-
-  afterAll(async () => {
-    const collections = ['users', 'stories', 'claps'];
-    await teardown(mongoose, collections);
-  });
-
-  describe('[/stories] handler', () => {
-    let mockRes;
-    let routeResponse;
-    beforeAll(async () => {
-      mockRes = { json: (data) => data };
-      routeResponse = await routeHandlers.userStoriesHandler({ pathUser, query: {} }, mockRes);
-    });
-
-    test('returns the User Stories Response shape, fields: ["stories", "pagination"]', () => {
-      expect(routeResponse).toBeDefined();
-      expect(routeResponse.stories).toBeDefined();
-      expect(routeResponse.pagination).toBeDefined();
-    });
-
-    test('returns the first ten (default) published stories authored by the user', () => {
-      const { stories } = routeResponse;
-      expect(stories).toBeDefined();
-      expect(stories.length).toBe(10);
-      expect(stories.every(story => story.author.id === pathUser.id));
+    test('returns a JSON response of the path user in User Response Shape', () => {
+      userDiscoveryHandler(reqMock, resMock);
+      expect(pathUserMock.toResponseShape).toHaveBeenCalled();
+      expect(resMock.json).toHaveBeenCalledWith(pathUserMock.toResponseShape());
     });
   });
 
-  describe('[/responses] handler', () => {
-    let mockRes;
-    let routeResponse;
-    beforeAll(async () => {
-      mockRes = { json: data => data };
-      routeResponse = await routeHandlers.userResponsesHandler({ pathUser, query: {} }, mockRes);
+  describe('userStoriesHandler(): paginable requests for authored User stories', () => {
+    const stories = [];
+    const limit = 5;
+    const currentPage = 0;
+    const query = { limit, currentPage };
+    const pathUserMock = {
+      getStories: jest.fn(() => stories),
+      shapeAuthoredStories: jest.fn(() => stories),
+      addStoriesPagination: jest.fn(() => ({ stories, pagination: query })),
+    };
+    const reqMock = { query, pathUser: pathUserMock };
+
+    beforeAll(() => userStoriesHandler(reqMock, resMock));
+    afterAll(() => jest.clearAllMocks());
+
+    test('calls getStories() method for stories using query pagination: { onlyStories: true, limit, currentPage }', () => {
+      expect(pathUserMock.getStories).toHaveBeenLastCalledWith({ onlyStories: true, limit, currentPage });
     });
 
-    test('returns the User story Responses Response shape, fields: ["responses", "pagination"]', () => {
-      expect(routeResponse).toBeDefined();
-      expect(routeResponse.responses).toBeDefined();
-      expect(routeResponse.pagination).toBeDefined();
+    test('calls shapeAuthoredStories() method using the stories results', () => {
+      expect(pathUserMock.shapeAuthoredStories).toHaveBeenLastCalledWith(stories);
     });
 
-    test('returns the first ten (default) published responses authored by the user', () => {
-      const { responses } = routeResponse;
-      expect(responses).toBeDefined();
-      expect(responses.length).toBe(10);
-      expect(responses.every(response => response.author.id === pathUser.id));
+    test('calls addStoriesPagination() method using the shaped stories: { stories, limit, currentPage }', () => {
+      expect(pathUserMock.addStoriesPagination).toHaveBeenLastCalledWith({ stories, limit, currentPage });
+    });
+
+    test('returns a JSON response with the paginated stories: { stories, pagination }', () => {
+      expect(resMock.json).toHaveBeenLastCalledWith({ stories, pagination: query });
+    });
+  });
+
+  describe('userResponsesHandler(): paginable requests for authored User responses', () => {
+    const responses = [];
+    const limit = 5;
+    const currentPage = 0;
+    const query = { limit, currentPage };
+    const pathUserMock = {
+      getStories: jest.fn(() => responses),
+      shapeAuthoredStories: jest.fn(() => responses),
+      addStoriesPagination: jest.fn(() => ({ responses, pagination: query })),
+    };
+    const reqMock = { query, pathUser: pathUserMock };
+
+    beforeAll(() => userResponsesHandler(reqMock, resMock));
+    afterAll(() => jest.clearAllMocks());
+
+    test('calls getStories() method for responses using query pagination: { onlyResponses: true, limit, currentPage }', () => {
+      expect(pathUserMock.getStories).toHaveBeenLastCalledWith({ onlyResponses: true, limit, currentPage });
+    });
+
+    test('calls shapeAuthoredStories() method using the responses results', () => {
+      expect(pathUserMock.shapeAuthoredStories).toHaveBeenLastCalledWith(responses);
+    });
+
+    test('calls addStoriesPagination() method using the shaped responses: { responses, limit, currentPage }', () => {
+      expect(pathUserMock.addStoriesPagination).toHaveBeenLastCalledWith({ responses, limit, currentPage });
+    });
+
+    test('returns a JSON response with the paginated responses: { responses, pagination }', () => {
+      expect(resMock.json).toHaveBeenLastCalledWith({ responses, pagination: query });
     });
   });
 });
