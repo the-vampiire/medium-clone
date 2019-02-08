@@ -12,7 +12,7 @@ const {
 const StoryController = express.Router();
 
 StoryController.get('/', storyDiscoveryHandler);
-StoryController.put('/', requireAuthedUser, requireAuthorship, storyUpdateHandler);
+StoryController.patch('/', requireAuthedUser, requireAuthorship, storyUpdateHandler);
 StoryController.delete('/', requireAuthedUser, requireAuthorship, storyDeleteHandler);
 
 
