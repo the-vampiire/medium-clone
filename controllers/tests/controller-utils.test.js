@@ -3,6 +3,11 @@ const {
   newResourceResponse,
 } = require('../controller-utils');
 
+const resMock = {
+  set: jest.fn(),
+  json: jest.fn(),
+  status: jest.fn(() => resMock),
+}
 
 describe('Shared Controller Utilities', () => {
   describe('extractFieldErrors(): extracts Mongo ValidationError messages for field(s)', () => {
@@ -40,6 +45,24 @@ describe('Shared Controller Utilities', () => {
     test('errors undefined or null: returns an empty object {}', () => {
       const fieldErrors = extractFieldErrors();
       expect(fieldErrors).toEqual({});
+    });
+  });
+
+  describe('newResourceResponse(): builds a 201 JSON response for POST creation handlers', () => {
+    const resourceURLName = 'storyURL';
+    const resourceURLValue = 'im a url';
+    const responseData = { links: {} };
+    responseData.links[resourceURLName] = resourceURLValue;
+
+    newResourceResponse(responseData, resourceURLName, resMock);
+
+    test('sets the Location header using the responseData.links.urlName value', () => {
+      expect(resMock.set).toHaveBeenCalledWith({ Location: responseData.links[resourceURLName] });
+    });
+
+    test('returns a 201 status JSON response using responseData', () => {
+      expect(resMock.status).toHaveBeenCalledWith(201);
+      expect(resMock.json).toHaveBeenCalledWith(responseData);
     });
   });
 });
