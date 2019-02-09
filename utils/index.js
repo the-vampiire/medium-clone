@@ -1,3 +1,5 @@
+const { appMiddleware } = require('./app-middleware');
+
 const getDatabaseURI = (env) => {
   switch(env) {
     case 'test':
@@ -11,4 +13,5 @@ const getDatabaseURI = (env) => {
 
 module.exports = {
   getDatabaseURI,
+  appMiddleware,
 };
