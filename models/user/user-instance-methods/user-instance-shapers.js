@@ -1,4 +1,4 @@
-const { buildEndpoint, injectPagination } = require('../../../controllers/controller-utils');
+const { buildEndpoint, injectPagination } = require('../../../controllers/pagination-utils');
 
 function toResponseShape() {
   return {

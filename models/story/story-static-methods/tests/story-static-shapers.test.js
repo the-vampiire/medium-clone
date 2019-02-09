@@ -1,8 +1,8 @@
-const controllerUtils = require('../../../../controllers/controller-utils');
+const paginationUtils = require('../../../../controllers/pagination-utils');
 const { addPagination } = require('../story-static-shapers');
 
-// mock the controllerUtils.injectPagination function
-jest.mock('../../../../controllers/controller-utils.js');
+// mock the paginationUtils.injectPagination function
+jest.mock('../../../../controllers/pagination-utils.js');
 
 describe('Story static shaper methods', () => {
   describe('addPagination(): adds pagination to a stories query', () => {
@@ -21,7 +21,7 @@ describe('Story static shaper methods', () => {
 
     test('calls injectPagination() util with { basePath: "stories", totalDocuments, ...options }', () => {
       const expected = { basePath: 'stories', totalDocuments: 5, ...options };
-      expect(controllerUtils.injectPagination).toHaveBeenCalledWith(expected);
+      expect(paginationUtils.injectPagination).toHaveBeenCalledWith(expected);
     });
   });
 });
