@@ -1,4 +1,4 @@
-const { buildEndpoint } = require('../../../controllers/controller-utils');
+const { buildEndpoint } = require('../../../controllers/pagination-utils');
 
 async function toResponseShape() {
   const populated = await this.populate('repliesCount').populate('author').execPopulate();

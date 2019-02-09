@@ -2,6 +2,7 @@ const express = require('express');
 
 const { requireAuthedUser } = require('../../require-authed-user'); 
 const { exchangeSlugForStory, requireAuthorship } = require('./story-controller-middleware');
+const { storyRepliesHandler, createStoryReplyHandler } = require('./story-replies-handlers');
 const {
   storyDiscoveryHandler,
   storyUpdateHandler,
@@ -15,17 +16,16 @@ StoryController.get('/', storyDiscoveryHandler);
 StoryController.patch('/', requireAuthedUser, requireAuthorship, storyUpdateHandler);
 StoryController.delete('/', requireAuthedUser, requireAuthorship, storyDeleteHandler);
 
-
-  // ResponsesController: /stories/:storySlug/responses
-  // GET: story responses
-  // POST: respond to story
-  // DELETE: 
+// story replies
+StoryController.get('/replies', storyRepliesHandler);
+StoryController.post('/replies', requireAuthedUser, createStoryReplyHandler);
 
   // ClapsController: /stories/:storySlug/claps
-  // GET: { clappedUser: [], readerClaps: Number }
+  // GET: { clappedReaders: [], totalClaps: Number }
   // POST: clap for story
-  // PUT: update claps on clapped story
-  // DELETE: remove claps on story
+  // GET /claps/@username: gets the user claps on a clapped story
+  // PUT /claps/@username: update user claps on clapped story
+  // DELETE /claps/@username: remove user claps on story
 
 module.exports = {
   exchangeSlugForStory,

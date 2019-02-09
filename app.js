@@ -3,8 +3,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 
 const controllers = require('./controllers');
-const { getDatabaseURI } = require('./utils');
-const appMiddleware = require('./app-middleware');
+const { getDatabaseURI, appMiddleware } = require('./utils');
 
 const app = express();
 const { PORT, DOMAIN, NODE_ENV } = process.env;

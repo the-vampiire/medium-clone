@@ -1,4 +1,4 @@
-const { injectPagination } = require('../../../controllers/controller-utils');
+const { injectPagination } = require('../../../controllers/pagination-utils');
 
 /**
  * Adds pagination to stories query result

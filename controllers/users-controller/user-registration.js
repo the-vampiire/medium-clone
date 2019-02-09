@@ -1,5 +1,5 @@
 const bcrypt = require('bcrypt');
-const { extractFieldErrors } = require('../controller-utils');
+const { extractFieldErrors, newResourceResponse } = require('../controller-utils');
 
 /**
  * Validates the incoming User registration payload
@@ -73,10 +73,9 @@ const registerUserHandler = async (req, res) => {
     return res.status(400).json({ error: 'validation failed', fields });
   }
 
-  const responseShape = newUser.toResponseShape();
+  const responseData = newUser.toResponseShape();
 
-  res.set({ Location: responseShape.links.userURL });
-  return res.status(201).json(responseShape);
+  return newResourceResponse(responseData, 'userURL', res);
 };
 
 module.exports = {

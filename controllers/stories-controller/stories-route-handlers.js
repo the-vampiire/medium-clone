@@ -1,3 +1,5 @@
+const { newResourceResponse } = require('../controller-utils');
+
 /**
  * Creates and shapes the response of a new Story
  * @requires req.authedUser: an authenticated User as the author
@@ -13,10 +15,9 @@ const newStoryHandler = async (req, res) => {
   if (!title) return res.status(400).json({ error: 'title required' });
   
   const newStory = await models.Story.create({ title, body, author: authedUser });
-  const responseShape = await newStory.toResponseShape();
+  const responseData = await newStory.toResponseShape();
 
-  res.set({ Location: responseShape.links.storyURL });
-  return res.status(201).json(responseShape);
+  return newResourceResponse(responseData, 'storyURL', res);
 };
 
 /**
