@@ -22,7 +22,7 @@ describe('Story Model Virtual fields', () => {
       const author = await User.create(mocks.userMock());
       const clappingMember = await User.create(mocks.userMock());
       story = await Story.create(mocks.storyMock({ author }));
-      clap = await Clap.create(mocks.clapMock({ user: clappingMember, story, count: 20 }));
+      clap = await Clap.create(mocks.clapMock({ reader: clappingMember, story, count: 20 }));
     });
 
     test('.claps: returns all Clap documents belonging to the Story', async () => {

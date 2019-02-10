@@ -15,8 +15,8 @@ const storyMock = ({ author, title, body, parent, published = false }) => ({
   publishedAt: published ? Date.now() : null,
 });
 
-const clapMock = ({ user, story, count }) => ({
-  user,
+const clapMock = ({ reader, story, count }) => ({
+  reader,
   story,
   count: count || 0,
 });

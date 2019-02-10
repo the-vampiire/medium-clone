@@ -2,20 +2,36 @@
  * Reduces the total claps count across all User claps
  * @returns {number} the total clap count for the Story
  */
+// TODO: refactor to use model aggregate
 async function getClapsCount() {
   const reduceClapsCount = claps => claps.reduce((total, clap) => total + clap.count, 0);
 
   return this.populate('claps').execPopulate().then(() => reduceClapsCount(this.claps));
 }
 
-// todo: refactor or remove
-// too heavy unless paginated, what is the use case?
-async function getClappedReaders() {
-  const mapClappedUsers = claps => Promise.all(claps.map(
-    clap => clap.populate('user').execPopulate().then(populated => populated.user),
-  ));
+/**
+ * Gets a paginated list of readers who clapped for the Story
+ * @param {number} query.limit [10] pagination limit
+ * @param {number} query.currentPage [0] pagination current page 
+ * @returns paginated readers output { readers, pagination }
+ */
+async function getClappedReaders(query) {
+  const { limit = 10, currentPage = 0 } = query;
 
-  return this.populate('claps').execPopulate().then(() => mapClappedUsers(this.claps));
+  const populated = await this
+    .populate({
+      path: 'claps',
+      options: { limit, skip: currentPage * limit, sort: { count: -1 } },
+    }).execPopulate()
+
+  const readers = await Promise.all(
+    populated.claps.map(async (clap) => {
+      const { reader } = await clap.populate('reader').execPopulate();
+      return reader.toResponseShape();
+    }),
+  );
+
+  return this.model('Story').addPagination({ output: { readers }, limit, currentPage });
 }
 
 /**
@@ -51,3 +67,4 @@ module.exports = {
   getClappedReaders,
   getReplies,
 };
+ 
