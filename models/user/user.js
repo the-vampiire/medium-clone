@@ -27,7 +27,7 @@ const userSchema = new mongoose.Schema({
 userSchema.virtual('claps', {
   ref: 'claps',
   localField: '_id',
-  foreignField: 'user',
+  foreignField: 'reader',
 });
 
 userSchema.virtual('slug').get(function () {

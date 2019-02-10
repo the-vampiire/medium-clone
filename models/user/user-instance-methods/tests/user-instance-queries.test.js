@@ -108,7 +108,7 @@ describe('User Model Instance Methods: Queries', () => {
   describe('getClappedStories()', () => {
     test('returns the users clapped stories: [{ count, story }, ...]', async () => {
       const clapCount = 20;
-      await models.Clap.create(clapMock({ user: author, story, count: clapCount }));
+      await models.Clap.create({ reader: author, story, count: clapCount });
       
       const output = await author.getClappedStories({});
       expect(output).toBeDefined();

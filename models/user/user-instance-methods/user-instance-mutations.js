@@ -37,7 +37,7 @@ async function clapForStory(storyID, totalClaps) {
 
   // creates or updates the count of a reader's (user) story clap
   return this.model('claps').updateOne(
-    { user: this, story }, // identifier for the update
+    { reader: this, story }, // identifier for the update
     { $set: { count } }, // operation to perform on the found/created document
     { upsert: true }, // upsert means update if exists or insert if not
   );

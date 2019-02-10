@@ -36,7 +36,7 @@ describe('User Model: Schema, Virtuals and Hooks', () => {
   describe('.claps virtual', () => {
     let claps;
     beforeAll(async () => {
-      clap = await models.Clap.create(clapMock({ user: author, story, count: 1 }));
+      clap = await models.Clap.create(clapMock({ reader: author, story, count: 1 }));
       author = await author.populate('claps').execPopulate();
       claps = author.claps;
     });

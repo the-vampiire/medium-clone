@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const { dbConnect } = require('../../test-utils');
+const { dbConnect } = require('../../../test-utils');
 const { Clap, MAX_CLAP_COUNT } = require('../clap');
 const { ObjectId } = mongoose.Types;
 
