@@ -35,4 +35,57 @@ describe('Story Claps route handlers', () => {
       expect(resMock.json).toHaveBeenCalledWith({ totalClaps, readers, pagination });
     });
   });
+
+  describe('clapForStoryHandler(): creates a clap for the authed user and path story', () => {
+    const clapMock = { toResponseShape: jest.fn() };
+    const authedUser = { clapForStory: jest.fn() };
+    const pathStory = { id: 'anID' };
+    const totalClaps = 50;
+    const body = { totalClaps };
+
+    test('body missing totalClaps param: 400 JSON response { error: "totalClaps required" }', async () => {
+      const reqMock = { body: {} };
+      
+      await clapForStoryHandler(reqMock, resMock);
+      expect(resMock.status).toHaveBeenCalledWith(400);
+      expect(resMock.json).toHaveBeenCalledWith({ error: 'totalClaps required' });
+
+      jest.clearAllMocks();
+    });
+
+    test('authedUser is story author: 403 JSON response { error: "clapping for author\'s own story" }', async () => {
+      const reqMock = { authedUser, pathStory, body };
+      authedUser.clapForStory.mockImplementation(() => null);
+
+      await clapForStoryHandler(reqMock, resMock);
+      expect(resMock.status).toHaveBeenCalledWith(403);
+      expect(resMock.json).toHaveBeenCalledWith({ error: 'clapping for author\'s own story' });
+
+      jest.clearAllMocks();
+    });
+
+    describe('successful path', () => {
+      const reqMock = { authedUser, pathStory, body };
+      beforeAll(() => {
+        authedUser.clapForStory.mockImplementation(() => clapMock);
+        clapForStoryHandler(reqMock, resMock);
+      });
+
+      test('calls clapForStory user method: (pathStory.id, totalClaps)', () => {
+        expect(authedUser.clapForStory).toHaveBeenCalledWith(pathStory.id, totalClaps);
+      });
+
+      test('calls toResponseShape() on the created clap', () => {
+        expect(clapMock.toResponseShape).toHaveBeenCalled();
+      });
+
+      test('returns newResourceResponse: with urlName: clapURL', () => {
+        expect(newResourceResponse).toHaveBeenCalledWith(
+          clapMock.toResponseShape(),
+          'clapURL',
+          resMock,
+        );
+      });
+    });
+  });
 });
