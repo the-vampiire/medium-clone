@@ -70,7 +70,7 @@ const registerUserHandler = async (req, res) => {
     newUser = await models.User.create({ username, password: encryptedPassword });
   } catch(validationError) {
     const fields = extractFieldErrors(validationError.errors);
-    return res.status(400).json({ error: 'validation failed', fields });
+    return res.status(400).json({ error: 'registration validation failed', fields });
   }
 
   const responseData = newUser.toResponseShape();
