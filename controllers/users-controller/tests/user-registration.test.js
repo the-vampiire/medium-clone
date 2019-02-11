@@ -108,13 +108,13 @@ describe('POST /users: User registration middleware and handler', () => {
       });
     });
     
-    test("invalid username or password: 400 JSON response with { error: 'validation failed', fields: { ... } }", async () => {
+    test("invalid username or password: 400 JSON response with { error: 'registration validation failed', fields: { ... } }", async () => {
       const validationError = new Error(JSON.stringify({ errors: {} }));
       const models = { User: { create: () => { throw validationError } } };
 
       await registerUserHandler({ body: {}, models }, resMock);
       expect(resMock.status).toHaveBeenCalledWith(400);
-      expect(resMock.json).toHaveBeenCalledWith({ error: 'validation failed', fields: {} });
+      expect(resMock.json).toHaveBeenCalledWith({ error: 'registration validation failed', fields: {} });
     });
   });
 });
