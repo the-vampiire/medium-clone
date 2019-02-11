@@ -22,24 +22,20 @@ async function followUser(followedUserID) {
     .then(() => this.save());
 }
 
-async function clapForStory(storyID, totalClaps) {
-  // reject negative values
-  if (totalClaps < 1) return null;
-
-  // limit the maximum count
-  const count = Math.min(totalClaps, MAX_CLAP_COUNT);
+async function clapForStory(storyID, clapsCount) {
+  let count;
+  if (clapsCount < 1) count = 1;
+  else if (clapsCount > MAX_CLAP_COUNT) count = MAX_CLAP_COUNT;
 
   const story = await this.model('stories').findById(storyID);
-  // some cases the author is populated - access ID, otherwise author is the ObjectID itself
-  const authorID = story.author.id || story.author.toString();
   // reject if a story is not found or author is attempting to smell their own farts
-  if (!story || authorID === this.id) return null;
+  if (!story || story.author.equals(this.id)) return null;
 
-  // creates or updates the count of a reader's (user) story clap
-  return this.model('claps').updateOne(
+  // creates or updats the count of a reader's (user) story clap
+  return this.model('claps').findOneAndUpdate(
     { reader: this, story }, // identifier for the update
     { $set: { count } }, // operation to perform on the found/created document
-    { upsert: true }, // upsert means update if exists or insert if not
+    { upsert: true, new: true }, // upsert means update if exists or insert if not
   );
 }
 
