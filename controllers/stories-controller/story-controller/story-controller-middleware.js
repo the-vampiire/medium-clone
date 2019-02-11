@@ -12,7 +12,7 @@ const { extractStoryID } = require('./story-controller-utils');
  * @returns {error} 404 JSON response if a corresponding story is not found
  */
 const exchangeSlugForStory = async (req, res, next) => {
-  const { params: { storySlug }, models } = req;
+  const { params: { storySlug }, context: { models } } = req;
   
   const storyID = extractStoryID(storySlug);
   if (!storyID) return res.status(400).json({ error: 'invalid story slug' });

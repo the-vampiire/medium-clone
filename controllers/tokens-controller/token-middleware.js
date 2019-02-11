@@ -27,7 +27,7 @@ const verifyPayload = (req, res, next) => {
  * @returns if user is not found or password mismatch 400 response with { error }
  */
 const authenticateRequest = async (req, res, next) => {
-  const { body: { username, password }, models } = req;
+  const { body: { username, password }, context: { models } } = req;
 
   const user = await models.User.findOne({ username });
   const authenticated = user && await user.verifyPassword(password);

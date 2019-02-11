@@ -10,7 +10,7 @@
  * @returns {error} 404 JSON response if a corresponding user is not found
  */
 const exchangeSlugForUser = async (req, res, next) => {
-  const { params: { usernameSlug }, models } = req;
+  const { params: { usernameSlug }, context: { models } } = req;
 
   const username = usernameSlug.replace('@', '');
   if (username.length !== usernameSlug.length - 1) {

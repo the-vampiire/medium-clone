@@ -10,7 +10,7 @@ const { newResourceResponse } = require('../controller-utils');
  * @returns {Story} JSON response with the newly created Story in Story Response shape
  */
 const newStoryHandler = async (req, res) => {
-  const { body: { title, body }, authedUser, models } = req;
+  const { body: { title, body }, authedUser, context: { models } } = req;
 
   if (!title) return res.status(400).json({ error: 'title required' });
   
@@ -30,7 +30,7 @@ const newStoryHandler = async (req, res) => {
  * @returns {object} JSON response with { stories, pagination } shape
  */
 const latestStoriesHandler = async (req, res) => {
-  const { query, models } = req;
+  const { query, context: { models } } = req;
   return res.json(models.Story.getLatestStories(query));
 };
 
