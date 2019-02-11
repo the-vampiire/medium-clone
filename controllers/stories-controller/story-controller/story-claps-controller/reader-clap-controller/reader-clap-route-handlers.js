@@ -41,7 +41,8 @@ const updateReaderClapHandler = async (req, res) => {
   
   let updatedClap;
   try {
-    updatedClap = await pathClap.update({ count });
+    pathClap.count = count;
+    updatedClap = await pathClap.save();
   } catch(validationError) {
     const fields = extractFieldErrors(validationError.errors);
     return res.status(400).json({ error: 'clap update validation failed', fields });
