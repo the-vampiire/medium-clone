@@ -27,12 +27,14 @@ const storyDiscoveryHandler = async (req, res) => {
 const storyUpdateHandler = async (req, res) => {
   const { pathStory, body: { title, body, published } } = req;
   
-  const updateData = {};
-  if (title) updateData.title = title;
-  if (body) updateData.body = body;
-  if (published !== undefined) updateData.published = published;
+  if (title) pathStory.title = title;
+  if (body) pathStory.body = body;
+  if (published !== undefined) {
+    pathStory.published = published;
+    pathStory.publishedAt = published ? Date.now() : null;
+  }
   
-  const updatedStory = await pathStory.update(updateData);
+  const updatedStory = await pathStory.save();
   const response = await updatedStory.toResponseShape();
   
   return res.json(response);
