@@ -1,4 +1,3 @@
-const { Story } = require('../../../../models');
 const {
   storyDiscoveryHandler,
   storyUpdateHandler,
@@ -18,7 +17,7 @@ const storyMock = {
 
 describe('Story Controller route handlers', () => {
   test('storyDiscoveryHandler(): returns JSON response of pathStory in Story Response Shape', async () => {
-    const reqMock = { pathStory: storyMock };
+    const reqMock = { context: { pathStory: storyMock } };
 
     await storyDiscoveryHandler(reqMock, resMock);
     expect(storyMock.toResponseShape).toHaveBeenCalled();
@@ -47,7 +46,7 @@ describe('Story Controller route handlers', () => {
     test('title only: only updates the story title', async () => {
       const pathStory = pathStoryMock();
       resMock.json.mockImplementation(() => pathStory);
-      const reqMock = { pathStory, body: { title: bodyMock.title } };
+      const reqMock = { context: { pathStory }, body: { title: bodyMock.title } };
   
       const output = await storyUpdateHandler(reqMock, resMock);
       expect(output.title).toBe(bodyMock.title);
@@ -58,7 +57,7 @@ describe('Story Controller route handlers', () => {
     test('body only: only updates the story body', async () => {
       const pathStory = pathStoryMock();
       resMock.json.mockImplementation(() => pathStory);
-      const reqMock = { pathStory, body: { body: bodyMock.body } };
+      const reqMock = { context: { pathStory }, body: { body: bodyMock.body } };
   
       const output = await storyUpdateHandler(reqMock, resMock);
       expect(output.body).toBe(bodyMock.body);
@@ -70,7 +69,7 @@ describe('Story Controller route handlers', () => {
       test('published true: sets published true and publishedAt = new Date()', async () => {
         const pathStory = pathStoryMock();
         resMock.json.mockImplementation(() => pathStory);
-        const reqMock = { pathStory, body: { published: true } };
+        const reqMock = { context: { pathStory }, body: { published: true } };
     
         const output = await storyUpdateHandler(reqMock, resMock);
         expect(output.published).toBe(true);
@@ -80,7 +79,7 @@ describe('Story Controller route handlers', () => {
       test('published false: sets published false and publishedAt = null', async () => {
         const pathStory = pathStoryMock();
         resMock.json.mockImplementation(() => pathStory);
-        const reqMock = { pathStory, body: { published: false } };
+        const reqMock = { context: { pathStory }, body: { published: false } };
     
         const output = await storyUpdateHandler(reqMock, resMock);
         expect(output.published).toBe(false);
@@ -91,7 +90,7 @@ describe('Story Controller route handlers', () => {
     test('multiple fields: updates with all provided fields', async () => {
       const pathStory = pathStoryMock();
       resMock.json.mockImplementation(() => pathStory);
-      const reqMock = { pathStory, body: { ...bodyMock, published: true } };
+      const reqMock = { context: { pathStory }, body: { ...bodyMock, published: true } };
   
       const output = await storyUpdateHandler(reqMock, resMock);
       expect(output.title).toBe(bodyMock.title);
@@ -102,7 +101,7 @@ describe('Story Controller route handlers', () => {
 
     test('any case: saves the updated story and returns it in a JSON response Story Response Shape', async () => {
       const pathStory = pathStoryMock();
-      const reqMock = { pathStory, body: {} };
+      const reqMock = { context: { pathStory }, body: {} };
   
       await storyUpdateHandler(reqMock, resMock);
       expect(pathStory.save).toHaveBeenCalled();
@@ -113,7 +112,7 @@ describe('Story Controller route handlers', () => {
 
   describe('storyDeleteHandler(): deletes a Story', () => {
     const toDeleteMock = { remove: jest.fn() };
-    const reqMock = { pathStory: toDeleteMock };
+    const reqMock = { context: { pathStory: toDeleteMock } };
 
     beforeAll(() => storyDeleteHandler(reqMock, resMock));
     afterAll(() => jest.clearAllMocks());
