@@ -41,30 +41,40 @@ async function getStories({
 
 /**
  * Gets a list of the stories the user has clapped for
- * @param {number} pagination.limit pagination limit
- * @param {number} pagination.currentPage pagination current page
+ * @param {number} paginationQuery.limit pagination limit
+ * @param {number} paginationQuery.currentPage pagination current page
  * @returns {[{ count, story }]} a list of { count, story } results
  */
-async function getClappedStories(pagination) {
-  const { limit = 10, currentPage = 0 } = pagination;
+async function getClappedStories(paginationQuery) {
+  const { limit = 10, currentPage = 0 } = paginationQuery;
 
   const { claps } = await this.populate({
       path: 'claps',
-      options: {
-        limit,
-        skip: currentPage * limit,
-        sort: { createdAt: -1 },
-      },
+      options: { limit, skip: (currentPage * limit), sort: { createdAt: -1 } },
     }).execPopulate();
   
-  return claps.reduce(
-    async (resultsPromise, clap) => {
+  const clappedStories = await claps.reduce(
+    async (resultsPromise, initialClap) => {
       const results = await resultsPromise; // resolve the returned promise
-      const { count, story } = await clap.populate('story').execPopulate();
-      return [...results, { count, story }]; // async callback returns a promise
+      const populatedClap = await initialClap.populate('story').execPopulate();
+      
+      const story = await populatedClap.story.toResponseShape();
+      const clap = await populatedClap.toResponseShape();
+      
+      return [...results, { story, clap }]; // async callback returns a promise
     },
     [],
   );
+
+  const totalDocuments = await this.model('claps').countDocuments({ reader: this }).exec();
+
+  return this.addPagination({
+    limit,
+    currentPage,
+    path: 'claps',
+    totalDocuments,
+    output: { clapped_stories: clappedStories },
+  });
 };
 
 /**

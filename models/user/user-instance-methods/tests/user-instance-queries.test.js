@@ -105,18 +105,29 @@ describe('User Model Instance Methods: Queries', () => {
     });
   });
 
-  describe('getClappedStories()', () => {
-    test('returns the users clapped stories: [{ count, story }, ...]', async () => {
-      const clapCount = 20;
+  describe('getClappedStories(): retrieves a paginated list of the reader\'s clapped stories', () => {
+    let output;
+    const clapCount = 20;
+    beforeAll(async () => {
       await models.Clap.create({ reader: author, story, count: clapCount });
-      
-      const output = await author.getClappedStories({});
-      expect(output).toBeDefined();
-      expect(output.length).toBe(1);
+      output = await author.getClappedStories({});
+    });
 
-      const [clappedStory] = output;
-      expect(clappedStory.count).toBe(clapCount);
-      expect(clappedStory.story.id).toBe(story.id);
+    test('returns the paginated shape: { pagination, clapped_stories }', () => {
+      expect(output).toHaveProperty('pagination');
+      expect(output).toHaveProperty('clapped_stories');
+    });
+
+    test('clapped_stories contains expected shape: [{ story, clap }]', () => {
+      const clappedStory = output.clapped_stories[0];
+      expect(clappedStory).toHaveProperty('story');
+      expect(clappedStory).toHaveProperty('clap');
+    });
+
+    test('story and clap are in [Story, Clap] Response Shape', () => {
+      const clappedStory = output.clapped_stories[0];
+      expect(clappedStory.story).toHaveProperty('links');
+      expect(clappedStory.clap).toHaveProperty('links');
     });
   });
 
