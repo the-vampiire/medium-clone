@@ -1,7 +1,9 @@
 const {
-  userDiscoveryHandler,
   userStoriesHandler,
+  userFollowingHandler,
+  userDiscoveryHandler,
   userResponsesHandler,
+  userClappedStoriesHandler,
 } = require('../user-route-handlers');
 
 const resMock = { json: jest.fn() };
@@ -81,6 +83,38 @@ describe('User Controller route handlers', () => {
 
     test('returns a JSON response with the paginated responses: { responses, pagination }', () => {
       expect(resMock.json).toHaveBeenLastCalledWith({ responses, pagination: query });
+    });
+  });
+
+  describe('userClappedStoriesHandler(): paginable requests for user\'s clapped stories', () => {
+    const pathUser = { getClappedStories: jest.fn() };
+    const reqMock = { context: { pathUser }, query: {} };
+    
+    beforeAll(() => userClappedStoriesHandler(reqMock, resMock));
+    afterAll(() => jest.clearAllMocks());
+
+    test('calls getClappedStories() to retrieve the paginated clapped stories', () => {
+      expect(pathUser.getClappedStories).toHaveBeenCalledWith(reqMock.query);
+    });
+
+    test('returns a JSON response with the paginated results', () => {
+      expect(resMock.json).toHaveBeenCalledWith(pathUser.getClappedStories());
+    });
+  });
+
+  describe('userFollowingHandler(): paginable requests for the users the user is following', () => {
+    const pathUser = { getFollowedUsers: jest.fn() };
+    const reqMock = { context: { pathUser }, query: {} };
+
+    beforeAll(() => userFollowingHandler(reqMock, resMock));
+    afterAll(() => jest.clearAllMocks());
+
+    test('calls getFollowedUsers() to retrieve the paginated followed users list', () => {
+      expect(pathUser.getFollowedUsers).toHaveBeenCalledWith(reqMock.query);
+    });
+
+    test('returns a JSON response with the paginated results', () => {
+      expect(resMock.json).toHaveBeenCalledWith(pathUser.getFollowedUsers());
     });
   });
 });

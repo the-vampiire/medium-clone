@@ -1,5 +1,5 @@
 const { constants: { MAX_CLAP_COUNT } } = require('../../../index');
-const { followUser, respondToStory, clapForStory } = require('../user-instance-mutations');
+const { followUser, unfollowUser, respondToStory, clapForStory } = require('../user-instance-mutations');
 
 
 describe('User instance mutation methods', () => {
@@ -9,8 +9,8 @@ describe('User instance mutation methods', () => {
       followUser,
       following: [],
       followers: [],
-      save: jest.fn(),
       model: jest.fn(),
+      update: jest.fn(),
     };
 
     test('user following self: throws { status: 403 , message: "can not follow self" }', async () => {
@@ -36,21 +36,40 @@ describe('User instance mutation methods', () => {
 
       beforeAll(() => followingUser.followUser(followedUser));
 
-      test('adds the following user to the followed user\'s followers list', () => {
-        expect(followedUser.followers[0]).toEqual(followingUser);
+      test('calls update() on the followed user to push the new follower to its followers list', () => {
+        expect(followedUser.update).toHaveBeenCalledWith({ $push: { followers: followingUser } });
       });
 
-      test('adds the followed user to the following user\'s following list', () => {
-        expect(followingUser.following[0]).toEqual(followedUser);
+      test('calls update() on the following user to push the followed user to its following list', () => {
+        expect(followingUser.update).toHaveBeenCalledWith({ $push: { following: followedUser } });
+      });
+    });
+  });
+
+  describe('unfollowUser(): updates the following and followers lists of each user', () => {
+    const follower = { id: 'followerID', update: jest.fn() };
+    const userMock = { following: ['followerID'], update: jest.fn(), unfollowUser };
+
+    describe('successful unfollow', () => {
+      beforeAll(() => userMock.unfollowUser(follower));
+
+      test('calls update() on the follower to remove the user from its following list', () => {
+        expect(follower.update).toHaveBeenCalledWith({ $pull: { following: { _id: userMock } } });
       });
 
-      test('saves the updated followed user', () => {
-        expect(followedUser.save).toHaveBeenCalled();
+      test('calls update() on the user to remove the follower from its followers list', () => {
+        expect(userMock.update).toHaveBeenCalledWith({ $pull: { followers: { _id: follower } } });
       });
+    });
 
-      test('saves the updated following user', () => {
-        expect(followingUser.save).toHaveBeenCalled();
-      });
+    test('follower not in user\'s followers list: throws { status: 400, message: not following }', async () => {
+      const user = Object.assign({}, userMock, { following: [] });
+
+      try {
+        await user.unfollowUser(follower);
+      } catch(error) {
+        expect(error).toEqual({ status: 400, message: 'not following' });
+      }
     });
   });
 
