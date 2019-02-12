@@ -40,7 +40,7 @@ async function clapForStory(storyID, clapsCount) {
   );
 }
 
-async function respondToStory(storyID, body) {
+async function respondToStory(storyID, body, publishedAt) {
   const Story = this.model('stories');
 
   const story = await Story.findById(storyID, '_id');
@@ -54,6 +54,7 @@ async function respondToStory(storyID, body) {
     author: this,
     parent: story,
     published: true,
+    publishedAt,
   });
 }
 

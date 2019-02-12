@@ -54,13 +54,14 @@ describe('User instance mutation methods', () => {
     });
   });
 
-  describe('respondToStory()', () => {
+  describe('respondToStory(): publishes a response to a story', () => {
+    const publishedAt = new Date();
     const body = 'this is the first sentence. and a second sentence';
     const storyMock = { id: 'storyID' };
     const StoryMock = { findById: jest.fn(() => storyMock), create: jest.fn() };
     const userMock = { model: jest.fn(() => StoryMock), respondToStory };
 
-    beforeAll(() => userMock.respondToStory(storyMock.id, body));
+    beforeAll(() => userMock.respondToStory(storyMock.id, body, publishedAt));
 
     test('retrieves the Story model: model("stories")', () => {
       expect(userMock.model).toHaveBeenCalledWith('stories');
@@ -77,13 +78,14 @@ describe('User instance mutation methods', () => {
       catch(error) { expect(error).toEqual({ status: 404, message: "story not found" }); }
     });
 
-    test('creates a published response passing the first sentence of the body as the title: { title, body, author: this, parent: story, published: true }', () => {
+    test('creates a published response passing the first sentence of the body as the title: { title, body, author: this, parent: story, published: true, publishedAt }', () => {
       expect(StoryMock.create).toHaveBeenCalledWith({
         title: body.split('.')[0],
         body,
         author: userMock,
         parent: storyMock,
         published: true,
+        publishedAt,
       });
     });
   });
