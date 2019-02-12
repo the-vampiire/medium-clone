@@ -11,7 +11,7 @@ describe('User Controller route handlers', () => {
     afterAll(() => jest.clearAllMocks());
 
     const pathUserMock = { toResponseShape: jest.fn() };
-    const reqMock = { pathUser: pathUserMock };
+    const reqMock = { context: { pathUser: pathUserMock } };
 
     test('returns a JSON response of the path user in User Response Shape', () => {
       userDiscoveryHandler(reqMock, resMock);
@@ -30,7 +30,7 @@ describe('User Controller route handlers', () => {
       shapeAuthoredStories: jest.fn(() => stories),
       addStoriesPagination: jest.fn(() => ({ stories, pagination: query })),
     };
-    const reqMock = { query, pathUser: pathUserMock };
+    const reqMock = { query, context: { pathUser: pathUserMock } };
 
     beforeAll(() => userStoriesHandler(reqMock, resMock));
     afterAll(() => jest.clearAllMocks());
@@ -62,7 +62,7 @@ describe('User Controller route handlers', () => {
       shapeAuthoredStories: jest.fn(() => responses),
       addStoriesPagination: jest.fn(() => ({ responses, pagination: query })),
     };
-    const reqMock = { query, pathUser: pathUserMock };
+    const reqMock = { query, context: { pathUser: pathUserMock } };
 
     beforeAll(() => userResponsesHandler(reqMock, resMock));
     afterAll(() => jest.clearAllMocks());
