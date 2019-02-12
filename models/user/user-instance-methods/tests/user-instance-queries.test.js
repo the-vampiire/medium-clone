@@ -1,7 +1,7 @@
 const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
 const models = require('../../../index');
-const { dbConnect, setup, teardown, mocks: { storyMock, clapMock } } = require('../../../../test-utils');
+const { dbConnect, setup, teardown, mocks: { storyMock, userMock } } = require('../../../../test-utils');
 
 describe('User Model Instance Methods: Queries', () => {
   let author;
@@ -153,6 +153,30 @@ describe('User Model Instance Methods: Queries', () => {
       let undefinedPassword;
       const isValid = await user.verifyPassword(undefinedPassword);
       expect(isValid).toBe(false);
+    });
+  });
+
+  describe('getFollowedMembers(): retrieves a paginated list of the users the user is following', () => {
+    let output;
+    const followedCount = 20;
+    beforeAll(async () => {
+      await Promise.all(
+        Array(followedCount).fill().map(async (e, i) => {
+          const user = await models.User.create(userMock({}));
+          author = await author.followUser(user);
+        }),
+      );
+
+      output = await author.getFollowedMembers({});
+    });
+
+    test('returns the paginated shape: { followed_users, pagination }', () => {
+      expect(output).toHaveProperty('pagination');
+      expect(output).toHaveProperty('followed_users');
+    });
+
+    test('followed_users are in User Response Shape', () => {
+      expect(output.followed_users[0]).toHaveProperty('links');
     });
   });
 });
