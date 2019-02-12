@@ -10,39 +10,42 @@ const populaterStub = {
 const author = new User(mocks.userMock());
 
 describe('Story instance shaper methods', () => {
-  describe('buildResourceLinks(): { storyURL, parentURL, repliesURL, clappedReadersURL }', () => {
+  describe('buildResourceLinks(): { storyURL, authorURL, parentURL, repliesURL, clappedReadersURL }', () => {
     const buildLinksStub = ({ parent = null, repliesCount = 0, clappedUserCount = 0 }) => Object.assign(
       {},
-      new Story(mocks.storyMock({ author })),
-      { parent, repliesCount, clappedUserCount, buildResourceLinks },
+      new Story(mocks.storyMock({})),
+      { author, parent, repliesCount, clappedUserCount, buildResourceLinks },
       populaterStub,
     );
 
-    test('story with no claps: only storyURL is not null', async () => {
+    test('story with no claps: only storyURL and authorURL are not null', async () => {
       const storyMock = buildLinksStub({});
 
       const output = await storyMock.buildResourceLinks();
       expect(output.storyURL.length).toBeGreaterThan(1);
+      expect(output.authorURL.length).toBeGreaterThan(1);
       expect(output.parentURL).toBeNull();    
       expect(output.repliesURL).toBeNull();    
       expect(output.clappedReadersURL).toBeNull();    
     });
 
-    test('story with claps: storyURL and clappedReadersURL are not null', async () => {
+    test('story with claps: storyURL, authorURL, and clappedReadersURL are not null', async () => {
       const storyMock = buildLinksStub({ clappedUserCount: 1 });
 
       const output = await storyMock.buildResourceLinks();
       expect(output.storyURL.length).toBeGreaterThan(1);
+      expect(output.authorURL.length).toBeGreaterThan(1);
       expect(output.clappedReadersURL.length).toBeGreaterThan(1);
       expect(output.parentURL).toBeNull();    
       expect(output.repliesURL).toBeNull();    
     });
 
-    test('story with claps and replies: storyURL, clappedReadersURL, and repliesURL are not null', async () => {
+    test('story with claps and replies: storyURL, authorURL, clappedReadersURL, and repliesURL are not null', async () => {
       const storyMock = buildLinksStub({ clappedUserCount: 1, repliesCount: 1 });
 
       const output = await storyMock.buildResourceLinks();
       expect(output.storyURL.length).toBeGreaterThan(1);
+      expect(output.authorURL.length).toBeGreaterThan(1);
       expect(output.repliesURL.length).toBeGreaterThan(1);    
       expect(output.clappedReadersURL.length).toBeGreaterThan(1);
       expect(output.parentURL).toBeNull();
