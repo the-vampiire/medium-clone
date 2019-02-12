@@ -12,12 +12,14 @@ async function followUser(followedUser) {
   }
 
   // update followed user's followers
-  followedUser.followers.push(this);
-  await followedUser.save();
-
+  await followedUser.update({ $push: { followers: this } });
+  
   // update this following users
-  this.following.push(followedUser);
-  return this.save();
+  return this.model('users').findOneAndUpdate(
+    { _id: this },
+    { $push: { following: followedUser } },
+    { new: true }, // return the updated document
+  );
 }
 
 async function clapForStory(storyID, clapsCount) {
