@@ -1,7 +1,7 @@
 const express = require('express');
 
-// const UserFollowersController = require('./user-follow-controller'); // WIP
 const { exchangeSlugForUser } = require('./user-controller-middleware');
+const { UserFollowersController } = require('./user-followers-controller');
 const {
   userStoriesHandler,
   userFollowingHandler,
@@ -18,7 +18,8 @@ UserController.get('/stories', userStoriesHandler);
 UserController.get('/responses', userResponsesHandler);
 UserController.get('/clapped', userClappedStoriesHandler);
 UserController.get('/following', userFollowingHandler);
-// UserController.use('/followers', UserFollowersController); // WIP
+
+UserController.use('/followers', UserFollowersController);
 
 module.exports = {
   exchangeSlugForUser,

@@ -15,7 +15,7 @@ const exchangeSlugForUser = async (req, res, next) => {
   const username = usernameSlug.replace('@', '');
   if (username.length !== usernameSlug.length - 1) {
     // usernameSlug did not begin with @ or had multiple @ chars: invalid
-    return res.status(400).json({ error: 'invalid username' });
+    return res.status(400).json({ error: 'invalid user slug' });
   }
 
   const user = await models.User.findOne({ username });
