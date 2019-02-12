@@ -15,7 +15,7 @@ const createStoryReplyHandler = async (req, res) => {
 
   let newReply;
   try {
-    newReply = await authedUser.respondToStory(pathStory.id, body);
+    newReply = await authedUser.respondToStory(pathStory.id, body, new Date());
   } catch(error) {
     const { status, message } = error;
     return res.status(status).json({ error: message });
