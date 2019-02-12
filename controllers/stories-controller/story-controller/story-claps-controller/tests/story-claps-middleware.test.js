@@ -1,4 +1,4 @@
-const { injectStoryClap } = require('../story-clap-middleware');
+const { injectStoryClap } = require('../story-claps-middleware');
 
 const resMock = {
   status: jest.fn(() => resMock),
@@ -36,8 +36,8 @@ describe('Story-Clap middleware', () => {
         expect(models.Clap.findOne).toHaveBeenCalledWith({ reader: pathUser, story: pathStory });
       });
   
-      test('clap found: injects req.pathClap and calls next()', () => {
-        expect(reqMock.pathClap).toEqual(pathClap);
+      test('clap found: injects req.context.pathClap and calls next()', () => {
+        expect(reqMock.context.pathClap).toEqual(pathClap);
         expect(nextMock).toHaveBeenCalled();
       });
     });
