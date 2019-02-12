@@ -53,7 +53,7 @@ const requireAuthedUser = async (req, res, next) => {
   const authedUser = await getAuthedUser(bearerToken, models);
   if (!authedUser) return notAuthedResponse(res);
 
-  req.authedUser = authedUser;
+  req.context.authedUser = authedUser;
   next();
 };
 

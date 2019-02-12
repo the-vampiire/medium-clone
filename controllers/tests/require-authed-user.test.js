@@ -79,14 +79,14 @@ describe('Required Authed User utilities', () => {
   });
 
   describe('requiredAuthedUser(): verifies authentication and injects req.authedUser', () => {
-    test('authenticated request: injects req.authedUser and calls next()', async () => {
+    test('authenticated request: injects req.context.authedUser and calls next()', async () => {
       const reqMock = { 
         context: { models: modelsMock },
         headers: { authorization: `Bearer ${tokenMock}` },
       };
       
       await requireAuthedUser(reqMock, resMock, nextSpy);
-      expect(reqMock.authedUser).toEqual(userMock);
+      expect(reqMock.context.authedUser).toEqual(userMock);
       expect(nextSpy).toHaveBeenCalled();
     });
   
