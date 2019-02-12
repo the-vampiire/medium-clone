@@ -36,8 +36,13 @@ const clapForStoryHandler = async (req, res) => {
     return res.status(400).json({ error: 'claps count required' });
   }
 
-  const clap = await authedUser.clapForStory(pathStory.id, count);
-  if (!clap) return res.status(403).json({ error: 'clapping for author\'s own story' });
+  let clap;
+  try {
+    clap = await authedUser.clapForStory(pathStory.id, count);
+  } catch (error) {
+    const { status, message } = error;
+    return res.status(status).json({ error: message });
+  };
   
   const responseData = await clap.toResponseShape();
 

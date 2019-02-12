@@ -53,13 +53,13 @@ describe('Story Claps route handlers', () => {
       jest.clearAllMocks();
     });
 
-    test('authedUser is story author: 403 JSON response { error: "clapping for author\'s own story" }', async () => {
+    test('authedUser is story author: 403 JSON response { error: "author clapping for own story" }', async () => {
       const reqMock = { authedUser, pathStory, body };
-      authedUser.clapForStory.mockImplementation(() => null);
+      authedUser.clapForStory.mockImplementation(() => { throw { status: 403, message: 'author clapping for own story' } });
 
       await clapForStoryHandler(reqMock, resMock);
       expect(resMock.status).toHaveBeenCalledWith(403);
-      expect(resMock.json).toHaveBeenCalledWith({ error: 'clapping for author\'s own story' });
+      expect(resMock.json).toHaveBeenCalledWith({ error: 'author clapping for own story' });
 
       jest.clearAllMocks();
     });
