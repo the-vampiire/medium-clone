@@ -46,8 +46,25 @@ const userResponsesHandler = async (req, res) => {
   return res.json(paginatedResponses);
 };
 
+/**
+ * Handler for accessing the stories the user has clapped for
+ * @param {Request} req Request object 
+ * @param req.context.pathUser: The user associated with this request path
+ * @param req.query.limit: the pagination limit
+ * @param req.query.currentPage: the pagination current page
+ * @param {Response} res Response object
+ * @returns Paginated JSON response { clapped_stories, pagination } 
+ */
+const userClappedStoriesHandler = async (req, res) => {
+  const { context: { pathUser }, query } = req;
+
+  const responseData = await pathUser.getClappedStories(query);
+  return res.json(responseData);
+};
+
 module.exports = {
   userDiscoveryHandler,
   userStoriesHandler,
   userResponsesHandler,
+  userClappedStoriesHandler,
 };

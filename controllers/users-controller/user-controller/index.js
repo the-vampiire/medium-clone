@@ -6,6 +6,7 @@ const {
   userDiscoveryHandler,
   userStoriesHandler,
   userResponsesHandler,
+  userClappedStoriesHandler,
 } = require('./user-route-handlers');
 
 // controls: /users/:usernameSlug/
@@ -14,9 +15,9 @@ const UserController = express.Router();
 UserController.get('/', userDiscoveryHandler);
 UserController.get('/stories', userStoriesHandler);
 UserController.get('/responses', userResponsesHandler);
+UserController.get('/clapped', userClappedStoriesHandler);
 // UserController.get('/following', userFollowingHandler); // WIP
 // UserController.use('/followers', UserFollowersController); // WIP
-// UserController.get('/clapped', userClappedStoriesHandler); // WIP
 
 module.exports = {
   exchangeSlugForUser,
