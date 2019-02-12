@@ -13,7 +13,14 @@ const createStoryReplyHandler = async (req, res) => {
 
   if (!body) return res.status(400).json({ error: 'body required' });
 
-  const newReply = await authedUser.respondToStory(pathStory.id, body);
+  let newReply;
+  try {
+    newReply = await authedUser.respondToStory(pathStory.id, body);
+  } catch(error) {
+    const { status, message } = error;
+    return res.status(status).json({ error: message });
+  }
+  
   const responseData = await newReply.toResponseShape();
 
   return newResourceResponse(responseData, 'storyURL', res);

@@ -46,6 +46,18 @@ describe('Story controller /replies handlers', () => {
       expect(resMock.json).toHaveBeenCalledWith({ error: 'body required' });
     });
 
+    test('story not found: 404 JSON response { error: "story not found" }', async () => {
+      authedUser.respondToStory.mockImplementationOnce(
+        () => { throw { status: 404, message: 'story not found' } },
+      );
+
+      const errorResMock = { status: jest.fn(() => errorResMock), json: jest.fn() };
+      
+      await createStoryReplyHandler(reqMock, errorResMock);
+      expect(errorResMock.status).toHaveBeenCalledWith(404);
+      expect(errorResMock.json).toHaveBeenCalledWith({ error: 'story not found' });
+    });
+
     test('calls authedUser respondToStory() method: (pathStoryID, body)', () => {
       expect(authedUser.respondToStory).toHaveBeenCalledWith(pathStory.id, body);
     });

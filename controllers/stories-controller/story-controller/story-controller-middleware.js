@@ -13,7 +13,7 @@ const { extractStoryID } = require('./story-controller-utils');
  */
 const exchangeSlugForStory = async (req, res, next) => {
   const { params: { storySlug }, context: { models } } = req;
-  
+
   const storyID = extractStoryID(storySlug);
   if (!storyID) return res.status(400).json({ error: 'invalid story slug' });
 
