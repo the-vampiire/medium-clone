@@ -35,8 +35,8 @@ const updateReaderClapHandler = async (req, res) => {
   }
   
   if (count === null) {
-    await pathClap.destroy();
-    return res.status(204);
+    await pathClap.remove();
+    return res.sendStatus(204);
   }
   
   let updatedClap;
