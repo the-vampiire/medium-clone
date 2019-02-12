@@ -1,4 +1,4 @@
-const { addRequestContext, sanitizePaginationQuery } = require('../app-middleware');
+const { addRequestContext, sanitizePaginationQuery, handleMalformedJSON  } = require('../app-middleware');
 
 const nextMock = jest.fn();
 
@@ -57,6 +57,24 @@ describe('App custom middleware', () => {
       sanitizePaginationQuery(reqMock, null, nextMock);
       expect(nextMock).toHaveBeenCalled();
       expect(reqMock.query).toEqual(reqMock.query);
+    });
+  });
+
+  describe('handleMalformedJSON(): catches malformed JSON errors from body parser', () => {
+    beforeAll(() => jest.clearAllMocks());
+
+    test('SyntaxError caught: returns 400 JSON response { error: "malformed data" }', () => {
+      const error = new SyntaxError();
+      const resMock = { status: jest.fn(() => resMock), json: jest.fn() };
+      
+      handleMalformedJSON(error, null, resMock);
+      expect(resMock.status).toHaveBeenCalledWith(400);
+      expect(resMock.json).toHaveBeenCalledWith({ error: 'malformed data' });
+    });
+    
+    test('no Syntax error: calls next()', () => {
+      handleMalformedJSON(null, null, null, nextMock);
+      expect(nextMock).toHaveBeenCalled();
     });
   });
 });

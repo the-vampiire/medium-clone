@@ -31,14 +31,31 @@ const sanitizePaginationQuery = (req, _, next) => {
   next();
 };
 
+/**
+ * Catches global errors
+ * @param {*} error 
+ * @param {*} req 
+ * @param {*} res 
+ * @param {*} next 
+ */
+const handleMalformedJSON = (error, req, res, next) => {
+  if (error instanceof SyntaxError) {
+    return res.status(400).json({ error: 'malformed data' });
+  }
+
+  next();
+};
+
 // export as Array to spread, order matters!
 module.exports = {
   addRequestContext,
   sanitizePaginationQuery,
+  handleMalformedJSON,
 
   appMiddleware: [
     bodyParser.json(),
     bodyParser.urlencoded({ extended: false }),
+    handleMalformedJSON,
     sanitizePaginationQuery,
     addRequestContext({ models }),
   ],
