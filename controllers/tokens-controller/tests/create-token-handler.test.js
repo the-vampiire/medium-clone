@@ -7,7 +7,7 @@ describe('POST /tokens handler', () => {
   afterAll(() => teardownEnv());
 
   test('createTokenHandler(): returns a 200 JSON content response { token }', () => {
-    const reqMock = { authedUser: authedUserMock };
+    const reqMock = { context: { authedUser: authedUserMock } };
     const resMock = { json: content => content };
     const jsonSpy = jest.spyOn(resMock, 'json');
 

@@ -18,7 +18,7 @@ const verifyPayload = (req, res, next) => {
 
 /**
  * Authenticates the User
- * - injects authedUser into Request object and calls next() on success
+ * - injects req.context.authedUser and calls next() on success
  * @param {Request} req Request object
  * @param {object} req.body Authentication credentials: { username, password }
  * @param {object} req.models Database models
@@ -39,7 +39,7 @@ const authenticateRequest = async (req, res, next) => {
   }
 
   // inject the authenticated user into the request object
-  req.authedUser = user;
+  req.context.authedUser = user;
   next();
 };
 

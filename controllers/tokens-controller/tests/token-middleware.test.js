@@ -43,7 +43,7 @@ describe('Token Controller Middleware', () => {
   });
 
   describe('authenticateRequest(): authenticates the User', () => {
-    test('successful authentication: adds req.authedUser and calls next()', async () => {
+    test('successful authentication: adds req.context.authedUser and calls next()', async () => {
       const body = { username, password };
       const userMock = new User({ username, password });
       userMock.verifyPassword = function () { return true; }
@@ -52,7 +52,7 @@ describe('Token Controller Middleware', () => {
       const reqMock = { body, context: { models } };
 
       await authenticateRequest(reqMock, resMock, nextSpy);
-      expect(reqMock.authedUser).toBeDefined();
+      expect(reqMock.context.authedUser).toBeDefined();
       expect(nextSpy).toHaveBeenCalled();
     });
 
