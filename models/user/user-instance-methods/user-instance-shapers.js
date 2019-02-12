@@ -1,10 +1,14 @@
 const { buildEndpoint, injectPagination } = require('../../../controllers/pagination-utils');
 
 function toResponseShape() {
+  const { username, avatarURL, createdAt, updatedAt } = this;
+
   return {
+    username,
+    avatarURL,
+    createdAt,
+    updatedAt,
     slug: this.slug,
-    username: this.username,
-    avatarURL: this.avatarURL,
     links: this.buildResourceLinks(),
   }
 }
@@ -49,7 +53,7 @@ async function addStoriesPagination({
     output,
     limit,
     currentPage,
-    path: 'stories',
+    path: stories ? 'stories' : 'responses',
     totalDocuments: await this.model('stories').countDocuments(match).exec(),
   });
 }

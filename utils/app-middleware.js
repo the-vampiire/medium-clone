@@ -3,7 +3,7 @@ const bodyParser = require('body-parser');
 
 const addRequestContext = (context) => (req, _, next) => {
   req.context = context;
-  
+
   next();
 };
 
@@ -20,8 +20,12 @@ const sanitizePaginationQuery = (req, _, next) => {
   const { query: { limit, currentPage } } = req;
 
   if (limit !== undefined || currentPage !== undefined) {
-    req.query.limit = isNaN(Number(limit)) ? 10 : limit;
-    req.query.currentPage = isNaN(Number(currentPage)) ? 0 : currentPage;
+    const limitNumber = Number(limit);
+    const currentPageNumber = Number(currentPage);
+
+    // use defaults and minimums to prevent pagination params from tricksy hobbitses
+    req.query.limit = isNaN(limitNumber) ? 10 : Math.max(limitNumber, 1);
+    req.query.currentPage = isNaN(currentPageNumber) ? 0 : Math.max(currentPageNumber, 0);
   }
 
   next();

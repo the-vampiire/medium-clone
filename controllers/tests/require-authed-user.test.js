@@ -79,19 +79,19 @@ describe('Required Authed User utilities', () => {
   });
 
   describe('requiredAuthedUser(): verifies authentication and injects req.authedUser', () => {
-    test('authenticated request: injects req.authedUser and calls next()', async () => {
+    test('authenticated request: injects req.context.authedUser and calls next()', async () => {
       const reqMock = { 
-        models: modelsMock,
+        context: { models: modelsMock },
         headers: { authorization: `Bearer ${tokenMock}` },
       };
       
       await requireAuthedUser(reqMock, resMock, nextSpy);
-      expect(reqMock.authedUser).toEqual(userMock);
+      expect(reqMock.context.authedUser).toEqual(userMock);
       expect(nextSpy).toHaveBeenCalled();
     });
   
     test('invalid authorization header: returns not authed response', async () => {
-      const reqMock = { headers: { authorization: '' } };
+      const reqMock = { headers: { authorization: '' }, context: {} };
       
       const output = await requireAuthedUser(reqMock, resMock);
       expect(output).toEqual(notAuthedContent);
@@ -99,7 +99,7 @@ describe('Required Authed User utilities', () => {
 
     test('authed user not found: returns not authed response', async () => {
       const reqMock = { 
-        models: { User: { findById: () => null } },
+        context: { models: { User: { findById: () => null } } },
         headers: { authorization: `Bearer ${tokenMock}` },
       };
     

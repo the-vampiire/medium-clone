@@ -52,7 +52,7 @@ describe('POST /users: User registration middleware and handler', () => {
       const body = { username };
       const models = { User: { countDocuments: () => 0 } };
 
-      await checkDuplicateRegistration({ body, models }, resMock, nextMock);
+      await checkDuplicateRegistration({ body, context: { models } }, resMock, nextMock);
       expect(nextMock).toHaveBeenCalled();
     });
 
@@ -60,7 +60,7 @@ describe('POST /users: User registration middleware and handler', () => {
       const body = { username };
       const models = { User: { countDocuments: () => 1 } };
 
-      await checkDuplicateRegistration({ body, models }, resMock, nextMock); 
+      await checkDuplicateRegistration({ body, context: { models } }, resMock, nextMock); 
       expect(resMock.status).toHaveBeenCalledWith(409);
       expect(resMock.json).toHaveBeenCalledWith({ error: 'username already registered' });
     });
@@ -80,7 +80,7 @@ describe('POST /users: User registration middleware and handler', () => {
 
       beforeAll(() => {
         process.env.SALT_ROUNDS = 1;
-        registerUserHandler({ body, models }, resMock);
+        registerUserHandler({ body, context: { models } }, resMock);
       });
 
       afterAll(() => {
@@ -112,7 +112,7 @@ describe('POST /users: User registration middleware and handler', () => {
       const validationError = new Error(JSON.stringify({ errors: {} }));
       const models = { User: { create: () => { throw validationError } } };
 
-      await registerUserHandler({ body: {}, models }, resMock);
+      await registerUserHandler({ body: {}, context: { models } }, resMock);
       expect(resMock.status).toHaveBeenCalledWith(400);
       expect(resMock.json).toHaveBeenCalledWith({ error: 'registration validation failed', fields: {} });
     });

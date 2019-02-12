@@ -1,4 +1,4 @@
-const { injectStoryClap } = require('../story-clap-middleware');
+const { injectStoryClap } = require('../story-claps-middleware');
 
 const resMock = {
   status: jest.fn(() => resMock),
@@ -13,7 +13,7 @@ describe('Story-Clap middleware', () => {
     const pathUser = { id: 'userID' };
     const pathStory = { id: 'storyID' };
     const models = { Clap: { findOne: jest.fn() } };
-    const reqMock = { pathUser, pathStory, models };
+    const reqMock = { context: { models, pathUser, pathStory, } };
 
     test('clap not found: returns a 400 JSON response { error: "clap not found" }', async () => {
       models.Clap.findOne.mockImplementation(() => null);
@@ -36,8 +36,8 @@ describe('Story-Clap middleware', () => {
         expect(models.Clap.findOne).toHaveBeenCalledWith({ reader: pathUser, story: pathStory });
       });
   
-      test('clap found: injects req.pathClap and calls next()', () => {
-        expect(reqMock.pathClap).toEqual(pathClap);
+      test('clap found: injects req.context.pathClap and calls next()', () => {
+        expect(reqMock.context.pathClap).toEqual(pathClap);
         expect(nextMock).toHaveBeenCalled();
       });
     });

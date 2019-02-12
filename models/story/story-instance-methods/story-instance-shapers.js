@@ -19,10 +19,11 @@ async function toResponseShape() {
 }
 
 async function buildResourceLinks() {
-  const { parent, repliesCount, clappedUserCount } = await this
+  const { parent, author, repliesCount, clappedUserCount } = await this
     .populate('repliesCount')
     .populate('clappedUserCount')
     .populate('parent', 'title')
+    .populate('author', 'username')
     .execPopulate();
   
   const basePath = `stories/${this.slug}`;
@@ -41,6 +42,7 @@ async function buildResourceLinks() {
 
   return {
     storyURL: buildEndpoint({ basePath }),
+    authorURL: buildEndpoint({ basePath: `users/${author.slug}`}),
     parentURL,
     repliesURL,
     clappedReadersURL,

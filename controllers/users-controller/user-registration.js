@@ -37,7 +37,7 @@ const verifyRegistrationPayload = (req, res, next) => {
  * @returns username taken: 409 JSON response with { error }
  */
 const checkDuplicateRegistration = async (req, res, next) => {
-  const { body, models } = req;
+  const { body, context: { models } } = req;
  
   const existingUser = await models.User.countDocuments({ username: body.username });
   if (existingUser !== 0) return res.status(409).json({ error: 'username already registered' });
@@ -60,7 +60,7 @@ const checkDuplicateRegistration = async (req, res, next) => {
  * @returns 201 JSON response with User Response Shape and Location header
  */
 const registerUserHandler = async (req, res) => {
-  const { body: { username, password }, models } = req;
+  const { body: { username, password }, context: { models } } = req;
 
   const { SALT_ROUNDS } = process.env;
   const encryptedPassword = await bcrypt.hash(password, SALT_ROUNDS);

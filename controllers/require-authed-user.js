@@ -45,7 +45,7 @@ const getAuthedUser = async (bearerToken, models) => {
  * @returns on failure: returns 401 JSON response { error }
  */
 const requireAuthedUser = async (req, res, next) => {
-  const { headers, models } = req;
+  const { headers, context: { models } } = req;
 
   const bearerToken = extractBearerToken(headers);
   if (!bearerToken) return notAuthedResponse(res);
@@ -53,7 +53,7 @@ const requireAuthedUser = async (req, res, next) => {
   const authedUser = await getAuthedUser(bearerToken, models);
   if (!authedUser) return notAuthedResponse(res);
 
-  req.authedUser = authedUser;
+  req.context.authedUser = authedUser;
   next();
 };
 

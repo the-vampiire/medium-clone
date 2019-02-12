@@ -7,7 +7,7 @@ const resMock = {
 
 const UserMock = { findOne: jest.fn() };
 
-const reqMockBase = { models: { User: UserMock } };
+const reqMockBase = { context: { models: { User: UserMock } } };
 
 describe('User Controller middleware', () => {
   afterEach(() => jest.clearAllMocks());
@@ -31,7 +31,7 @@ describe('User Controller middleware', () => {
 
     });
 
-    test('user is found for @username slug: next() called and req.pathUser contains matching User', async () => {
+    test('user is found for @username slug: next() called and adds matching User to req.context.pathUser', async () => {
       const mockUser = { username: 'the-vampiire' };
       const reqMock = { ...reqMockBase, params: { usernameSlug: '@the-vampiire' } };
       UserMock.findOne.mockImplementation(() => mockUser);
@@ -41,7 +41,7 @@ describe('User Controller middleware', () => {
       await exchangeSlugForUser(reqMock, null, nextMock);
       expect(UserMock.findOne).toHaveBeenCalledWith({ username: mockUser.username });
       expect(nextMock).toHaveBeenCalled();
-      expect(reqMock.pathUser).toBe(mockUser)
+      expect(reqMock.context.pathUser).toBe(mockUser)
     });
   });
 });

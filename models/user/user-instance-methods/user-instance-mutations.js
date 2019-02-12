@@ -1,53 +1,52 @@
 const { MAX_CLAP_COUNT } = require('../../clap');
 
-async function followUser(followedUserID) {
-  // user can not follow themselves or the universe will implode from recursive nesting
-  if (this.id === followedUserID) return null; // our savior, NullMan
+async function followUser(followedUser) {
+  if (this.id === followedUser.id) {
+    throw { status: 403, message: 'can not follow self' };
+  }
   
   // check if the user is already following
-  // following is an array of ObjectId, convert to String before comparing
-  const isFollowing = this.following.some(id => String(id) === followedUserID);
-  if (isFollowing) return null;
+  const isFollowing = this.following.some(id => id.toString() === followedUser.id);
+  if (isFollowing) {
+    throw { status: 400, message: 'already following' };
+  }
 
-  const followedUser = await this.model('users').findById(followedUserID);
-  if (!followedUser) return null;
-
-  // push 'this' (current user) into the followedUser followers array field
+  // update followed user's followers
   followedUser.followers.push(this);
-  // save the changes to the followedUser then update 'this' user
-  return followedUser.save()
-    // update 'this' current users following array field
-    .then(followedUser => this.following.push(followedUser))
-    // save and return the updated user
-    .then(() => this.save());
+  await followedUser.save();
+
+  // update this following users
+  this.following.push(followedUser);
+  return this.save();
 }
 
-async function clapForStory(storyID, totalClaps) {
-  // reject negative values
-  if (totalClaps < 1) return null;
+async function clapForStory(storyID, clapsCount) {
+  let count = clapsCount;
+  if (clapsCount < 1) count = 1;
+  else if (clapsCount > MAX_CLAP_COUNT) count = MAX_CLAP_COUNT;
 
-  // limit the maximum count
-  const count = Math.min(totalClaps, MAX_CLAP_COUNT);
+  const story = await this.model('stories').findById(storyID, '_id author');
+  if (!story) {
+    throw { status: 404, message: 'story not found' }
+  } else if (story.author.equals(this.id)) {
+    throw { status: 403, message: 'author clapping for own story' };
+  }
 
-  const story = await this.model('stories').findById(storyID);
-  // some cases the author is populated - access ID, otherwise author is the ObjectID itself
-  const authorID = story.author.id || story.author.toString();
-  // reject if a story is not found or author is attempting to smell their own farts
-  if (!story || authorID === this.id) return null;
-
-  // creates or updates the count of a reader's (user) story clap
-  return this.model('claps').updateOne(
+  // creates or updats the count of a reader's (user) story clap
+  return this.model('claps').findOneAndUpdate(
     { reader: this, story }, // identifier for the update
     { $set: { count } }, // operation to perform on the found/created document
-    { upsert: true }, // upsert means update if exists or insert if not
+    { upsert: true, new: true }, // upsert means update if exists or insert if not
   );
 }
 
 async function respondToStory(storyID, body) {
   const Story = this.model('stories');
 
-  const story = await Story.findOne({ _id: storyID }, '_id');
-  if (!story) return null; // does not exist
+  const story = await Story.findById(storyID, '_id');
+  if (!story) {
+    throw { status: 404, message: 'story not found' };
+  };
 
   return Story.create({
     title: body.split('.')[0], // first sentence of response

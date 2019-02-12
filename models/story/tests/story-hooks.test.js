@@ -21,11 +21,5 @@ describe('Story Model hooks', () => {
       const savedStory = await Story.create({ title: 'ok', body: badBody });
       expect(savedStory.body.includes('<script>')).toBe(false);
     });
-
-    test('sanitizes the Story body before saving during update()', async () => {
-      const savedStory = await Story.create({ title: 'ok', body: 'good body' });
-      await savedStory.update({ body: badBody });
-      expect(savedStory.body.includes('<script>')).toBe(false);
-    });
   });
 }); 

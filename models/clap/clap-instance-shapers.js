@@ -1,11 +1,14 @@
 const { buildEndpoint } = require('../../controllers/pagination-utils');
 
 /**
- * @returns Clap response shape { count, links }
+ * @returns Clap response shape { count, createdAt, updatedAt, links }
  */
 async function toResponseShape() {
+  const { count, createdAt, updatedAt } = this;
   return {
-    count: this.count,
+    count,
+    createdAt,
+    updatedAt,
     links: await this.buildResourceLinks(),
   };
 }

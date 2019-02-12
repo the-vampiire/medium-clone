@@ -18,7 +18,7 @@ const verifyPayload = (req, res, next) => {
 
 /**
  * Authenticates the User
- * - injects authedUser into Request object and calls next() on success
+ * - injects req.context.authedUser and calls next() on success
  * @param {Request} req Request object
  * @param {object} req.body Authentication credentials: { username, password }
  * @param {object} req.models Database models
@@ -27,7 +27,7 @@ const verifyPayload = (req, res, next) => {
  * @returns if user is not found or password mismatch 400 response with { error }
  */
 const authenticateRequest = async (req, res, next) => {
-  const { body: { username, password }, models } = req;
+  const { body: { username, password }, context: { models } } = req;
 
   const user = await models.User.findOne({ username });
   const authenticated = user && await user.verifyPassword(password);
@@ -39,7 +39,7 @@ const authenticateRequest = async (req, res, next) => {
   }
 
   // inject the authenticated user into the request object
-  req.authedUser = user;
+  req.context.authedUser = user;
   next();
 };
 

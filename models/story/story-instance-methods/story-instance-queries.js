@@ -31,7 +31,7 @@ async function getClappedReaders(query) {
     }),
   );
 
-  return this.model('Story').addPagination({ output: { readers }, limit, currentPage });
+  return this.model('stories').addPagination({ output: { readers }, limit, currentPage });
 }
 
 /**
@@ -59,7 +59,7 @@ async function getReplies(queryParams) {
   );
 
   // static method access
-  return this.model('Story').addPagination({ output: { replies }, limit, currentPage });
+  return this.model('stories').addPagination({ output: { replies }, limit, currentPage });
 }
 
 module.exports = {

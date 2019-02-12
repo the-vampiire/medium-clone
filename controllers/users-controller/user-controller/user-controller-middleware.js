@@ -1,6 +1,6 @@
 /**
  * Processes a user slug from the path
- * - injects req.pathUser property on success
+ * - injects req.context.pathUser property on success
  * @requires req.usernameSlug: the slug to exchange
  * @requires req.models DB models
  * @param {Request} req Request object
@@ -10,7 +10,7 @@
  * @returns {error} 404 JSON response if a corresponding user is not found
  */
 const exchangeSlugForUser = async (req, res, next) => {
-  const { params: { usernameSlug }, models } = req;
+  const { params: { usernameSlug }, context: { models } } = req;
 
   const username = usernameSlug.replace('@', '');
   if (username.length !== usernameSlug.length - 1) {
@@ -21,7 +21,7 @@ const exchangeSlugForUser = async (req, res, next) => {
   const user = await models.User.findOne({ username });
   if (!user) return res.status(404).json({ error: 'user not found' });
   
-  req.pathUser = user;
+  req.context.pathUser = user;
   next();
 };
 

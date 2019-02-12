@@ -1,4 +1,3 @@
-const { Story } = require('../../../../models');
 const {
   storyDiscoveryHandler,
   storyUpdateHandler,
@@ -8,101 +7,122 @@ const {
 const resMock = {
   status: jest.fn(() => resMock),
   json: jest.fn(),
+  sendStatus: jest.fn(),
 };
 
 const storyMock = {
   toResponseShape: jest.fn(), // already tested, can mock
+  save: jest.fn(),
 };
 
 describe('Story Controller route handlers', () => {
-  afterEach(() => jest.clearAllMocks());
-
   test('storyDiscoveryHandler(): returns JSON response of pathStory in Story Response Shape', async () => {
-    const reqMock = { pathStory: storyMock };
+    const reqMock = { context: { pathStory: storyMock } };
 
     await storyDiscoveryHandler(reqMock, resMock);
     expect(storyMock.toResponseShape).toHaveBeenCalled();
     expect(resMock.json).toHaveBeenCalledWith(storyMock.toResponseShape());
+
+    jest.clearAllMocks();
   });
 
   describe('storyUpdateHandler(): manages updates to an existing story', () => {
-    const bodyMock = { title: 'a new title', body: 'a new body', published: false };
-    const storyBase = new Story({ title: 'original title', body: 'original body', published: true });
-    const pathStory = Object.assign(storyBase, { update: jest.fn() }, storyMock);
-    const updatedMock = data => Object.assign(new Story({ ...data }), storyMock);
-
-    test('given title: updates the title only', async () => {
-      const reqMock = { pathStory, body: { title: bodyMock.title } };
-      pathStory.update.mockImplementation(() => updatedMock(reqMock.body));
-
-      await storyUpdateHandler(reqMock, resMock);
-      expect(pathStory.update).toHaveBeenCalledWith({ title: bodyMock.title });
-    });
-
-    test('given body: updates the body only', async () => {
-      const reqMock = { pathStory, body: { body: bodyMock.body } };
-      pathStory.update.mockImplementation(() => updatedMock(reqMock.body));
+    const bodyMock = { title: 'a new title', body: 'a new body' };
+    // initial data for comparison since pathStory is mutated during flow
+    const initialData = { title: 'original title', body: 'original body', published: false };
+    
+    const pathStoryMock = () => {
+      const mock = {
+        ...initialData,
+        save: jest.fn(() => mock),
+        toResponseShape: jest.fn(() => mock),
+      };
       
-      await storyUpdateHandler(reqMock, resMock);
-      expect(pathStory.update).toHaveBeenCalledWith({ body: bodyMock.body });
+      return mock;
+    };
+
+    afterEach(() => jest.clearAllMocks());
+
+    test('title only: only updates the story title', async () => {
+      const pathStory = pathStoryMock();
+      resMock.json.mockImplementation(() => pathStory);
+      const reqMock = { context: { pathStory }, body: { title: bodyMock.title } };
+  
+      const output = await storyUpdateHandler(reqMock, resMock);
+      expect(output.title).toBe(bodyMock.title);
+      expect(output.body).toBe(initialData.body);
+      expect(output.published).toBe(initialData.published);
     });
 
-    test('given published: updates the published field only', async () => {
-      const reqMock = { pathStory, body: { published: bodyMock.published } };
-      pathStory.update.mockImplementation(() => updatedMock(reqMock.body));
-      
-      await storyUpdateHandler(reqMock, resMock);
-      expect(pathStory.update).toHaveBeenCalledWith({ published: bodyMock.published });
+    test('body only: only updates the story body', async () => {
+      const pathStory = pathStoryMock();
+      resMock.json.mockImplementation(() => pathStory);
+      const reqMock = { context: { pathStory }, body: { body: bodyMock.body } };
+  
+      const output = await storyUpdateHandler(reqMock, resMock);
+      expect(output.body).toBe(bodyMock.body);
+      expect(output.title).toBe(initialData.title);
+      expect(output.published).toBe(initialData.published);
     });
 
-    test('given all three: updates all three fields', async () => {
-      const reqMock = { pathStory, body: bodyMock };
-      pathStory.update.mockImplementation(() => updatedMock(bodyMock));
-      
-      await storyUpdateHandler(reqMock, resMock);
-      expect(pathStory.update).toHaveBeenCalledWith(bodyMock);
+    describe('published field only', () => {
+      test('published true: sets published true and publishedAt = new Date()', async () => {
+        const pathStory = pathStoryMock();
+        resMock.json.mockImplementation(() => pathStory);
+        const reqMock = { context: { pathStory }, body: { published: true } };
+    
+        const output = await storyUpdateHandler(reqMock, resMock);
+        expect(output.published).toBe(true);
+        expect(output.publishedAt.constructor.name).toBe('Date')
+      });
+
+      test('published false: sets published false and publishedAt = null', async () => {
+        const pathStory = pathStoryMock();
+        resMock.json.mockImplementation(() => pathStory);
+        const reqMock = { context: { pathStory }, body: { published: false } };
+    
+        const output = await storyUpdateHandler(reqMock, resMock);
+        expect(output.published).toBe(false);
+        expect(output.publishedAt).toBeNull();
+      });
     });
 
-    test('returns a JSON response with the updated story in Story Response Shape', async () => {
-      const reqMock = { pathStory, body: bodyMock };
-      const updated = updatedMock(bodyMock);
-      pathStory.update.mockImplementation(() => updated);
+    test('multiple fields: updates with all provided fields', async () => {
+      const pathStory = pathStoryMock();
+      resMock.json.mockImplementation(() => pathStory);
+      const reqMock = { context: { pathStory }, body: { ...bodyMock, published: true } };
+  
+      const output = await storyUpdateHandler(reqMock, resMock);
+      expect(output.title).toBe(bodyMock.title);
+      expect(output.body).toBe(bodyMock.body);
+      expect(output.published).toBe(true);
+      expect(output.publishedAt).toBeDefined();
+    });
 
+    test('any case: saves the updated story and returns it in a JSON response Story Response Shape', async () => {
+      const pathStory = pathStoryMock();
+      const reqMock = { context: { pathStory }, body: {} };
+  
       await storyUpdateHandler(reqMock, resMock);
-      expect(updated.toResponseShape).toHaveBeenCalled();
-      expect(resMock.json).toHaveBeenCalledWith(updated.toResponseShape());
+      expect(pathStory.save).toHaveBeenCalled();
+      expect(pathStory.toResponseShape).toHaveBeenCalled();
+      expect(resMock.json).toHaveBeenCalledWith(pathStory.toResponseShape());
     });
   });
 
   describe('storyDeleteHandler(): deletes a Story', () => {
-    const authedUserMock = { verifyPassword: jest.fn() };
-    const toDeleteMock = { destroy: jest.fn() };
+    const toDeleteMock = { remove: jest.fn() };
+    const reqMock = { context: { pathStory: toDeleteMock } };
 
-    test('no password provided: returns 401 JSON response with { error: "failed to authenticate" }', async () => {
-      const reqMock = { pathStory: toDeleteMock, authedUser: authedUserMock, body: {} };
-      authedUserMock.verifyPassword.mockImplementation(() => false);
+    beforeAll(() => storyDeleteHandler(reqMock, resMock));
+    afterAll(() => jest.clearAllMocks());
 
-      await storyDeleteHandler(reqMock, resMock);
-      expect(resMock.status).toHaveBeenCalledWith(401);
-      expect(resMock.json).toHaveBeenCalledWith({ error: 'failed to authenticate' });
+    test('deletes the story', () => {
+      expect(toDeleteMock.remove).toHaveBeenCalled();
     });
 
-    test('invalid password provided: returns 401 JSON response with { error: "failed to authenticate" }', async () => {
-      const reqMock = { pathStory: toDeleteMock, authedUser: authedUserMock, body: {} };
-      authedUserMock.verifyPassword.mockImplementation(() => false);
-
-      await storyDeleteHandler(reqMock, resMock);
-      expect(resMock.status).toHaveBeenCalledWith(401);
-      expect(resMock.json).toHaveBeenCalledWith({ error: 'failed to authenticate' });
-    });
-
-    test('valid password provided: deletes the story and responds with a 201 status code', async () => {
-      const reqMock = { pathStory: toDeleteMock, authedUser: authedUserMock, body: { password: 'a secret one' } };
-      authedUserMock.verifyPassword.mockImplementation(() => true);
-
-      await storyDeleteHandler(reqMock, resMock);
-      expect(toDeleteMock.destroy).toHaveBeenCalled();
-      expect(resMock.status).toHaveBeenCalledWith(204);
+    test('responds with a 204 status code (success + no content)', () => {
+      expect(resMock.sendStatus).toHaveBeenCalledWith(204);
     });
   });
 });

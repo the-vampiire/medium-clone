@@ -35,14 +35,9 @@ describe('User Model Instance Methods: Response Data Shapers', () => {
     let output;
     beforeAll(async () => { output = author.toResponseShape(); });
     
-    test('returns the User Response Shape, fields: ["slug", "username", "avatarURL", "links"]', () => {
-      const expected = {
-        slug: author.slug,
-        username: author.username,
-        avatarURL: author.avatarURL,
-        links: author.buildResourceLinks(),
-      };
-      expect(output).toEqual(expected);
+    test('returns the User Response Shape, fields: ["slug", "createdAt", "updatedAt", "username", "avatarURL", "links"]', () => {
+      ["slug", "createdAt", "updatedAt", "username", "avatarURL", "links"]
+        .forEach(expectedField => expect(output).toHaveProperty(expectedField));
     });
   });
 

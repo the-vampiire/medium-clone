@@ -1,6 +1,6 @@
 const express = require('express');
 
-const { injectStoryClap } = require('./story-clap-middleware');
+const { injectStoryClap } = require('./story-claps-middleware');
 const { ReaderClapController } = require('./reader-clap-controller');
 const { requireAuthedUser } = require('../../../require-authed-user');
 const { exchangeSlugForUser } = require('../../../users-controller/user-controller');

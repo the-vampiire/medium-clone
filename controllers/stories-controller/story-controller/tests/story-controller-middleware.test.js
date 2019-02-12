@@ -13,7 +13,7 @@ const nextMock = jest.fn();
 
 const StoryMock = { findById: jest.fn() };
 
-const reqMockBase = { models: { Story: StoryMock } };
+const reqMockBase = { context: { models: { Story: StoryMock } } };
 
 describe('Story Controller middleware', () => {
   afterEach(() => jest.clearAllMocks());
@@ -39,7 +39,7 @@ describe('Story Controller middleware', () => {
 
     });
 
-    test('story is found from slug: next() called and req.pathStory contains matching Story', async () => {
+    test('story is found from slug: next() called and req.context.pathStory contains matching Story', async () => {
       const mockStory = { id: 'aRealId' };
       const reqMock = { ...reqMockBase, params: { storySlug: 'the-best-sluggie-andAnId' } };
       extractStoryID.mockImplementation(() => mockStory.id);
@@ -48,7 +48,7 @@ describe('Story Controller middleware', () => {
       await exchangeSlugForStory(reqMock, null, nextMock);
       expect(StoryMock.findById).toHaveBeenCalledWith(mockStory.id);
       expect(nextMock).toHaveBeenCalled();
-      expect(reqMock.pathStory).toBe(mockStory)
+      expect(reqMock.context.pathStory).toBe(mockStory)
     });
   });
 
@@ -57,7 +57,7 @@ describe('Story Controller middleware', () => {
     const story = new Story({ author: author.id });
 
     test('authedUser is the author: calls next()', () => {
-      const reqMock = { authedUser: author, pathStory: story };
+      const reqMock = { context: { authedUser: author, pathStory: story } };
       
       requireAuthorship(reqMock, resMock, nextMock);
       expect(nextMock).toHaveBeenCalled();
@@ -65,7 +65,7 @@ describe('Story Controller middleware', () => {
 
     test('authedUser is not the author: returns 401 JSON response { error: "authorship required" }', () => {
       const notAuthor = new User({ username: 'the-werewolf', password: 'a tough one' });
-      const reqMock = { authedUser: notAuthor, pathStory: story };
+      const reqMock = { context: { authedUser: notAuthor, pathStory: story } };
       
       requireAuthorship(reqMock, resMock);
       expect(resMock.status).toHaveBeenCalledWith(401);
