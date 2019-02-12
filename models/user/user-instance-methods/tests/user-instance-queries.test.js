@@ -156,7 +156,7 @@ describe('User Model Instance Methods: Queries', () => {
     });
   });
 
-  describe('getFollowedMembers(): retrieves a paginated list of the users the user is following', () => {
+  describe('getFollowedUsers(): retrieves a paginated list of the users the user is following', () => {
     let output;
     const followedCount = 20;
     beforeAll(async () => {
@@ -167,7 +167,7 @@ describe('User Model Instance Methods: Queries', () => {
         }),
       );
 
-      output = await author.getFollowedMembers({});
+      output = await author.getFollowedUsers({});
     });
 
     test('returns the paginated shape: { followed_users, pagination }', () => {
