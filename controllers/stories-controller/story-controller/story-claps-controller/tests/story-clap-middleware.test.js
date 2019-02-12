@@ -13,7 +13,7 @@ describe('Story-Clap middleware', () => {
     const pathUser = { id: 'userID' };
     const pathStory = { id: 'storyID' };
     const models = { Clap: { findOne: jest.fn() } };
-    const reqMock = { pathUser, pathStory, models };
+    const reqMock = { pathUser, pathStory, context: { models } };
 
     test('clap not found: returns a 400 JSON response { error: "clap not found" }', async () => {
       models.Clap.findOne.mockImplementation(() => null);

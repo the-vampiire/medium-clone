@@ -49,7 +49,7 @@ describe('Token Controller Middleware', () => {
       userMock.verifyPassword = function () { return true; }
 
       const models = { User: { findOne: () => userMock } };
-      const reqMock = { body, models };
+      const reqMock = { body, context: { models } };
 
       await authenticateRequest(reqMock, resMock, nextSpy);
       expect(reqMock.authedUser).toBeDefined();
@@ -61,7 +61,7 @@ describe('Token Controller Middleware', () => {
       const userMock = new User({ username, password: 'different' });
       const models = { User: { findOne: () => userMock } };
       
-      await authenticateRequest({ body, models }, resMock, nextSpy);
+      await authenticateRequest({ body, context: { models } }, resMock, nextSpy);
       expect(statusSpy).toHaveBeenCalledWith(401);
       expect(jsonSpy).toHaveBeenCalledWith({ error: 'failed to authenticate' });
     });

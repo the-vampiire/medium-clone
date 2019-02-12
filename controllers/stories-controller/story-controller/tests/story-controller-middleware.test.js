@@ -13,7 +13,7 @@ const nextMock = jest.fn();
 
 const StoryMock = { findById: jest.fn() };
 
-const reqMockBase = { models: { Story: StoryMock } };
+const reqMockBase = { context: { models: { Story: StoryMock } } };
 
 describe('Story Controller middleware', () => {
   afterEach(() => jest.clearAllMocks());

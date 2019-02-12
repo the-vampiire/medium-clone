@@ -7,7 +7,7 @@ const resMock = {
 
 const UserMock = { findOne: jest.fn() };
 
-const reqMockBase = { models: { User: UserMock } };
+const reqMockBase = { context: { models: { User: UserMock } } };
 
 describe('User Controller middleware', () => {
   afterEach(() => jest.clearAllMocks());

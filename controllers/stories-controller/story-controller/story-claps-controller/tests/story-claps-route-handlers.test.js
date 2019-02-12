@@ -12,10 +12,10 @@ describe('Story Claps route handlers', () => {
   describe('clappedReadersHandler(): retrieves a paginable list of the story\'s clapped readers', () => {
     const readers = [];
     const pagination = {};
-    const totalClaps = 200;
+    const clapsCount = 200;
     const query = { limit: 5, currentPage: 0 };
     const pathStory = {
-      getClapsCount: jest.fn(() => totalClaps),
+      getClapsCount: jest.fn(() => clapsCount),
       getClappedReaders: jest.fn(() => ({ readers, pagination })),
     };
     const reqMock = { pathStory, query };
@@ -31,8 +31,8 @@ describe('Story Claps route handlers', () => {
       expect(pathStory.getClappedReaders).toHaveBeenCalledWith(query);
     });
 
-    test('returns a JSON response: { totalClaps, readers, pagination }', () => {
-      expect(resMock.json).toHaveBeenCalledWith({ totalClaps, readers, pagination });
+    test('returns a JSON response: { clapsCount, readers, pagination }', () => {
+      expect(resMock.json).toHaveBeenCalledWith({ clapsCount, readers, pagination });
     });
   });
 
@@ -40,15 +40,15 @@ describe('Story Claps route handlers', () => {
     const clapMock = { toResponseShape: jest.fn() };
     const authedUser = { clapForStory: jest.fn() };
     const pathStory = { id: 'anID' };
-    const totalClaps = 50;
-    const body = { totalClaps };
+    const count = 50;
+    const body = { count };
 
-    test('body missing totalClaps param: 400 JSON response { error: "totalClaps required" }', async () => {
+    test('body missing count param: 400 JSON response { error: "claps count required" }', async () => {
       const reqMock = { body: {} };
       
       await clapForStoryHandler(reqMock, resMock);
       expect(resMock.status).toHaveBeenCalledWith(400);
-      expect(resMock.json).toHaveBeenCalledWith({ error: 'totalClaps required' });
+      expect(resMock.json).toHaveBeenCalledWith({ error: 'claps count required' });
 
       jest.clearAllMocks();
     });
@@ -66,13 +66,13 @@ describe('Story Claps route handlers', () => {
 
     describe('successful path', () => {
       const reqMock = { authedUser, pathStory, body };
-      beforeAll(() => {
+      beforeAll(async () => {
         authedUser.clapForStory.mockImplementation(() => clapMock);
-        clapForStoryHandler(reqMock, resMock);
+        await clapForStoryHandler(reqMock, resMock);
       });
 
-      test('calls clapForStory user method: (pathStory.id, totalClaps)', () => {
-        expect(authedUser.clapForStory).toHaveBeenCalledWith(pathStory.id, totalClaps);
+      test('calls clapForStory user method: (pathStory.id, count)', () => {
+        expect(authedUser.clapForStory).toHaveBeenCalledWith(pathStory.id, count);
       });
 
       test('calls toResponseShape() on the created clap', () => {

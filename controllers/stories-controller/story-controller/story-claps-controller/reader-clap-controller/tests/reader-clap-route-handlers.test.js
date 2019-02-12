@@ -9,6 +9,7 @@ jest.mock('../../../../../controller-utils', () => ({ extractFieldErrors: jest.f
 const resMock = {
   status: jest.fn(() => resMock),
   json: jest.fn(),
+  sendStatus: jest.fn(),
 };
 
 describe('Reader-Clap route handlers', () => {
@@ -24,16 +25,16 @@ describe('Reader-Clap route handlers', () => {
   describe('updateReaderClapHandler(): updates a reader\'s story clap', () => {
     afterEach(() => jest.clearAllMocks());
 
-    const pathClap = { destroy: jest.fn(), update: jest.fn() };
+    const pathClap = { remove: jest.fn(), save: jest.fn() };
 
     test('count valid: updates the clap count and returns a JSON Clap Response Shape', async () => {
       const count = 34;
       const updatedClap = { toResponseShape: jest.fn() };
-      pathClap.update.mockImplementation(() => updatedClap);
+      pathClap.save.mockImplementation(() => updatedClap);
       const reqMock = { pathClap, body: { count } };
 
       await updateReaderClapHandler(reqMock, resMock);
-      expect(pathClap.update).toHaveBeenCalledWith({ count });
+      expect(pathClap.save).toHaveBeenCalled();
       expect(updatedClap.toResponseShape).toHaveBeenCalled();
       expect(resMock.json).toHaveBeenCalledWith(updatedClap.toResponseShape());
     });
@@ -42,8 +43,8 @@ describe('Reader-Clap route handlers', () => {
       const reqMock = { pathClap, body: { count: null } };
       
       await updateReaderClapHandler(reqMock, resMock);
-      expect(pathClap.destroy).toHaveBeenCalled();
-      expect(resMock.status).toHaveBeenCalledWith(204);
+      expect(pathClap.remove).toHaveBeenCalled();
+      expect(resMock.sendStatus).toHaveBeenCalledWith(204);
     });
 
     test('count missing: returns 400 JSON response { error: "clap count required" }', async () => {
@@ -56,13 +57,13 @@ describe('Reader-Clap route handlers', () => {
 
     test('count invalid: returns a 400 JSON response { error: "clap update validation failed", fields }', async () => {
       const count = 400;
-      pathClap.update.mockImplementation(() => {
+      pathClap.save.mockImplementation(() => {
         throw new Error(JSON.stringify({ errors: {} }));
       });
       const reqMock = { pathClap, body: { count } };
       
       await updateReaderClapHandler(reqMock, resMock);
-      expect(pathClap.update).toHaveBeenCalledWith({ count });
+      expect(pathClap.save).toHaveBeenCalled();
       expect(extractFieldErrors).toHaveBeenCalled();
       expect(resMock.status).toHaveBeenCalledWith(400);
       expect(resMock.json).toHaveBeenCalledWith({
