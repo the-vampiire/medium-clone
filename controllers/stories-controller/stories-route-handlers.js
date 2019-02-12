@@ -2,15 +2,15 @@ const { newResourceResponse } = require('../controller-utils');
 
 /**
  * Creates and shapes the response of a new Story
- * @requires req.authedUser: an authenticated User as the author
- * @requires req.models: Database models
+ * @requires req.context.authedUser: an authenticated User as the author
+ * @requires req.context.models: Database models
  * @param {Request} req Request object
  * @param {Response} res Response object
  * @returns {error} 400 JSON response if the title is missing { error }
  * @returns {Story} JSON response with the newly created Story in Story Response shape
  */
 const newStoryHandler = async (req, res) => {
-  const { body: { title, body }, authedUser, context: { models } } = req;
+  const { body: { title, body }, context: { authedUser, models } } = req;
 
   if (!title) return res.status(400).json({ error: 'title required' });
   
@@ -22,7 +22,7 @@ const newStoryHandler = async (req, res) => {
 
 /**
  * Retrieves a paginable list of recently published stories
- * @requires req.models: Database models
+ * @requires req.context.models: Database models
  * @param {Request} req Request object
  * @param {number} req.query.limit pagination limit
  * @param {number} req.query.currentPage pagination current page

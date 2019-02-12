@@ -28,7 +28,7 @@ describe('/stories Route Handlers', () => {
       });
 
       const models = { Story: { create: jest.fn(() => storyMock) } };
-      const reqMock = { body: { title, body }, authedUser: authedUserMock, context: { models } };
+      const reqMock = { body: { title, body }, context: { authedUser: authedUserMock, models } };
 
       test('creates a story and converts it to a Story Response Shape', async () => {
         expect(models.Story.create).toHaveBeenCalledWith({ title, body, author: authedUserMock });
