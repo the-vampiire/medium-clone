@@ -15,7 +15,7 @@ const resMock = {
 describe('Reader-Clap route handlers', () => {
   test('readerClapDiscoveryHandler(): returns a JSON response with the Clap Response Shape', async () => {
     const pathClap = { toResponseShape: jest.fn() };
-    const reqMock = { pathClap };
+    const reqMock = { context: { pathClap } };
     
     await readerClapDiscoveryHandler(reqMock, resMock);
     expect(pathClap.toResponseShape).toHaveBeenCalled();
@@ -31,7 +31,7 @@ describe('Reader-Clap route handlers', () => {
       const count = 34;
       const updatedClap = { toResponseShape: jest.fn() };
       pathClap.save.mockImplementation(() => updatedClap);
-      const reqMock = { pathClap, body: { count } };
+      const reqMock = { context: { pathClap }, body: { count } };
 
       await updateReaderClapHandler(reqMock, resMock);
       expect(pathClap.save).toHaveBeenCalled();
@@ -40,7 +40,7 @@ describe('Reader-Clap route handlers', () => {
     });
 
     test('count null: destroys the clap and returns a 204 response', async () => {
-      const reqMock = { pathClap, body: { count: null } };
+      const reqMock = { context: { pathClap }, body: { count: null } };
       
       await updateReaderClapHandler(reqMock, resMock);
       expect(pathClap.remove).toHaveBeenCalled();
@@ -48,7 +48,7 @@ describe('Reader-Clap route handlers', () => {
     });
 
     test('count missing: returns 400 JSON response { error: "clap count required" }', async () => {
-      const reqMock = { pathClap, body: {} };
+      const reqMock = { context: { pathClap }, body: {} };
 
       await updateReaderClapHandler(reqMock, resMock);
       expect(resMock.status).toHaveBeenCalledWith(400);
@@ -60,7 +60,7 @@ describe('Reader-Clap route handlers', () => {
       pathClap.save.mockImplementation(() => {
         throw new Error(JSON.stringify({ errors: {} }));
       });
-      const reqMock = { pathClap, body: { count } };
+      const reqMock = { context: { pathClap }, body: { count } };
       
       await updateReaderClapHandler(reqMock, resMock);
       expect(pathClap.save).toHaveBeenCalled();

@@ -3,12 +3,12 @@ const { extractFieldErrors } = require('../../../../controller-utils');
 /**
  * Get the reader's story clap
  * @param {Request} req Request object
- * @param {Clap} req.pathClap the reader's story clap 
+ * @param {Clap} req.context.pathClap the reader's story clap 
  * @param {Response} res Response object
  * @returns JSON response in Clap Response Shape
  */
 const readerClapDiscoveryHandler = async (req, res) => {
-  const { pathClap } = req;
+  const { pathClap } = req.context;
   
   const responseData = await pathClap.toResponseShape();
   return res.json(responseData);
@@ -19,7 +19,7 @@ const readerClapDiscoveryHandler = async (req, res) => {
  * - count is null: destroy the clap
  * - count between 1 and 50: updates the clap count
  * @param {Request} req Request object 
- * @param {Clap} req.pathClap the reader's story clap
+ * @param {Clap} req.context.pathClap the reader's story clap
  * @param {number | null} req.body.count the new count to update the clap
  * @param {Response} res Response object
  * @returns count null: 204 no content
@@ -28,7 +28,7 @@ const readerClapDiscoveryHandler = async (req, res) => {
  * @returns invalid count: 400 JSON response { error, fields }
  */
 const updateReaderClapHandler = async (req, res) => {
-  const { pathClap, body: { count } } = req;
+  const { context: { pathClap }, body: { count } } = req;
 
   if (count === undefined) {
     return res.status(400).json({ error: 'clap count required' });

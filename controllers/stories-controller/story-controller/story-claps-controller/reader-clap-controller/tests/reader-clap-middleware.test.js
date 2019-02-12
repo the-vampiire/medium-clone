@@ -13,8 +13,10 @@ describe('Reader-Clap middleware', () => {
 
     test('pathClap reader is authedUser: calls next()', async () => {
       const reqMock = {
-        authedUser: { id: 'sameID' },
-        pathClap: { reader: 'sameID' },
+        context: {
+          authedUser: { id: 'sameID' },
+          pathClap: { reader: 'sameID' },
+        },
       };
 
       await requireClapOwnership(reqMock, resMock, nextMock);
@@ -23,8 +25,10 @@ describe('Reader-Clap middleware', () => {
     
     test('pathClap reader not authedUser: 401 JSON response { error: "clap ownership required" }', async () => {
       const reqMock = {
-        authedUser: { id: 'userID' },
-        pathClap: { reader: 'readerID' },
+        context: {
+          authedUser: { id: 'userID' },
+          pathClap: { reader: 'readerID' },
+        },
       };
   
       await requireClapOwnership(reqMock, resMock);
