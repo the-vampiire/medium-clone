@@ -31,7 +31,7 @@ const storyUpdateHandler = async (req, res) => {
   if (body) pathStory.body = body;
   if (published !== undefined) {
     pathStory.published = published;
-    pathStory.publishedAt = published ? Date.now() : null;
+    pathStory.publishedAt = published ? new Date() : null;
   }
   
   const updatedStory = await pathStory.save();
@@ -42,25 +42,16 @@ const storyUpdateHandler = async (req, res) => {
 
 /**
  * Handler for deleting a Story
- * - verifies the password of the authenticated user before deleting
- * @requires Authentication and authorship
  * @param {Request} req Request object 
  * @param {Story} req.pathStory The story to be deleted
- * @param {User} req.authedUser The authenticated User (author)
- * @param {string} req.body.password Author's password for final verification
  * @param {Response} res Response object
- * @returns password verification fails: 401 JSON response { error }
- * @returns password verification succeeds: 204 (no-content) response
+ * @returns 204 (no-content) response
  */
 const storyDeleteHandler = async (req, res) => {
-  const { pathStory, authedUser, body: { password } } = req;
+  const { pathStory } = req;
 
-  const verified = await authedUser.verifyPassword(password);
-  if (!verified) return res.status(401).json({ error: 'failed to authenticate' });
-
-  await pathStory.destroy();
-
-  return res.status(204); // success + no content
+  await pathStory.remove();
+  return res.sendStatus(204); // success + no content
 };
 
 module.exports = {
