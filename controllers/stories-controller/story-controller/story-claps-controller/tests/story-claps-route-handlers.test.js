@@ -18,7 +18,7 @@ describe('Story Claps route handlers', () => {
       getClapsCount: jest.fn(() => clapsCount),
       getClappedReaders: jest.fn(() => ({ readers, pagination })),
     };
-    const reqMock = { pathStory, query };
+    const reqMock = { context: { pathStory }, query };
 
     beforeAll(() => clappedReadersHandler(reqMock, resMock));  
     afterAll(() => jest.clearAllMocks());
@@ -44,7 +44,7 @@ describe('Story Claps route handlers', () => {
     const body = { count };
 
     test('body missing count param: 400 JSON response { error: "claps count required" }', async () => {
-      const reqMock = { body: {} };
+      const reqMock = { context: {}, body: {} };
       
       await clapForStoryHandler(reqMock, resMock);
       expect(resMock.status).toHaveBeenCalledWith(400);
@@ -54,7 +54,7 @@ describe('Story Claps route handlers', () => {
     });
 
     test('authedUser is story author: 403 JSON response { error: "author clapping for own story" }', async () => {
-      const reqMock = { authedUser, pathStory, body };
+      const reqMock = { context: { authedUser, pathStory }, body };
       authedUser.clapForStory.mockImplementation(() => { throw { status: 403, message: 'author clapping for own story' } });
 
       await clapForStoryHandler(reqMock, resMock);
@@ -65,7 +65,7 @@ describe('Story Claps route handlers', () => {
     });
 
     describe('successful path', () => {
-      const reqMock = { authedUser, pathStory, body };
+      const reqMock = { context: { authedUser, pathStory }, body };
       beforeAll(async () => {
         authedUser.clapForStory.mockImplementation(() => clapMock);
         await clapForStoryHandler(reqMock, resMock);
