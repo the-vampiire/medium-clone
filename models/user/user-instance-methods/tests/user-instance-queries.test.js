@@ -158,16 +158,18 @@ describe('User Model Instance Methods: Queries', () => {
 
   describe('getFollowedUsers(): retrieves a paginated list of the users the user is following', () => {
     let output;
-    const followedCount = 20;
+    const limit = 5;
     beforeAll(async () => {
       await Promise.all(
-        Array(followedCount).fill().map(async (e, i) => {
+        Array(10).fill().map(async () => {
           const user = await models.User.create(userMock({}));
-          author = await author.followUser(user);
+          await author.followUser(user);
         }),
       );
 
-      output = await author.getFollowedUsers({});
+      // refresh the author
+      author = await models.User.findById(author.id);
+      output = await author.getFollowedUsers({ limit });
     });
 
     test('returns the paginated shape: { followed_users, pagination }', () => {
@@ -177,6 +179,39 @@ describe('User Model Instance Methods: Queries', () => {
 
     test('followed_users are in User Response Shape', () => {
       expect(output.followed_users[0]).toHaveProperty('links');
+    });
+
+    test('only returns the limit amount of followed users', () => {
+      expect(output.followed_users.length).toBe(limit);
+    });
+  });
+
+  describe('getFollowers(): returns a paginated list of the user\'s followers', () => {
+    let output;
+    const limit = 3;
+    const followersCount = 10;
+    beforeAll(async () => {
+      const followers = await Promise.all(
+        Array(followersCount).fill().map(() => models.User.create(userMock({}))),
+      );
+
+      author.followers.push(...followers);
+      await author.save();
+
+      output = await author.getFollowers({ limit });
+    });
+
+    test('returns the paginated shape: { followers, pagination }', () => {
+      expect(output).toHaveProperty('followers');
+      expect(output).toHaveProperty('pagination');
+    });
+
+    test('followers are in User Response Shape', () => {
+      expect(output.followers[0]).toHaveProperty('links');
+    });
+
+    test('only returns the limit amount of followers', () => {
+      expect(output.followers.length).toBe(limit);
     });
   });
 });

@@ -82,7 +82,7 @@ async function getClappedStories(paginationQuery) {
 
 /**
  * Get a paginated list of the members the user is following
- * - retrives result in descending order of the follow creation
+ * - retrives result in descending order of the order they were pushed (follow date)
  * - converts followed users into User Response Shape
  * - injects pagination into the results
  * @param {number} paginationQuery.limit pagination limit
@@ -97,7 +97,7 @@ async function getFollowedUsers(paginationQuery) {
 
   const populated = await this.populate({
     path: 'following',
-    options: { limit, skip: (limit * currentPage), sort: { createdAt: -1 } }
+    options: { limit, skip: (limit * currentPage) }
   }).execPopulate();
 
   const followed_users = populated.following.map(user => user.toResponseShape());
@@ -108,6 +108,37 @@ async function getFollowedUsers(paginationQuery) {
     totalDocuments,
     path: 'following',
     output: { followed_users },
+  });
+}
+
+/**
+ * Get a paginated list of the user's followers
+ * - retrives result in descending order of the order they were pushed (follow date)
+ * - converts followers into User Response Shape
+ * - injects pagination into the results
+ * @param {number} paginationQuery.limit pagination limit
+ * @param {number} paginationQuery.currentPage pagination current page
+ * @returns paginated result { followers, pagination }
+ */
+async function getFollowers(paginationQuery) {
+  const { limit = 10, currentPage = 0 } = paginationQuery;
+  
+  // retrieve before populate, populate will mutate this document
+  const totalDocuments = this.followers.length;
+
+  const populated = await this.populate({
+    path: 'followers',
+    options: { limit, skip: (limit * currentPage) }
+  }).execPopulate();
+
+  const followers = populated.followers.map(user => user.toResponseShape());
+
+  return this.addPagination({
+    limit,
+    currentPage,
+    totalDocuments,
+    path: 'followers',
+    output: { followers },
   });
 }
 
@@ -123,6 +154,7 @@ async function verifyPassword(passwordAttempt) {
 
 module.exports = {
   getStories,
+  getFollowers,
   verifyPassword,
   getFollowedUsers,
   getClappedStories,
