@@ -55,10 +55,10 @@ describe('User Model: Schema, Virtuals and Hooks', () => {
       const userID = author.id;
       await author.remove();
       userStories = await models.Story.find({ author: userID });
-      userClaps = await models.Clap.find({ user: userID });
+      userClaps = await models.Clap.find({ reader: userID });
     });
 
     test('cascades to destroy authored stories', () => expect(userStories.length).toBe(0));
-    test('cascades to destroy claps made by the user', () => expect(userClaps.length).toBe(0));
+    test('cascades to destroy claps made by the reader (user)', () => expect(userClaps.length).toBe(0));
   });
 });
