@@ -7,9 +7,8 @@ const { followUserHandler, userFollowersHandler } = require('./user-followers-ro
 // controls: /users/:usernameSlug/followers/
 const UserFollowersController = express.Router();
 
-UserFollowersController.get(userFollowersHandler);
-
-UserFollowersController.post(requireAuthedUser, followUserHandler);
+UserFollowersController.get('/', userFollowersHandler);
+UserFollowersController.post('/', requireAuthedUser, followUserHandler);
 
 // controls: /users/:usernameSlug/followers/:followerSlug/
 UserFollowersController.use('/:followerSlug', UserFollowerController);

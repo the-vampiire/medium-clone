@@ -22,7 +22,7 @@ const isFollowingHandler = async (req, res) => {
     return res.status(400).json({ error: 'invalid user slug' });
   }
 
-  const follower = await models.User.findOne({ username });
+  const follower = await models.User.findOne({ username }, '_id');
   if (!follower) return res.status(404).json({ error: 'follower not found' });
 
   const isFollowing = pathUser.followers.some(id => id.toString() === follower.id);

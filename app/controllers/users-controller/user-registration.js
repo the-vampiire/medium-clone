@@ -63,7 +63,7 @@ const registerUserHandler = async (req, res) => {
   const { body: { username, password }, context: { models } } = req;
 
   const { SALT_ROUNDS } = process.env;
-  const encryptedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+  const encryptedPassword = await bcrypt.hash(password, Number(SALT_ROUNDS));
 
   let newUser;
   try {

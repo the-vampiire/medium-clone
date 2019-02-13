@@ -1,4 +1,4 @@
-const { User, Story } = require('../../../../models');
+const { models: { User, Story } } = require('../../../../../db');
 const { extractStoryID } = require('../story-controller-utils');
 const { exchangeSlugForStory, requireAuthorship } = require('../story-controller-middleware');
 

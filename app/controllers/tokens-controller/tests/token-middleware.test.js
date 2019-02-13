@@ -1,4 +1,4 @@
-const { User } = require('../../../models');
+const { models: { User } } = require('../../../../db');
 const { verifyPayload, authenticateRequest } = require('../token-middleware');
 
 const resMock = {
