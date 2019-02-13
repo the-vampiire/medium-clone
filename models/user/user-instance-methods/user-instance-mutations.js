@@ -19,31 +19,31 @@ async function followUser(userToFollow) {
     throw { status: 400, message: 'already following' };
   }
 
-  // update followed user's followers
+  // follow the userToFollow -> push (this) into userToFollow.followers
   await userToFollow.update({ $push: { followers: this } });
   
-  // update (this) following users
+  // follow the userToFollow -> push userToFollow into (this).following
   return this.update({ $push: { following: userToFollow } });
 }
 
 /**
- * Removes a follow connection between (this) and a follower
- * - removes (this) from follower.followers
- * - removes follower from (this).following
- * @param {User} follower the user to unfollow
+ * Removes a follow connection between (this) and a userToUnfollow
+ * - removes (this) from userToUnfollow.followers
+ * - removes userToUnfollow from (this).following
+ * @param {User} userToUnfollow the user to unfollow
  * @throws not in (this).following: { status: 400, message: not following }
  */
-async function unfollowUser(follower) {
-  const isFollowing = this.following.some(id => id.toString() === follower.id);
+async function unfollowUser(userToUnfollow) {
+  const isFollowing = this.following.some(id => id.toString() === userToUnfollow.id);
   if (!isFollowing) {
-    throw { status: 400, message: 'not following'};
+    throw { status: 400, message: 'not following' };
   }
 
-  // follower is following (this): follower.following = [this] -> remove
-  await follower.update({ $pull: { following: { _id: this } } });
+  // userToUnfollow is followed by (this): userToUnfollow.followers = [this, ...] -> remove (this)
+  await userToUnfollow.update({ $pull: { followers: { _id: this } } });
 
-  // (this) is followed by follower: this.followers = [follower] -> remove
-  return this.update({ $pull: { followers: { _id: follower } } })
+  // (this) is following userToUnfollow: (this).following = [userToUnfollow, ...] -> remove userToUnfollow
+  return this.update({ $pull: { following: { _id: userToUnfollow } } })
 }
 
 /**
