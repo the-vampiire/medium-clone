@@ -39,11 +39,17 @@ async function unfollowUser(userToUnfollow) {
     throw { status: 400, message: 'not following' };
   }
 
-  // userToUnfollow is followed by (this): userToUnfollow.followers = [this, ...] -> remove (this)
-  await userToUnfollow.update({ $pull: { followers: { _id: this } } });
+  /*
+    NOTE:
+    - $push will push a document into an Array field
+    - $pull MUST use the exact identifier (.id field) or a casting error is thrown
+  */
 
-  // (this) is following userToUnfollow: (this).following = [userToUnfollow, ...] -> remove userToUnfollow
-  return this.update({ $pull: { following: { _id: userToUnfollow } } })
+  // userToUnfollow is followed by (this): userToUnfollow.followers = [this, ...] -> remove (this)
+  await userToUnfollow.update({ $pull: { followers: this.id } });
+
+  // // // (this) is following userToUnfollow: (this).following = [userToUnfollow, ...] -> remove userToUnfollow
+  return this.update({ $pull: { following: userToUnfollow.id } })
 }
 
 /**

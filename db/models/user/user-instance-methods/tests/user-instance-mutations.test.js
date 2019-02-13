@@ -54,11 +54,11 @@ describe('User instance mutation methods', () => {
       beforeAll(() => userMock.unfollowUser(userToUnfollow));
 
       test('calls update() on the userToUnfollow to remove (this) user from its followers list', () => {
-        expect(userToUnfollow.update).toHaveBeenCalledWith({ $pull: { followers: { _id: userMock } } });
+        expect(userToUnfollow.update).toHaveBeenCalledWith({ $pull: { followers: userMock.id } });
       });
 
       test('calls update() on (this) user to remove the userToUnfollow from its following list', () => {
-        expect(userMock.update).toHaveBeenCalledWith({ $pull: { following: { _id: userToUnfollow } } });
+        expect(userMock.update).toHaveBeenCalledWith({ $pull: { following: userToUnfollow.id } });
       });
     });
 
