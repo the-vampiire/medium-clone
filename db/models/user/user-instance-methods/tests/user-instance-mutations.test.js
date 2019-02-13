@@ -46,27 +46,27 @@ describe('User instance mutation methods', () => {
     });
   });
 
-  describe('unfollowUser(): updates the following and followers lists of each user', () => {
-    const follower = { id: 'followerID', update: jest.fn() };
+  describe('unfollowUser(): lets (this) user unfollow another user', () => {
+    const userToUnfollow = { id: 'followerID', update: jest.fn() };
     const userMock = { following: ['followerID'], update: jest.fn(), unfollowUser };
 
     describe('successful unfollow', () => {
-      beforeAll(() => userMock.unfollowUser(follower));
+      beforeAll(() => userMock.unfollowUser(userToUnfollow));
 
-      test('calls update() on the follower to remove the user from its following list', () => {
-        expect(follower.update).toHaveBeenCalledWith({ $pull: { following: { _id: userMock } } });
+      test('calls update() on the userToUnfollow to remove (this) user from its followers list', () => {
+        expect(userToUnfollow.update).toHaveBeenCalledWith({ $pull: { followers: { _id: userMock } } });
       });
 
-      test('calls update() on the user to remove the follower from its followers list', () => {
-        expect(userMock.update).toHaveBeenCalledWith({ $pull: { followers: { _id: follower } } });
+      test('calls update() on (this) user to remove the userToUnfollow from its following list', () => {
+        expect(userMock.update).toHaveBeenCalledWith({ $pull: { following: { _id: userToUnfollow } } });
       });
     });
 
-    test('follower not in user\'s followers list: throws { status: 400, message: not following }', async () => {
+    test('userToUnfollow not in user\'s following list: throws { status: 400, message: not following }', async () => {
       const user = Object.assign({}, userMock, { following: [] });
 
       try {
-        await user.unfollowUser(follower);
+        await user.unfollowUser(userToUnfollow);
       } catch(error) {
         expect(error).toEqual({ status: 400, message: 'not following' });
       }
