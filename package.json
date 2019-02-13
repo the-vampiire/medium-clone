@@ -8,8 +8,8 @@
     "test": "NODE_ENV=test jest --runInBand",
     "test:verbose": "NODE_ENV=test jest --runInBand --verbose",
     "test:coverage": "NODE_ENV=test jest --runInBand --coverage > COVERAGE.md",
-    "dev": "NODE_ENV=development nodemon app.js",
-    "start": "NODE_ENV=production node app.js"
+    "dev": "NODE_ENV=development nodemon ./app",
+    "start": "NODE_ENV=production node ./app"
   },
   "author": "the-vampiire",
   "license": "ISC",
