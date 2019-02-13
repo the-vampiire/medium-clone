@@ -43,8 +43,9 @@ userSchema.virtual('slug').get(function () {
 userSchema.pre(
   'remove', // when user [User document instance] has .remove() called on it
   function cascadeDelete() {
+    // delete all authored stories and reader claps
     return mongoose.model('stories').deleteMany({ author: this.id })
-    .then(() => mongoose.model('claps').deleteMany({ user: this.id }))
+    .then(() => mongoose.model('claps').deleteMany({ reader: this.id }))
   },
 );
 
