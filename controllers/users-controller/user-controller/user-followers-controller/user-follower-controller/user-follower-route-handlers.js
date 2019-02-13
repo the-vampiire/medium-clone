@@ -1,7 +1,8 @@
 /**
  * Handler for confirming the followerSlug user is a follower of the path user
+ * - lightweight confirmation response
  * - suggested use: controlling accessibility of a "follow" action on the client
- * - the follower's user details can be accessed via GET /users/:usernameSlug
+ * - the follower's user details should be accessed via their slug at GET /users/:usernameSlug
  * @param {Request} req Request object
  * @param req.params.followerSlug the follower slug
  * @param req.context.pathUser the user associated with this path
@@ -28,7 +29,7 @@ const isFollowingHandler = async (req, res) => {
   const isFollowing = pathUser.followers.some(id => id.toString() === follower.id);
   if (!isFollowing) return res.status(404).json({ error: 'not following' });
 
-  return res.sendStatus(204);
+  return res.sendStatus(204); // lightweight confirmation response
 }; 
 
 /**
@@ -42,8 +43,8 @@ const isFollowingHandler = async (req, res) => {
  * @returns follower not found: 400 JSON response { error: follower not found }
  * @returns not already following: 400 JSON response { error: not following }
  * @example
- * DELETE /users/vamp/followers/wolf
- * - authed user (wolf) unfollows vamp
+ * DELETE /users/the-vampiire/followers/the-werewolf
+ * - authed user (the-werewolf) unfollows the-vampiire
  */
 const unfollowUserHandler = async (req, res) => {
   const { authedUser, pathUser } = req.context;
