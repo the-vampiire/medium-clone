@@ -139,6 +139,16 @@ describe('User instance mutation methods', () => {
     });
 
     describe('invalid paths', () => {
+      test('clapsCount is non-numeric: throws { status: 400, message: invalid clap count }', async () => {
+        try {
+          await userMock.clapForStory(storyMock.id, 'nonsense');
+        } catch(error) {
+          const { status, message } = error;
+          expect(status).toBe(400);
+          expect(message).toBe('invalid clap count');
+        }
+      });
+
       test('clapsCount negative: sets count to minimum value of 1', async () => {
         await userMock.clapForStory(storyMock.id, -50);
         expect(ModelMock.findOneAndUpdate).toHaveBeenCalledWith(

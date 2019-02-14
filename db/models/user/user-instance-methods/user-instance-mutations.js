@@ -56,16 +56,19 @@ async function unfollowUser(userToUnfollow) {
  * Create a new clap for a story
  * - limits clap count minimum to 1
  * - limits clap count maximum to MAX_CLAP_COUNT
- * - upserts to limit duplication (protected at DB level by composite unique index)
+ * - upserts to restrict duplication (protected at DB level by composite unique index)
  * @param {string} storyID the ID of the story to clap for
  * @param {number} clapsCount the total claps count to apply
+ * @throw non-numeric clap count: { status: 400, message: invalid clap count }
  * @throws story not found: { status: 404, message: story not found }
  * @throws author self clap: { status: 403, message: author clapping for own story }
  * @returns a created / upserted Clap
  */
 async function clapForStory(storyID, clapsCount) {
-  let count = clapsCount;
-  if (clapsCount < 1) count = 1;
+  let count = Number(clapsCount);
+
+  if (isNaN(count)) throw { status: 400, message: 'invalid clap count' };
+  else if (clapsCount < 1) count = 1;
   else if (clapsCount > MAX_CLAP_COUNT) count = MAX_CLAP_COUNT;
 
   const story = await this.model('stories').findById(storyID, '_id author');
