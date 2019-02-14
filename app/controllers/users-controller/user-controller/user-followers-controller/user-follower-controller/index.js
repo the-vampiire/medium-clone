@@ -1,8 +1,8 @@
 const express = require('express');
 
 const { requireAuthedUser } = require('../../../../require-authed-user');
-const { requireFollowOwnership } = require('./user-follower-middleware');
 const { isFollowingHandler, unfollowUserHandler } = require('./user-follower-route-handlers');
+const { requireFollowOwnership, exchangeSlugForFollower } = require('./user-follower-middleware');
 
 const UserFollowerController = express.Router();
 
@@ -17,4 +17,5 @@ UserFollowerController.delete(
 
 module.exports = {
   UserFollowerController,
+  exchangeSlugForFollower,
 };
