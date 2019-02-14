@@ -1,6 +1,7 @@
 const app = require('../../app');
 const mongoose = require('mongoose');
 const request = require('supertest');
+const expectedShapes = require('./expected-shapes');
 const { utils: { testUtils: { dbConnect, teardown, mocks } } } = require('../../../db');
 
 const defaultUsers = [
@@ -62,4 +63,5 @@ module.exports = {
   extractPath,
   testManager,
   defaultUsers,
+  expectedShapes,
 };

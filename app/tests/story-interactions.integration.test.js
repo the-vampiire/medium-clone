@@ -1,5 +1,6 @@
-const { testManager, request, app, mocks, extractPath } = require('./utils');
+const { testManager, request, app, mocks, extractPath, expectedShapes } = require('./utils');
 
+const { storyExpectedShape } = expectedShapes;
 const tm = new testManager({});
 
 /**
@@ -13,7 +14,7 @@ const tm = new testManager({});
  * Story Controller [/stories/:storySlug]
  * - GET: access an individual story's details
  * - PATCH: update a story's title, body, and/or publishment
- * - DELETE: delete a story (or story reply)
+ * - DELETE: delete a story/story-reply
  * 
  * Replies Handlers [/stories/:storySlug/replies]
  * - POST: create a reply for the story
@@ -23,39 +24,6 @@ const tm = new testManager({});
  * - GET /stories: get a list of the user's published stories
  * - GET /responses: get a list of the user's published story responses
  */
-
-const storyExpectedShape = {
-  publishedAt: null,
-  published: false,
-  title: 'Devolved background archive',
-  body: 'Et repudiandae autem unde aut sunt et. Adipisci deleniti ex occaecati velit. Ducimus ab distinctio magnam est suscipit. Rerum quia voluptatem necessitatibus aut.\n \rCupiditate dolore quo eligendi nihil culpa unde aliquid. Qui nihil mollitia recusandae nam consequatur culpa. Et aliquam sit voluptatum eum officia. Optio deserunt recusandae iure.',
-  author: {
-    username: 'vamp',
-    avatarURL: null,
-    createdAt: '2019-02-14T03:48:48.608Z',
-    updatedAt: '2019-02-14T03:48:48.608Z',
-    slug: '@vamp',
-    links: {
-      userURL: 'http://localhost:8008/users/@vamp',
-      followersURL: 'http://localhost:8008/users/@vamp/followers?limit=10&currentPage=0',
-      followingURL: 'http://localhost:8008/users/@vamp/following?limit=10&currentPage=0',
-      storiesURL: 'http://localhost:8008/users/@vamp/stories?limit=10&currentPage=0',
-      responsesURL: 'http://localhost:8008/users/@vamp/responses?limit=10&currentPage=0',
-      clappedStoriesURL: 'http://localhost:8008/users/@vamp/clapped?limit=10&currentPage=0',
-    },
-  },
-  createdAt: '2019-02-14T03:48:48.919Z',
-  updatedAt: '2019-02-14T03:48:48.919Z',
-  slug: 'devolved-background-archive-5c64e5200e4f8208b0e1f6e0',
-  clapsCount: 0,
-  links: {
-    storyURL: 'http://localhost:8008/stories/devolved-background-archive-5c64e5200e4f8208b0e1f6e0',
-    authorURL: 'http://localhost:8008/users/@vamp',
-    parentURL: null,
-    repliesURL: null,
-    clappedReadersURL: null,
-  },
-};
 
 // mutate these objects during calls to carry data between tests
 const newStoryData = {};
