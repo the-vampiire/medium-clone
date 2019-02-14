@@ -4,29 +4,17 @@
  * - suggested use: controlling accessibility of a "follow" action on the client
  * - the follower's user details should be accessed via their slug at GET /users/:usernameSlug
  * @param {Request} req Request object
- * @param req.params.followerSlug the follower slug
+ * @param req.context.pathFollower the follower associated with this path
  * @param req.context.pathUser the user associated with this path
- * @param req.context.models DB models
  * @param {Response} res Response object 
  * @param {Function} next next step function
  * @returns 204 no content response as confirmation of followship
- * @returns invalid slug: 400 JSON response { error: invalid user slug }
- * @returns follower not found: 404 JSON response { error: follower not found }
  * @returns not following path user: 404 JSON response { error: not following }
 */
 const isFollowingHandler = async (req, res) => {
-  const { followerSlug } = req.params;
-  const { pathUser, models } = req.context;
+  const { pathUser, pathFollower } = req.context;
 
-  const username = followerSlug.replace('@', '');
-  if (username.length !== followerSlug.length - 1) {
-    return res.status(400).json({ error: 'invalid user slug' });
-  }
-
-  const follower = await models.User.findOne({ username }, '_id');
-  if (!follower) return res.status(404).json({ error: 'follower not found' });
-
-  const isFollowing = pathUser.followers.some(id => id.toString() === follower.id);
+  const isFollowing = pathUser.followers.some(id => id.toString() === pathFollower.id);
   if (!isFollowing) return res.status(404).json({ error: 'not following' });
 
   return res.sendStatus(204); // lightweight confirmation response
