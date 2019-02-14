@@ -31,7 +31,9 @@ const newStoryHandler = async (req, res) => {
  */
 const latestStoriesHandler = async (req, res) => {
   const { query, context: { models } } = req;
-  return res.json(models.Story.getLatestStories(query));
+
+  const responseData = await models.Story.getLatestStories(query);
+  return res.json(responseData);
 };
 
 module.exports = {
