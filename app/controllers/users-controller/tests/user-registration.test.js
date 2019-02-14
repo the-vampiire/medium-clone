@@ -72,6 +72,7 @@ describe('POST /users: User registration middleware and handler', () => {
       const hashedPassword = 'a hashed one';
       bcrypt.hash = jest.fn(() => hashedPassword);
 
+      const SALT_ROUNDS = 1;
       const body = { username, password };
       const UserMock = { create: jest.fn(() => userMock) };
       const responseShapeMock = { links: { userURL: 'this is a url' } };
@@ -79,7 +80,7 @@ describe('POST /users: User registration middleware and handler', () => {
       const models = { User: UserMock };
 
       beforeAll(() => {
-        process.env.SALT_ROUNDS = 1;
+        process.env.SALT_ROUNDS = SALT_ROUNDS;
         registerUserHandler({ body, context: { models } }, resMock);
       });
 
@@ -89,8 +90,7 @@ describe('POST /users: User registration middleware and handler', () => {
       });
 
       test('hashes the user password before creation', () => {
-        // process.env vars are loaded as strings, use string "1"
-        expect(bcrypt.hash).toHaveBeenCalledWith(body.password, '1');
+        expect(bcrypt.hash).toHaveBeenCalledWith(body.password, SALT_ROUNDS);
       });
 
       test('creates a new User and converts it to the User Response Shape', async () => {
