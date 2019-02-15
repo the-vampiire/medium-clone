@@ -15,11 +15,11 @@ describe('Story-Clap middleware', () => {
     const models = { Clap: { findOne: jest.fn() } };
     const reqMock = { context: { models, pathUser, pathStory, } };
 
-    test('clap not found: returns a 400 JSON response { error: "clap not found" }', async () => {
+    test('clap not found: returns a 404 JSON response { error: "clap not found" }', async () => {
       models.Clap.findOne.mockImplementation(() => null);
 
       await injectStoryClap(reqMock, resMock);
-      expect(resMock.status).toHaveBeenCalledWith(400);
+      expect(resMock.status).toHaveBeenCalledWith(404);
       expect(resMock.json).toHaveBeenCalledWith({ error: 'clap not found' });
 
       jest.clearAllMocks();
