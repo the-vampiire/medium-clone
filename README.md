@@ -103,7 +103,7 @@ Represents a member of the community
 - the `links` field contains resource links to the user's owned resources
 
 ### `/users/`: Users Collection entry point
-- `POST`: register a new user account
+- register a new user account: `POST` `/users` 
   - request payload: `{ username: String, password: String, verifyPassword: String }`
     - username restrictions: [3-20 chars] alpha, numeric, `-`, and `_`
     - password restrictions: [6+ chars]
@@ -124,47 +124,46 @@ Represents a member of the community
 - global errors
   - user not found: `404` status code
   - invalid user slug: `400` status code
-- `GET` `/users/:userSlug/`: User discovery
+- User discovery: `GET` `/users/:userSlug/`
   - response payload: [User](#User%20Schema)
-- `GET` `/users/:userSlug/stories`: Author's published stories
+- User's published stories: `GET` `/users/:userSlug/stories`
   - sorted by published date descending
   - response payload: `{ stories, pagination }`
     - `stories` shape: [[Story]](#Story%20Schema)
     - `pagination` shape: [Pagination](#Pagination)
-- `GET` `/users/:userSlug/responses`: Reader's published responses
+- User's published story responses: `GET` `/users/:userSlug/responses`
   - sorted by published date descending
   - response payload: `{ responses, pagination }`
     - `responses` shape: [[Story]](#Story%20Schema)
     - `pagination` shape: [Pagination](#Pagination)
-- `GET` `/users/:userSlug/clapped`: Stories the reader has clapped for
+- Stories the User has clapped for: `GET` `/users/:userSlug/clapped`
   - sorted by clap count descending
   - response payload: `{ clapped_stories, pagination }`
     - `clapped_stories` shape: [{ clap, story }]
       - `clap` shape: [Clap](#Clap%20Schema)
       - `story` shape: [Story](#Story%20Schema)
     - `pagination` shape: [Pagination](#Pagination)
-- `GET` `/users/:userSlug/following`: Users the User is following
+- Members the User is following: `GET` `/users/:userSlug/following`
   - response payload: `{ followed_users, pagination }`
     - `followed_users` shape: [[User]](#User%20Schema)
     - `pagination` shape: [Pagination](#Pagination)
-- `GET` `/users/:userSlug/followers/`: Users following the User
+- Members following the User: `GET` `/users/:userSlug/followers/`
   - response payload: `{ followers, pagination }`
     - `followers` shape: [[User]](User%20Schema)
     - `pagination` shape: [Pagination](#Pagination)
-- `POST` `/users/:userSlug/followers/`: Follow the User
+- Follow the User: `POST` `/users/:userSlug/followers/`
   - **authentication required** see [Authentication](#Authentication)
-  - the authenticated user follows the User
   - success response
     - `201` status code with Location header to the new follower
   - errors
     - following self: `403` status code
     - already following: `400` status code
-- `GET` `/users/:userSlug/followers/:followerSlug`: Following confirmation
+- Following confirmation: `GET` `/users/:userSlug/followers/:followerSlug`
   - the `followerSlug` is the user slug for the follower
   - responses
     - is following: `204` status code, no-content response
     - is not following: `404` status code
-- `DELETE` `/users/:userSlug/followers/:followerSlug`: Following confirmation
+- Unfollow the User: `DELETE` `/users/:userSlug/followers/:followerSlug`
   - **authentication required** see [Authentication](#Authentication)
   - **follow ownership required** the authenticated user must match the `followerSlug`
   - success response
@@ -175,3 +174,7 @@ Represents a member of the community
     - not following: `400` status code
 
 ## Story
+### Story Schema
+
+## Clap
+### Clap Schema
