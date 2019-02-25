@@ -39,12 +39,22 @@ ENCRYPTION_SECRET=even secreter
 - all errors will include the appropriate status code and an `{ error }` JSON response describing the request error (unless otherwise specified)
 
 ## Authentication
-- Requesting an access token - see [Tokens](#Tokens)
 - All endpoints that require authentication must include an `Authorization` header
   - `{ headers: { 'Authorization': Bearer <ACCESS TOKEN> } }`
 - If an access token is invalid or invalidated you will receive the following error
   - `401` status code `{ error: failed to authenticate }`
   - authorization is endpoint dependent and errors will be listed under the respective endpoint description
+### Requesting an Access Token
+- Access tokens are signed JWT with a 48 hour expiration
+- **After a [user account has been registered](#/users/:%20Users%20Collection%20entry%20point)** a new access token can be requested
+- `POST` `/tokens`: Create a new access token
+  - success response: `{ token }`
+    - use this `token` in all subsequent requests, see [Authentication](#Authentication)
+  - errors
+    - missing username: `400` status code
+    - missing password: `400 status code`
+    - invalid credentials: `401` status code
+      - **note** to limit exposure there is no further detail on whether the `username` and / or `password` credentials are invalid
 
 ## Pagination
 - paginable resources will contain a `pagination` field of the following shape:
@@ -67,18 +77,6 @@ ENCRYPTION_SECRET=even secreter
     - will return the 5th page of results with up to 3 results per page
 
 # Entities
-
-## Token
-- Access tokens are signed JWT with 48 hour expiration
-- **After a [user account has been registered](#/users/:%20Users%20Collection%20entry%20point)** a new access token can be requested
-- `POST` `/tokens`: Create a new access token
-  - success response: `{ token }`
-    - use this `token` in all subsequent requests, see [Authentication](#Authentication)
-  - errors
-    - missing username: `400` status code
-    - missing password: `400 status code`
-    - invalid credentials: `401` status code
-      - **note** to limit exposure there is no further detail on whether the `username` and / or `password` credentials are invalid
 
 ## User
 Represents a member of the community
