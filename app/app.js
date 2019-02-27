@@ -9,6 +9,7 @@ const app = express();
 app.use(...appMiddleware);
 
 // -- ENDPOINTS -- //
+app.use('/me', controllers.MeController);
 app.use('/users', controllers.UsersController);
 app.use('/tokens', controllers.TokensController);
 app.use('/stories', controllers.StoriesController);
