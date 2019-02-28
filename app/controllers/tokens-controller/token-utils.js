@@ -2,80 +2,87 @@ const jwt = require('jsonwebtoken');
 const cryptoJS = require('crypto-js');
 
 /**
+ * WTF uuID generator...
+ * wizardry -> https://gist.github.com/jed/982883
+ * @param {string} a I don't know and at this point I'm too afraid to ask
+ */
+const wtfID = () => {
+  const b = a=>a?(a^Math.random()*16>>a/4).toString(16):([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,b);
+  return b();
+}
+
+/**
  * AES encryption of a User ID
  * @param {string} id User ID to encrypt
- * @requires process.env: ENCRYPTION_SECRET
+ * @param {string} encryptionSecret: encryption secret
  * @returns {string} encrypted ID 
  */
-const encryptID = (id) => {
-  const { ENCRYPTION_SECRET } = process.env;
-  const cipher = cryptoJS.AES.encrypt(id, ENCRYPTION_SECRET);
+const encryptID = (id, encryptionSecret) => {
+  const cipher = cryptoJS.AES.encrypt(id, encryptionSecret);
   return cipher.toString();
 };
 
 /**
  * AES decryption of an encrypted User ID
  * @param {string} encryptedID Encrypted ID to decrypt
- * @requires process.env: ENCRYPTION_SECRET
+ * @param {string} encryptionSecret: encryption secret
  * @returns {string} decrypted ID 
  */
-const decryptID = (encryptedID) => {
-  const { ENCRYPTION_SECRET } = process.env;
-  const bytes = cryptoJS.AES.decrypt(encryptedID, ENCRYPTION_SECRET);
+const decryptID = (encryptedID, encryptionSecret) => {
+  const bytes = cryptoJS.AES.decrypt(encryptedID, encryptionSecret);
   return bytes.toString(cryptoJS.enc.Utf8);
 }
 
 /**
- * Parses the JWT_OPTIONS String from the process environment
- * @param {string} stringOptions options in String form: "option: value, optionN: valueN, ..."
- * @returns {object} { algorithm, expiresIn, issuer }
+ * Creates a JWT { sub } payload
+ * @param {User} authedUser Authenticated User from request
+ * @param {string} encryptionSecret encryption secret
+ * @returns {object} { sub: <encrypted ID> }
  */
-const parseTokenOptions = stringOptions => stringOptions
-  .split(', ')
-  .reduce(
-    (options, option) => {
-      const [optionKey, optionValue] = option.split(': ');
-      options[optionKey] = optionValue;
-      return options;
-    },
-    {},
-  );
+const createTokenPayload = (authedUser, encryptionSecret) => {
+  const encryptedID = encryptID(authedUser.id, encryptionSecret);
+  return { sub: encryptedID };
+}; 
 
 /**
- * Creates a JWT authentication token payload
- * @param {User} authedUser Authenticated User from request 
- * @returns {object} { id: <encrypted> }
- */
-const createTokenPayload = authedUser => ({ id: encryptID(authedUser.id) }); 
-
-/**
- * Creates an authentication token
+ * Creates a signed JWT using HS256 signing algorithm
+ * - generates a unique (uuID) jwtID/jti token field
  * @param {User} authedUser the authenticated User
- * @requires process.env: JWT_SECRET, JWT_OPTIONS
- * @returns JWT
+ * @param {string} env.DOMAIN for the issuer field of the JWT
+ * @param {string} env.ENCRYPTION_SECRET for encrypting the { sub } JWT payload 
+ * @param {string} options.expiresIn JWT lifespan
+ * @param {string} options.signingSecret JWT signing secret
+ * @returns signed JWT
  */
-const createToken = (authedUser) => {
-  const { JWT_SECRET, JWT_OPTIONS } = process.env;
-  const options = parseTokenOptions(JWT_OPTIONS);
-  const payload = createTokenPayload(authedUser);
-  
-  return jwt.sign(payload, JWT_SECRET, options);
+const createToken = (authedUser, env, options) => {
+  const { DOMAIN, ENCRYPTION_SECRET } = env;
+  const { signingSecret, expiresIn } = options;
+
+  const payload = createTokenPayload(authedUser, ENCRYPTION_SECRET);
+
+  const tokenOptions = {
+    expiresIn,
+    issuer: DOMAIN,
+    jwtid: wtfID(),
+    algorithm: 'HS256',
+  };
+
+  return jwt.sign(payload, signingSecret, tokenOptions);
 }
+
 /**
  * Verifies the JWT
- * @param {string} bearerToken Authorization Bearer JWT to verify
- * @requires process.env: JWT_SECRET, JWT_OPTIONS
- * @returns null if token fails verification
- * @returns token if verification succeeds
+ * @param {string} token JWT to verify
+ * @param {string} tokenSecret secret for the JWT
+ * @param {string} issuer JWT issuer (API domain)
+ * @returns verification failure: null
+ * @returns verification success: decoded token
  */
-const verifyToken = (bearerToken) => {
-  const { JWT_SECRET, JWT_OPTIONS } = process.env;
- 
-  const { issuer, algorithm } = parseTokenOptions(JWT_OPTIONS);
-  const verifyOptions = { issuer, algorithms: [algorithm] };
+const verifyToken = (token, tokenSecret, issuer) => {
+  const verifyOptions = { issuer, algorithms: ['HS256'] };
 
   try {
-    return jwt.verify(bearerToken, JWT_SECRET, verifyOptions);
+    return jwt.verify(token, tokenSecret, verifyOptions);
   } catch(error) {
     return null;
   }
@@ -84,7 +91,6 @@ const verifyToken = (bearerToken) => {
 module.exports = {
   encryptID,
   decryptID,
-  parseTokenOptions,
   createTokenPayload,
   createToken,
   verifyToken,
