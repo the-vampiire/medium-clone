@@ -1,24 +1,13 @@
 const jwt = require('jsonwebtoken');
 
+const { mockENV, authedUserMock } = require('./mocks');
 const {
   encryptID,
   decryptID,
   createTokenPayload,
   createToken,
   verifyToken,
-  createAccessToken,
-  verifyAccessToken,
-  createRefreshToken,
-  verifyRefreshToken,
-  attachRefreshCookie,
 } = require('../token-utils');
-
-const authedUserMock = { id: 'anID' };
-
-const mockENV = {
-  DOMAIN: 'api domain',
-  ENCRYPTION_SECRET: 'encryption bits',
-};
 
 describe('Authentication Token utilities', () => {
   test('encryptID(): encrypts a User ID string', () => {
