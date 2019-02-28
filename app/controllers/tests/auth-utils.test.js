@@ -1,20 +1,19 @@
-const { decryptID, verifyToken } = require('../../controllers/tokens-controller/token-utils');
-const { failedAuthResponse } = require('../controller-utils');
+const { decryptID, verifyToken } = require('../tokens-controller/token-utils');
 
 const {
-  extractBearerToken,
   getAuthedUser,
   requireAuthedUser,
-} = require('../require-authed-user');
+  extractBearerToken,
+  failedAuthResponse,
+} = require('../auth-utils');
 
-jest.mock('../controller-utils.js', () => ({ failedAuthResponse: jest.fn() }));
 jest.mock('../../controllers/tokens-controller/token-utils.js', () => ({
   decryptID: jest.fn(),
   verifyToken: jest.fn(),
 }));
 
 const resMock = {
-  json: content => content,  
+  json: jest.fn(),  
   status: jest.fn(() => resMock),
 };
 
@@ -25,6 +24,14 @@ const modelsMock = { User: { findById: () => userMock } };
 
 describe('Required Authed User utilities', () => {
   afterEach(() => jest.clearAllMocks());
+
+  test('failedAuthResponse(): returns a 401 not authed JSON response', () => {
+    const notAuthedContent = { error: 'not authenticated' };
+    
+    failedAuthResponse(resMock);
+    expect(resMock.status).toHaveBeenCalledWith(401);
+    expect(resMock.json).toHaveBeenCalledWith(notAuthedContent);
+  });
 
   describe('extractBearerToken(): extracts the Bearer JWT from Authorization header', () => {
     test('given auth header: returns JWT', () => {
@@ -90,7 +97,7 @@ describe('Required Authed User utilities', () => {
       const reqMock = { headers: { authorization: '' }, context: {} };
       
       await requireAuthedUser(reqMock, resMock);
-      expect(failedAuthResponse).toBeCalled();
+      expect(resMock.status).toBeCalledWith(401);
     });
 
     test('authed user not found: returns not authed response', async () => {
@@ -100,7 +107,7 @@ describe('Required Authed User utilities', () => {
       };
     
       await requireAuthedUser(reqMock, resMock);
-      expect(failedAuthResponse).toBeCalled();
+      expect(resMock.status).toBeCalledWith(401);
     });
   });
 });

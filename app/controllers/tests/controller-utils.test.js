@@ -11,14 +11,6 @@ const resMock = {
 }
 
 describe('Shared Controller Utilities', () => {
-  test('failedAuthResponse(): returns a 401 not authed JSON response', () => {
-    const notAuthedContent = { error: 'not authenticated' };
-    
-    failedAuthResponse(resMock);
-    expect(resMock.status).toHaveBeenCalledWith(401);
-    expect(resMock.json).toHaveBeenCalledWith(notAuthedContent);
-  });
-
   describe('extractFieldErrors(): extracts Mongo ValidationError messages for field(s)', () => {
     const validationError = {
       errors: { 

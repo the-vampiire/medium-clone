@@ -1,7 +1,7 @@
 const express = require('express');
 
 const { requireClapOwnership } = require('./reader-clap-middleware');
-const { requireAuthedUser } = require('../../../../require-authed-user');
+const { requireAuthedUser } = require('../../../../auth-utils');
 const {
   readerClapDiscoveryHandler,
   updateReaderClapHandler,

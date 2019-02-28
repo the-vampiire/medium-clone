@@ -1,4 +1,3 @@
-const { failedAuthResponse } = require('./controller-utils');
 const { decryptID, verifyToken } = require('./tokens-controller/token-utils');
 
 /**
@@ -32,11 +31,18 @@ const getAuthedUser = async (bearerToken, models) => {
 };
 
 /**
+ * Returns a not authed response
+ * @param {Response} res Response objecet
+ * @returns 401 JSON response { error: 'not authenticated' } 
+ */
+const failedAuthResponse = res => res.status(401).json({ error: 'not authenticated' });
+
+/**
  * Injects an authedUser property on the Request object and calls next()
  * @param {Request} req Request object
  * @param {Response} res Response object
  * @param {Function} next Next step function
- * @returns on failure: returns 401 JSON response { error }
+ * @returns on failure: returns 401 JSON response { error } 
  */
 const requireAuthedUser = async (req, res, next) => {
   const { headers, context: { models } } = req;
@@ -52,7 +58,8 @@ const requireAuthedUser = async (req, res, next) => {
 };
 
 module.exports = {
-  extractBearerToken,
   getAuthedUser,
   requireAuthedUser,
+  extractBearerToken,
+  failedAuthResponse,
 };

@@ -1,6 +1,6 @@
 const express = require('express');
 
-const { requireAuthedUser } = require('../require-authed-user');
+const { requireAuthedUser } = require('../auth-utils');
 const { exchangeSlugForStory, StoryController } = require('./story-controller');
 const { latestStoriesHandler, newStoryHandler } = require('./stories-route-handlers');
 

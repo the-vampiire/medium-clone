@@ -27,15 +27,7 @@ const newResourceResponse = (responseData, urlName, res) => {
   return res.status(201).json(responseData);
 }
 
-/**
- * Returns a not authed response
- * @param {Response} res Response objecet
- * @returns 401 JSON response { error: 'not authenticated' } 
- */
-const failedAuthResponse = res => res.status(401).json({ error: 'not authenticated' });
-
 module.exports = {
   extractFieldErrors,
   newResourceResponse,
-  failedAuthResponse,
 };
