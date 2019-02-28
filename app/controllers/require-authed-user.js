@@ -1,3 +1,4 @@
+const { failedAuthResponse } = require('./controller-utils');
 const { decryptID, verifyToken } = require('./tokens-controller/token-utils');
 
 /**
@@ -11,15 +12,8 @@ const extractBearerToken = (headers) => {
   if (!authorization) return null;
 
   const [bearer, token] = authorization.split(' ');
-  return (!bearer || !token) ? null : token;
+  return (bearer !== 'Bearer' || !token) ? null : token;
 };
-
-/**
- * Returns a not authed response
- * @param {Response} res Response objecet
- * @returns 401 JSON response { error: 'not authenticated' } 
- */
-const notAuthedResponse = res => res.status(401).json({ error: 'not authenticated' });
 
 /**
  * Verifies the JWT and exchanges it for an Authenticated User
@@ -48,10 +42,10 @@ const requireAuthedUser = async (req, res, next) => {
   const { headers, context: { models } } = req;
 
   const bearerToken = extractBearerToken(headers);
-  if (!bearerToken) return notAuthedResponse(res);
+  if (!bearerToken) return failedAuthResponse(res);
 
   const authedUser = await getAuthedUser(bearerToken, models);
-  if (!authedUser) return notAuthedResponse(res);
+  if (!authedUser) return failedAuthResponse(res);
 
   req.context.authedUser = authedUser;
   next();
@@ -59,7 +53,6 @@ const requireAuthedUser = async (req, res, next) => {
 
 module.exports = {
   extractBearerToken,
-  notAuthedResponse,
   getAuthedUser,
   requireAuthedUser,
 };
