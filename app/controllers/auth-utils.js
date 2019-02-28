@@ -1,4 +1,5 @@
-const { decryptID, verifyToken } = require('./tokens-controller/token-utils');
+const { decryptID } = require('./tokens-controller/token-utils');
+const { verifyAccessToken } = require('./tokens-controller/access-token-utils');
 
 /**
  * Extracts the Bearer token from the Authorization header
@@ -15,18 +16,18 @@ const extractBearerToken = (headers) => {
 };
 
 /**
- * Verifies the JWT and exchanges it for an Authenticated User
- * @param {string} bearerToken Authorization Bearer JWT 
+ * Verifies the access JWT and exchanges it for an Authenticated User
+ * @param {string} bearerToken Authorization Bearer access JWT 
  * @param {object} models Database models
- * @param {User} models.User User model
- * @requires process.env: JWT_SECRET
- * @returns null if token verification fails or User is not found
+ * @param {object} env environment variables
+ * @returns success: authenticated User
+ * @returns token verification or User auth fail: null
  */
-const getAuthedUser = async (bearerToken, models) => {
-  const token = verifyToken(bearerToken);
+const getAuthedUser = async (bearerToken, models, env) => {
+  const token = verifyAccessToken(bearerToken, env);
   if (!token) return null;
 
-  const userID = decryptID(token.id);
+  const userID = decryptID(token.sub);
   return models.User.findById(userID);
 };
 
@@ -45,12 +46,12 @@ const failedAuthResponse = res => res.status(401).json({ error: 'not authenticat
  * @returns on failure: returns 401 JSON response { error } 
  */
 const requireAuthedUser = async (req, res, next) => {
-  const { headers, context: { models } } = req;
+  const { headers, context: { models, env } } = req;
 
   const bearerToken = extractBearerToken(headers);
   if (!bearerToken) return failedAuthResponse(res);
 
-  const authedUser = await getAuthedUser(bearerToken, models);
+  const authedUser = await getAuthedUser(bearerToken, models, env);
   if (!authedUser) return failedAuthResponse(res);
 
   req.context.authedUser = authedUser;

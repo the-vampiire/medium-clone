@@ -1,4 +1,5 @@
-const { decryptID, verifyToken } = require('../tokens-controller/token-utils');
+const { decryptID } = require('../tokens-controller/token-utils');
+const { verifyAccessToken } = require('../tokens-controller/access-token-utils');
 
 const {
   getAuthedUser,
@@ -9,7 +10,10 @@ const {
 
 jest.mock('../../controllers/tokens-controller/token-utils.js', () => ({
   decryptID: jest.fn(),
-  verifyToken: jest.fn(),
+}));
+
+jest.mock('../../controllers/tokens-controller/access-token-utils.js', () => ({
+  verifyAccessToken: jest.fn(),
 }));
 
 const resMock = {
@@ -53,7 +57,7 @@ describe('Required Authed User utilities', () => {
 
   describe('getAuthedUser(): exchanges a Bearer JWT for its corresponding User', () => {
     test('invalid token: returns null', async () => {
-      verifyToken.mockImplementationOnce(() => null);
+      verifyAccessToken.mockImplementationOnce(() => null);
 
       const badToken = 'iWasABadTokie';
       const output = await getAuthedUser(badToken);
@@ -61,7 +65,7 @@ describe('Required Authed User utilities', () => {
     });
 
     test('user not found: returns null', async () => {
-      verifyToken.mockImplementationOnce(() => true);
+      verifyAccessToken.mockImplementationOnce(() => true);
       decryptID.mockImplementationOnce(() => 'id');
 
       const failModels = { User: { findById: () => null } };
@@ -70,7 +74,7 @@ describe('Required Authed User utilities', () => {
     });
 
     test('valid token and User ID: returns authenticated User', async () => {
-      verifyToken.mockImplementationOnce(() => true);
+      verifyAccessToken.mockImplementationOnce(() => true);
       decryptID.mockImplementationOnce(() => 'id');
 
       const output = await getAuthedUser('a tokie', modelsMock);
@@ -80,7 +84,7 @@ describe('Required Authed User utilities', () => {
 
   describe('requiredAuthedUser(): verifies authentication and injects req.authedUser', () => {
     test('authenticated request: injects req.context.authedUser and calls next()', async () => {
-      verifyToken.mockImplementationOnce(() => true);
+      verifyAccessToken.mockImplementationOnce(() => true);
       decryptID.mockImplementationOnce(() => 'id');
       
       const reqMock = { 
