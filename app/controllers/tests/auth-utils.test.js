@@ -29,8 +29,8 @@ const modelsMock = { User: { findById: () => userMock } };
 describe('Required Authed User utilities', () => {
   afterEach(() => jest.clearAllMocks());
 
-  test('failedAuthResponse(): returns a 401 not authed JSON response', () => {
-    const notAuthedContent = { error: 'not authenticated' };
+  test('failedAuthResponse(): returns a 401 failed to auth JSON response', () => {
+    const notAuthedContent = { error: 'failed to authenticate' };
     
     failedAuthResponse(resMock);
     expect(resMock.status).toHaveBeenCalledWith(401);

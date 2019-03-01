@@ -34,9 +34,9 @@ const getAuthedUser = async (bearerToken, models, env) => {
 /**
  * Returns a not authed response
  * @param {Response} res Response objecet
- * @returns 401 JSON response { error: 'not authenticated' } 
+ * @returns 401 JSON response { error: 'failed to authenticate' } 
  */
-const failedAuthResponse = res => res.status(401).json({ error: 'not authenticated' });
+const failedAuthResponse = res => res.status(401).json({ error: 'failed to authenticate' });
 
 /**
  * Injects an authedUser property on the Request object and calls next()
