@@ -1,3 +1,6 @@
+const { failedAuthResponse } = require('../auth-utils');
+const { verifyRefreshToken } = require('./refresh-token-utils');
+
 /**
  * Verifies the authentication payload and calls next() if payload:
  * - includes username
@@ -24,7 +27,7 @@ const verifyPayload = (req, res, next) => {
  * @param {object} req.models Database models
  * @param {Response} res Response object
  * @param {Function} next next step function
- * @returns if user is not found or password mismatch 400 response with { error }
+ * @returns failure: 401 JSON response { error }
  */
 const authenticateRequest = async (req, res, next) => {
   const { body: { username, password }, context: { models } } = req;
@@ -35,7 +38,7 @@ const authenticateRequest = async (req, res, next) => {
   if (!authenticated) {
     // do not provide any additional details
     // attack workload has doubled (could be username OR password)
-    return res.status(401).json({ error: 'failed to authenticate' });
+    return failedAuthResponse(res);
   }
 
   // inject the authenticated user into the request object
@@ -43,7 +46,30 @@ const authenticateRequest = async (req, res, next) => {
   next();
 };
 
+/**
+ * Validates the refresh JWT and ensures it has not been revoked
+ * - success: calls next()
+ * @param req.signedCookies.refresh_token refresh JWT
+ * @param req.context.env environment variables
+ * @param req.context.models.RevokedRefreshToken revoked model
+ * @returns token verficiation fails: 401 JSON response { error }
+ * @returns token is revoked: 401 JSON response { error }
+ */
+const validateRefreshToken = async (req, res, next) => {
+  const { refresh_token } = req.signedCookies;
+  const { env, models: { RevokedRefreshToken } } = req.context;
+
+  const token = verifyRefreshToken(refresh_token, env);
+  if (!token) return failedAuthResponse(res);
+
+  const isRevoked = await RevokedRefreshToken.isRevoked(token);
+  if (isRevoked) return res.status(401).json({ error: 'revoked token' });
+
+  next();
+};
+
 module.exports = {
   verifyPayload,
   authenticateRequest,
+  validateRefreshToken,
 };
