@@ -1,16 +1,18 @@
 const { mockENV, authedUserMock } = require('./mocks');
 const { createToken, verifyToken } = require('../token-utils');
 
-const {
-  createRefreshToken,
-  verifyRefreshToken,
-  attachRefreshCookie,
-} = require('../refresh-token-utils');
-
 jest.mock('../token-utils.js', () => ({
   createToken: jest.fn(),
   verifyToken: jest.fn(),
 }));
+
+const {
+  createRefreshToken,
+  verifyRefreshToken,
+  attachRefreshCookie,
+  removeRefreshCookie,
+  refreshCookieOptions,
+} = require('../refresh-token-utils');
 
 describe('Access Token utils', () => {
   afterEach(() => jest.clearAllMocks());
@@ -33,28 +35,49 @@ describe('Access Token utils', () => {
     expect(domain).toBe(mockENV.DOMAIN);
   });
 
-  describe('attachRefreshCookie(): attaches the refresh token in a response cookie', () => {
+  describe('refreshCookieOptions(): configures cookie options ', () => {
+    const output = refreshCookieOptions(mockENV);
+
+    test('sets signed, httpOnly, sameSite (strict), secure, domain, and path [/tokens] flags', () => {
+      expectedOptions = {
+        signed: true,
+        httpOnly: true,
+        path: '/tokens',
+        domain: mockENV.DOMAIN,
+        sameSite: 'strict',
+        secure: mockENV.NODE_ENV === 'production',
+      };
+      
+      Object.keys(expectedOptions).forEach(
+        field => expect(output[field]).toBe(expectedOptions[field]),
+      );
+    });
+
+    test('NODE_ENV = test || development: sets secure flag false', () => {
+      const env = { ...mockENV, NODE_ENV: 'test' };
+      const output = refreshCookieOptions(env);
+      expect(output.secure).toBe(false);
+    });
+
+    test('NODE_ENV = production: sets secure flag true', () => {
+      const env = { ...mockENV, NODE_ENV: 'production' };
+      const output = refreshCookieOptions(env);
+      expect(output.secure).toBe(true);
+    }); 
+  });
+
+  test('attachRefreshCookie(): attaches the refresh token in a response cookie', () => {
     const resMock = { cookie: jest.fn() };
     const token = 'refreshy boi';
 
     attachRefreshCookie(resMock, token, mockENV);
-    const [name, value, calledOptions] = resMock.cookie.mock.calls[0];
+    expect(resMock.cookie).toBeCalledWith('refresh_token', token, refreshCookieOptions(mockENV));
+  });
 
-    test('sets signed, httpOnly, and sameSite (strict) flags', () => {
-      expectedOptions = {
-        signed: true,
-        httpOnly: true,
-        sameSite: 'strict',
-      };
-      
-      Object.keys(expectedOptions).forEach(
-        field => expect(calledOptions[field]).toBe(expectedOptions[field]),
-      );
-    });
+  test('removeRefreshCookie(): removes refresh token cookie from response', () => {
+    const resMock = { clearCookie: jest.fn() };
 
-    test('sets domain [env.DOMAIN] and path [/tokens] flags', () => {
-      expect(calledOptions.path).toBe('/tokens');
-      expect(calledOptions.domain).toBe(mockENV.DOMAIN);
-    });
+    removeRefreshCookie(resMock, mockENV);
+    expect(resMock.clearCookie).toBeCalledWith('refresh_token', refreshCookieOptions(mockENV));
   });
 });
