@@ -76,11 +76,12 @@ describe('Token Controller Middleware', () => {
       context: { models: { RevokedRefreshToken }, env: {} },
     };
 
-    test('validation success: calls next()', async () => {
-      verifyRefreshToken.mockImplementationOnce(() => true);
+    test('validation success: injects req.context.refreshToken and calls next()', async () => {
+      verifyRefreshToken.mockImplementationOnce(() => refresh_token);
       RevokedRefreshToken.isRevoked.mockImplementationOnce(() => false);
 
       await validateRefreshToken(reqMock, resMock, nextMock);
+      expect(reqMock.context.refreshToken).toBe(refresh_token);
       expect(nextMock).toBeCalled();
     });
 

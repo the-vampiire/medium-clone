@@ -48,7 +48,7 @@ const authenticateRequest = async (req, res, next) => {
 
 /**
  * Validates the refresh JWT and ensures it has not been revoked
- * - success: calls next()
+ * - success: injects req.context.refreshToken and calls next()
  * @param req.signedCookies.refresh_token refresh JWT
  * @param req.context.env environment variables
  * @param req.context.models.RevokedRefreshToken revoked model
@@ -65,6 +65,7 @@ const validateRefreshToken = async (req, res, next) => {
   const isRevoked = await RevokedRefreshToken.isRevoked(token);
   if (isRevoked) return res.status(401).json({ error: 'revoked token' });
 
+  req.context.refreshToken = token;
   next();
 };
 
