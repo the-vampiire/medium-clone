@@ -15,6 +15,9 @@ describe('Revoked Refresh Token', () => {
     const refreshToken = { jti: 'tokieID', exp };
 
     describe('revoke(): revokes a valid refresh JWT', () => {
+      // cleanup after test
+      afterAll(() => RevokedRefreshToken.deleteOne({ jwtID: refreshToken.jti }));
+
       test('returns true: creates a revoked entry with auto-deletion at JWT [exp + 1hr]', async () => {
         const output = await RevokedRefreshToken.revoke(refreshToken);
         expect(output).toBe(true);
@@ -37,6 +40,22 @@ describe('Revoked Refresh Token', () => {
         } catch (error) {
           expect(error).toEqual({ status: 500, message: 'failed to revoke' });
         }
+      });
+    });
+
+    describe('isRevoked(): checks if a refresh token is revoked', () => {
+      beforeAll(() => RevokedRefreshToken.revoke(refreshToken));
+      afterAll(() => RevokedRefreshToken.deleteOne({ jwtID: refreshToken.jti }));
+
+      test('returns true: token is revoked', async () => {
+        const output = await RevokedRefreshToken.isRevoked(refreshToken);
+        expect(output).toBe(true);
+      });
+
+      test('returns false: token is not revoked', async () => {
+        const validRefresh = { ...refreshToken, jti: 'valid tokie' };
+        const output = await RevokedRefreshToken.isRevoked(validRefresh);
+        expect(output).toBe(false);
       });
     });
   });

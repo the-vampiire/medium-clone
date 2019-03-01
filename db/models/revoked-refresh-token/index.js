@@ -15,6 +15,7 @@ revokedRefreshTokenSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
  * Revokes a valid refresh JWT
  * - marks for automatic record deletion at JWT expiration + 1 hour buffer
  * @param {JWT} refreshToken
+ * @throws {object} unexpected revocation error: { status: 500, message: 'failed to revoke' }
  * @returns {boolean} success (marked as revoked): true
  * @returns {boolean} failure (already revoked): false
  */
@@ -35,7 +36,19 @@ async function revoke(refreshToken) {
   return true;
 }
 
+/**
+ * Checks if a refresh JWT has been revoked
+ * @param {JWT} refreshToken
+ * @returns {boolean} revoked: true
+ * @returns {boolean} not revoked: false 
+ */
+async function isRevoked(refreshToken) {
+  const matchCount = await this.countDocuments({ jwtID: refreshToken.jti });
+  return matchCount > 0;
+}
+
 revokedRefreshTokenSchema.statics.revoke = revoke;
+revokedRefreshTokenSchema.statics.isRevoked = isRevoked;
 
 const RevokedRefreshToken = mongoose.model('revoked_refresh_tokens', revokedRefreshTokenSchema);
 
