@@ -1,11 +1,14 @@
 const { failedAuthResponse } = require('../../auth-utils');
+const { verifyRefreshToken } = require('../refresh-token-utils');
+
+jest.mock('../../auth-utils.js', () => ({ failedAuthResponse: jest.fn() }));
+jest.mock('../refresh-token-utils.js', () => ({ verifyRefreshToken: jest.fn() }));
+
 const {
   verifyPayload,
   authenticateRequest,
   validateRefreshToken,
 } = require('../tokens-middleware');
-
-jest.mock('../../auth-utils.js', () => ({ failedAuthResponse: jest.fn() }));
 
 const resMock = {
   json: jest.fn(),
@@ -56,11 +59,45 @@ describe('Token Controller Middleware', () => {
       expect(nextMock).toHaveBeenCalled();
     });
 
-    test('failed authentication: responds with 401 status and { error }', async () => {
+    test('failed authentication: sends failed auth response', async () => {
       userMock.verifyPassword.mockImplementationOnce(() => false);
 
       await authenticateRequest(reqMock, resMock, nextMock);
       expect(failedAuthResponse).toBeCalled();
+    });
+  });
+
+  describe('validateRefreshToken(): validates the cookie refresh token', () => {
+    const refresh_token = 'tokie';
+    const RevokedRefreshToken = { isRevoked: jest.fn() };
+    
+    const reqMock = {
+      signedCookies: { refresh_token },
+      context: { models: { RevokedRefreshToken }, env: {} },
+    };
+
+    test('validation success: calls next()', async () => {
+      verifyRefreshToken.mockImplementationOnce(() => true);
+      RevokedRefreshToken.isRevoked.mockImplementationOnce(() => false);
+
+      await validateRefreshToken(reqMock, resMock, nextMock);
+      expect(nextMock).toBeCalled();
+    });
+
+    test('token verficiation fails: sends failed auth response', async () => {
+      verifyRefreshToken.mockImplementationOnce(() => null);
+      
+      await validateRefreshToken(reqMock, resMock, nextMock);
+      expect(failedAuthResponse).toBeCalled();
+    });
+
+    test('token is revoked: 401 JSON response { error: revoked token }', async () => {
+      verifyRefreshToken.mockImplementationOnce(() => true);
+      RevokedRefreshToken.isRevoked.mockImplementationOnce(() => true);
+
+      await validateRefreshToken(reqMock, resMock, nextMock);
+      expect(resMock.status).toBeCalledWith(401);
+      expect(resMock.json).toBeCalledWith({ error: 'revoked token' });
     });
   });
 });
