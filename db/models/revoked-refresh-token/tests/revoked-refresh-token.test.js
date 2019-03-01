@@ -2,16 +2,31 @@ const mongoose = require('mongoose');
 const RevokedRefreshToken = require('../');
 const { testUtils: { dbConnect, teardown } } = require('../../../utils');
 
+
 describe('Revoked Refresh Token', () => {
   beforeAll(() => dbConnect(mongoose));
   afterAll(() => teardown(mongoose, ['revoked_refresh_tokens']));
 
-  describe('static methods', () => {
-    // 1 hour expiration from now;
-    const hourInSeconds = 1 * 60 * 60;
-    const expireBase = Math.floor((Number(Date.now()) / 1000));
+  /* WARNING: remove skip if any changes made to TTL index in model file */
+  describe.skip('document TTL index', () => {
+    const expireBase = Math.floor((Number(Date.now())));
+    // expire immediately
+    const testData = { jwtID: 'tokie id', expiresAt: expireBase };
 
-    const exp = expireBase + hourInSeconds;
+    test('destroys the document at the [expiresAt] time', async () => {
+      const newDoc = await RevokedRefreshToken.create(testData);
+      expect(newDoc).not.toBeNull();
+
+      setTimeout(async () => {
+        const foundDoc = await RevokedRefreshToken.findById(newDoc.id);
+        expect(foundDoc).toBeNull();
+      }, 100); // 100ms buffer for checking in case of test env delays
+    });
+  });
+
+  describe('static methods', () => {
+    // 1 hour expiration from now
+    const exp = Number(Date.now()) + 1 * 60 * 60 * 1000;
     const refreshToken = { jti: 'tokieID', exp };
 
     describe('revoke(): revokes a valid refresh JWT', () => {
@@ -26,7 +41,7 @@ describe('Revoked Refresh Token', () => {
         expect(revoked).not.toBeNull();
 
         const expiresAt = Number(revoked.expiresAt);
-        expect(expiresAt).toBe(exp + hourInSeconds);
+        expect(expiresAt - exp).toBe(1 * 60 * 60 * 1000)
       });
 
       test('returns false: token has already been revoked (duplicate entry)', async () => {

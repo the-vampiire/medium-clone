@@ -7,6 +7,8 @@ const revokedRefreshTokenSchema = new mongoose.Schema({
 
 // set dynamic TTL index
 // https://docs.mongodb.com/manual/tutorial/expire-data/#expire-documents-at-a-specific-clock-time
+
+/* WARNING: remove describe.skip in test file if any changes made here */
 revokedRefreshTokenSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 // -- STATIC METHODS -- //
@@ -22,7 +24,7 @@ revokedRefreshTokenSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 async function revoke(refreshToken) {
   const { jti: jwtID, exp: expirationSeconds } = refreshToken;
   // auto-deletes from revoked collection 1 hour (buffer) after natural token expiration
-  const expiresAt = expirationSeconds + 1 * 60 * 60;
+  const expiresAt = expirationSeconds + 1 * 60 * 60 * 1000; // Date must be in ms
 
   try {
     await this.create({ jwtID, expiresAt });
