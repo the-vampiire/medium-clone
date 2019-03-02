@@ -79,15 +79,8 @@ describe('POST /users: User registration middleware and handler', () => {
       const userMock = { username, password, toResponseShape: jest.fn(() => responseShapeMock) };
       const models = { User: UserMock };
 
-      beforeAll(() => {
-        process.env.SALT_ROUNDS = SALT_ROUNDS;
-        registerUserHandler({ body, context: { models } }, resMock);
-      });
-
-      afterAll(() => {
-        delete process.env.SALT_ROUNDS;
-        jest.clearAllMocks();
-      });
+      beforeAll(() =>  registerUserHandler({ body, context: { models, env: { SALT_ROUNDS } } }, resMock));
+      afterAll(() =>  jest.clearAllMocks());
 
       test('hashes the user password before creation', () => {
         expect(bcrypt.hash).toHaveBeenCalledWith(body.password, SALT_ROUNDS);
@@ -112,7 +105,7 @@ describe('POST /users: User registration middleware and handler', () => {
       const validationError = new Error(JSON.stringify({ errors: {} }));
       const models = { User: { create: () => { throw validationError } } };
 
-      await registerUserHandler({ body: {}, context: { models } }, resMock);
+      await registerUserHandler({ body: {}, context: { models, env: {} } }, resMock);
       expect(resMock.status).toHaveBeenCalledWith(400);
       expect(resMock.json).toHaveBeenCalledWith({ error: 'registration validation failed', fields: {} });
     });
