@@ -50,20 +50,19 @@ const checkDuplicateRegistration = async (req, res, next) => {
  * - hashes the user's password
  * - registers a new user
  * - sets the Location header for the newly created User URL
- * @requires process.env.SALT_ROUNDS: the number of salt rounds to use for hashing
  * @param {Request} req Request object
  * @param {string} req.body.username the username to register
  * @param {string} req.body.password the password to register
- * @param {object} req.models DB models
+ * @param {object} req.context.models DB models
+ * @param {string} req.context.env.SALT_ROUNDS password encryption salt rounds
  * @param {Response} res Response object
  * @returns validation failure: 400 JSON response with { error, fields: { ... } }
  * @returns 201 JSON response with User Response Shape and Location header
  */
 const registerUserHandler = async (req, res) => {
-  const { body: { username, password }, context: { models } } = req;
+  const { body: { username, password }, context: { env, models } } = req;
 
-  const { SALT_ROUNDS } = process.env;
-  const encryptedPassword = await bcrypt.hash(password, Number(SALT_ROUNDS));
+  const encryptedPassword = await bcrypt.hash(password, Number(env.SALT_ROUNDS));
 
   let newUser;
   try {

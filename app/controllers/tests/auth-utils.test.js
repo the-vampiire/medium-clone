@@ -1,44 +1,40 @@
-const { createToken } = require('../tokens-controller/token-utils');
-const { setupEnv, teardownEnv } = require('../tokens-controller/tests/mocks');
+const { decryptID } = require('../tokens-controller/token-utils');
+const { verifyAccessToken } = require('../tokens-controller/access-token-utils');
+
 const {
-  extractBearerToken,
-  notAuthedResponse,
   getAuthedUser,
   requireAuthedUser,
-} = require('../require-authed-user');
+  extractBearerToken,
+  failedAuthResponse,
+} = require('../auth-utils');
+
+jest.mock('../../controllers/tokens-controller/token-utils.js', () => ({
+  decryptID: jest.fn(),
+}));
+
+jest.mock('../../controllers/tokens-controller/access-token-utils.js', () => ({
+  verifyAccessToken: jest.fn(),
+}));
 
 const resMock = {
-  status() { return this; },
-  json: content => content,  
+  json: jest.fn(),  
+  status: jest.fn(() => resMock),
 };
 
-const statusSpy = jest.spyOn(resMock, 'status');
-const jsonSpy = jest.spyOn(resMock, 'json');
-const nextSpy = jest.fn(() => {});
-
-const notAuthedContent = { error: 'not authenticated' };
+const nextMock = jest.fn();
 
 const userMock = { id: 'someID' };
 const modelsMock = { User: { findById: () => userMock } };
 
 describe('Required Authed User utilities', () => {
-  let tokenMock;
-  beforeAll(() => {
-    setupEnv();
-    tokenMock = createToken(userMock);
-  });
-  afterAll(() => teardownEnv());
+  afterEach(() => jest.clearAllMocks());
 
-  afterEach(() => {
-    statusSpy.mockClear();
-    jsonSpy.mockClear();
-    nextSpy.mockClear();
-  });
-
-  test('notAuthedResponse(): returns a 401 not authed JSON response', () => {
-    notAuthedResponse(resMock);
-    expect(statusSpy).toHaveBeenCalledWith(401);
-    expect(jsonSpy).toHaveBeenCalledWith(notAuthedContent);
+  test('failedAuthResponse(): returns a 401 failed to auth JSON response', () => {
+    const notAuthedContent = { error: 'failed to authenticate' };
+    
+    failedAuthResponse(resMock);
+    expect(resMock.status).toHaveBeenCalledWith(401);
+    expect(resMock.json).toHaveBeenCalledWith(notAuthedContent);
   });
 
   describe('extractBearerToken(): extracts the Bearer JWT from Authorization header', () => {
@@ -61,50 +57,61 @@ describe('Required Authed User utilities', () => {
 
   describe('getAuthedUser(): exchanges a Bearer JWT for its corresponding User', () => {
     test('invalid token: returns null', async () => {
+      verifyAccessToken.mockImplementationOnce(() => null);
+
       const badToken = 'iWasABadTokie';
       const output = await getAuthedUser(badToken);
       expect(output).toBeNull();
     });
 
     test('user not found: returns null', async () => {
+      verifyAccessToken.mockImplementationOnce(() => true);
+      decryptID.mockImplementationOnce(() => 'id');
+
       const failModels = { User: { findById: () => null } };
-      const output = await getAuthedUser(tokenMock, failModels);
+      const output = await getAuthedUser('a tokie', failModels);
       expect(output).toBeNull();
     });
 
     test('valid token and User ID: returns authenticated User', async () => {
-      const output = await getAuthedUser(tokenMock, modelsMock);
+      verifyAccessToken.mockImplementationOnce(() => true);
+      decryptID.mockImplementationOnce(() => 'id');
+
+      const output = await getAuthedUser('a tokie', modelsMock);
       expect(output).toEqual(userMock);
     });
   });
 
   describe('requiredAuthedUser(): verifies authentication and injects req.authedUser', () => {
     test('authenticated request: injects req.context.authedUser and calls next()', async () => {
+      verifyAccessToken.mockImplementationOnce(() => true);
+      decryptID.mockImplementationOnce(() => 'id');
+      
       const reqMock = { 
         context: { models: modelsMock },
-        headers: { authorization: `Bearer ${tokenMock}` },
+        headers: { authorization: 'Bearer atokie' },
       };
       
-      await requireAuthedUser(reqMock, resMock, nextSpy);
+      await requireAuthedUser(reqMock, resMock, nextMock);
       expect(reqMock.context.authedUser).toEqual(userMock);
-      expect(nextSpy).toHaveBeenCalled();
+      expect(nextMock).toHaveBeenCalled();
     });
   
     test('invalid authorization header: returns not authed response', async () => {
       const reqMock = { headers: { authorization: '' }, context: {} };
       
-      const output = await requireAuthedUser(reqMock, resMock);
-      expect(output).toEqual(notAuthedContent);
+      await requireAuthedUser(reqMock, resMock);
+      expect(resMock.status).toBeCalledWith(401);
     });
 
     test('authed user not found: returns not authed response', async () => {
       const reqMock = { 
         context: { models: { User: { findById: () => null } } },
-        headers: { authorization: `Bearer ${tokenMock}` },
+        headers: { authorization: 'Bearer atokie' },
       };
     
-      const output = await requireAuthedUser(reqMock, resMock);
-      expect(output).toEqual(notAuthedContent);
+      await requireAuthedUser(reqMock, resMock);
+      expect(resMock.status).toBeCalledWith(401);
     });
   });
 });

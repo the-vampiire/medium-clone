@@ -1,68 +1,67 @@
 const jwt = require('jsonwebtoken');
 
-const {
-  setupEnv,
-  teardownEnv,
-  secret,
-  stringOptions,
-  authedUserMock,
-} = require('./mocks');
-
+const { mockENV, authedUserMock } = require('./mocks');
 const {
   encryptID,
   decryptID,
-  parseTokenOptions,
   createTokenPayload,
   createToken,
   verifyToken,
 } = require('../token-utils');
 
 describe('Authentication Token utilities', () => {
-  beforeAll(() => setupEnv());
-  afterAll(() => teardownEnv());
-  
   test('encryptID(): encrypts a User ID string', () => {
-    const output = encryptID(authedUserMock.id);
+    const output = encryptID(authedUserMock.id, mockENV.ENCRYPTION_SECRET);
     expect(output).not.toBe(authedUserMock.id);
   });
 
   test('decryptID(): decrypts an encrypted ID string', () => {
-    const encryptedID = encryptID(authedUserMock.id);
-    const output = decryptID(encryptedID);
+    const encryptedID = encryptID(authedUserMock.id, mockENV.ENCRYPTION_SECRET);
+    const output = decryptID(encryptedID, mockENV.ENCRYPTION_SECRET);
     expect(output).toBe(authedUserMock.id);
   });
 
-  test('parseTokenOptions(): parses an env String of JWT options into a JWT options object', () => {
-    const expectedShape = { algorithm: 'HS256', expiresIn: '1h', issuer: 'Medium REST Clone' };
-    const output = parseTokenOptions(stringOptions);
-    expect(output).toEqual(expectedShape);
-  });
-
   test('createTokenPayload(): creates a JWT token payload with an encrypted User ID', () => {
-    const output = createTokenPayload(authedUserMock);
-    expect(output.id).toBeDefined();
-    expect(decryptID(output.id)).toBe(authedUserMock.id);
+    const output = createTokenPayload(authedUserMock.id, mockENV.ENCRYPTION_SECRET);
+    expect(output.sub).toBeDefined();
+    expect(decryptID(output.sub, mockENV.ENCRYPTION_SECRET)).toBe(authedUserMock.id);
   });
 
-  test('createToken(): creates an authentication JWT', async () => {
-    const output = await createToken(authedUserMock);
-    const token = await jwt.verify(output, secret);
+  describe('createToken(): creates a signed JWT', () => {
+    const options = { signingSecret: 'test', expiresIn: '5m' };
+    const token = createToken(authedUserMock.id, mockENV, options);
+    const decoded = jwt.decode(token);
 
-    expect(token.id).toBeDefined();
-    expect(token.iss).toBe('Medium REST Clone');
-  });
-
-  describe('verifyToken(): verifies a Bearer JWT', () => {
-    test('verification fails: returns null', () => {
-      const badToken = 'iAmABadTokie';
-      expect(verifyToken(badToken)).toBeNull();
+    test('sets the [sub] field to the encrypted authedUser ID', () => {
+      const decrypted = decryptID(decoded.sub, mockENV.ENCRYPTION_SECRET);
+      expect(decrypted).toBe(authedUserMock.id);
     });
 
-    test('verification passes: returns token', () => {
-      const token = createToken(authedUserMock);
-      const output = verifyToken(token);
-      const id = decryptID(output.id);
-      expect(id).toBe(authedUserMock.id);
+    test('sets the [iss] field to the env DOMAIN', () => {
+      expect(decoded.iss).toBe(mockENV.DOMAIN);
+    });
+
+    test('generates a uuID for the [jti] field', () => {
+      expect(decoded.jti).toBeDefined();
+      expect(decoded.jti.length).toBe(36);
+    });
+  });
+
+  describe('verifyToken(): verifies a JWT given its secret and issuer', () => {
+    test('valid secret and issuer: returns the decoded token', () => {
+      const options = { signingSecret: 'test', expiresIn: '5m' };
+      const token = createToken(authedUserMock.id, mockENV, options);
+
+      const decoded = verifyToken(token, options.signingSecret, mockENV.DOMAIN);
+      expect(decoded).not.toBeNull();
+    });
+
+    test('invalid options: returns null', () => {
+      const options = { signingSecret: 'test', expiresIn: '5m' };
+      const token = createToken(authedUserMock.id, mockENV, options);
+
+      const decoded = verifyToken(token, 'bad secret', mockENV.DOMAIN);
+      expect(decoded).toBeNull();
     });
   });
 });

@@ -15,17 +15,25 @@ Long term I hope to finish this project and explore a GraphQL wrapping design ne
 - The following ENV vars
   - add these in a `.env` in the top level directory of the project
   - feel free to set your own values, these are the test values I've been using
+  - **note that the `_LIFESPAN` env vars must be in ms**
 ```sh
-DEV_DB_URI=mongodb://127.0.0.1:27017/medium_clone
-TEST_DB_URI=mongodb://127.0.0.1:27017/medium_clone_test
+DEV_DB_URI=
+TEST_DB_URI=
 
-PORT=8008
-DOMAIN=http://localhost:8008
+PORT=
+DOMAIN=http://localhost:PORT
 
-JWT_SECRET=super secret
-JWT_OPTIONS=algorithm: HS256, expiresIn: 24h, issuer: Medium REST Clone
+COOKIE_SECRET=
 
-ENCRYPTION_SECRET=even secreter
+SALT_ROUNDS=12
+ENCRYPTION_SECRET=
+
+ACCESS_TOKEN_SECRET=
+ACCESS_TOKEN_LIFESPAN=1800000
+
+REFRESH_TOKEN_SECRET=
+REFRESH_TOKEN_LIFESPAN=604800000
+
 ```
 
 ## Testing: [Jest](https://jestjs.io)
@@ -36,25 +44,77 @@ ENCRYPTION_SECRET=even secreter
 
 # Usage
 - all request and response payloads enforce `application/json` encoding
-- all errors will include the appropriate status code and an `{ error }` JSON response describing the request error (unless otherwise specified)
+- all errors will be sent with the noted status code and an `{ error }` JSON response describing the request error (unless otherwise specified)
 
 ## Authentication
-- All endpoints that require authentication must include an `Authorization` header
-  - `{ headers: { 'Authorization': Bearer <ACCESS TOKEN> } }`
-- If an access token is invalid or invalidated you will receive the following error
+- All endpoints that require authentication must include an `Authorization` header with an access token
+- If an access token is invalid you will receive the following JSON response
   - `401` status code `{ error: failed to authenticate }`
-  - authorization is endpoint dependent and errors will be listed under the respective endpoint description
-### Requesting an Access Token
-- Access tokens are signed JWT with a 48 hour expiration
-- **After a [user account has been registered](#/users/:%20Users%20Collection%20entry%20point)** a new access token can be requested
-- `POST` `/tokens`: Create a new access token
-  - success response: `{ token }`
-    - use this `token` in all subsequent requests, see [Authentication](#Authentication)
+- Authorization is endpoint dependent and errors will be listed under the respective endpoint description
+
+## Exploring the Authentication Flow
+Authentication is separated into a usage of two JWTs that provide stateless authentication and complementary protection from both CSRF and XSS attacks. The pair is formed by a refresh token, transmitted via fortified cookie, and an access token, transmitted over an Authorization header. This system emerges from a modification of a typical server to server API authentication mechanism where both the refresh and access token are left to the consumer to protect. Authorization is controlled on each endpoint, token claims, or mixture of both.
+
+The refresh token is stored in a signed, httpOnly, sameSite, secure, and path bound cookie. These cookie flags provide robust security from CSRF and XSS attacks (when consumed by modern browsers) and ensure a narrow usage space. The short-lived access token, being bound to the header, adds supplementary protection against CSRF attacks. The access token is to be restricted to in-memory use of the client application to prevent the most common and simplistic sort of XSS attacks that target browser storage. 
+
+The two tokens, their transport, and their usage provide a balance to each other across their respective transport medium risks. Together they form a cohesive unit with short (access token lifespan) windows of opportunity for authentication abuse.
+
+The authentication process begins with the exchange of user credentials, a username and password, for a 7 day lifespan refresh token. The refresh token is identified, signed, and returned in a response cookie. A second request, carrying the refresh token cookie, can then be made to create an access token with a lifespan of 30 minutes. When an access token expires, or is near expiration, the client application can perform a transparent attempt at creating a new one - extending the user activity for 30 more minutes. The access token handler validates the refresh token and returns the access token in a JSON paylaod. When the new access token is created a new refresh token is also created and attached to the response to extend the authenticated session an additional 7 days.
+
+This refreshing process can revolve until a user remains inactive for 7 days from the last moment of client activity (when the last refresh token was signed). At this point the user must re-authenticate and create a new refresh token to begin the cycle again. 
+
+As with all articles on stateless authentication mechanisms the a major question is always "how is revocation controlled?". The revocation process can be separated by its two actors - the user and the server. The user uses its mechanism to "log out" while the server uses revocation to manage system security and abuse.
+
+User revocation targets its refresh token since it manages their session and is a predicate to the creation of the access token. Each refresh token is given a unique ID in the form of the JWT `jti` (JWT ID) claim durin signing. A revoked token is placed into a revoked token store that marks this ID as well as its expiration. All access token requests must pass both a JWT verification step as well as a query against this revoked token store.
+
+In order to keep the queries light the revoked tokens are assigned a database TTL, time to live, which will auto delete them one hour after their signed expiration. The one hour window provides a buffer to guarantee that a revoked token will either fail verification due to natural expiration or by lookup in the revoked token store. Because the tokens auto delete the store remains mostly empty making these read operations, performed on every refresh phase, more performant.
+
+Server revocation can be provided in two ways. The first is through a changing of the signing key. This is a drastic measure which invalidates every user session and forces re-authentication. This is the infamous "wipe clean" approach that should be used sparingly but comes at a low cost to the server as the workload is passed to the users in having to re-authenticate.
+
+The second approach involves storing the refresh token ID in the user store during creation. When a user's refresh token is to be revoked individually this token field is set to null. During every token refresh process this field is checked. If it is null then the token has been revoked and re-authentication is required by the user. This process provides the server with fine-grained revocation control at the cost of a heavier workload by requiring a user store query during every refresh process (at its longest a second shy of the 30 minute access token lifespan, per user). An optional status field can flag users to reject or restrict future refresh token creation requests as needed.
+
+The choice of server revocation mechanism is dependent on the application. For most client application backends the user revocation + signing key rotation approach is sufficient. If, however, the server needs greater control then the cost of user store queries may be worthwhile.
+
+The flow can be modified to return the refresh token / access token directly to the consumer in the case of allowing 3rd party access on behalf of a user. Instead of sending the refresh token in the cookie it is now left to the consumer to protect the tokens.
+
+### `/tokens`: Authentication Token entry point
+- requesting a refresh token: `POST` `/tokens` 
+  - request payload: `{ username: String, password: String }`
+  - success response
+    - `204` no-content
+    - attaches: refresh token cookie
+      - flags: `httpOnly`, `secure`, `sameSite: 'strict'`
+      - `domain: API domain`
+      - `path: /tokens`, 
   - errors
-    - missing username: `400` status code
-    - missing password: `400 status code`
-    - invalid credentials: `401` status code
-      - **note** to limit exposure there is no further detail on whether the `username` and / or `password` credentials are invalid
+    - missing username or password: 400 status code
+    - failed credential authentication: 401 status code
+- requesting an access token: `POST` `/tokens/access_token`
+  - requires: `refresh_token` cookie
+  - request payload: none
+  - success response
+    - JSON `{ type: 'Bearer', access_token, expiration }`
+      - `expiration` is a UNIX timestamp in ms
+  - errors
+    - missing or invalid refresh token cookie: 401 status code
+    - revoked refresh token: 401 status code
+- revoking a refresh token: `DELETE` `/tokens`
+  - marks a refresh token as revoked and inhibits any future use of it
+  - requires: `refresh_token` cookie
+  - request payload: none
+    - success response
+      -  `204` no-content
+      - removes: refresh token cookie
+  - errors
+    - already revoked: 409 status code
+    - failed to revoke: 500 status code
+
+### Authentication Sample Flow
+- `POST` `/tokens`: receive refresh token cookie in response
+- `POST` `/tokens/access_token`: receive access token JSON response
+- use the access token in the Authorization header for authentication required requests
+  - `{ headers: { 'Authorization': Bearer <ACCESS TOKEN> } }`
+- make new requests to `/tokens/access_token` to retrieve access tokens when the old one expires
 
 ## Pagination
 - paginable resources will contain a `pagination` field of the following shape:
