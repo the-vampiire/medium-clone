@@ -39,11 +39,11 @@ const getAuthedUser = async (bearerToken, models, env) => {
 const failedAuthResponse = res => res.status(401).json({ error: 'failed to authenticate' });
 
 /**
- * Injects an authedUser property on the Request object and calls next()
- * @param {Request} req Request object
- * @param {Response} res Response object
- * @param {Function} next Next step function
- * @returns on failure: returns 401 JSON response { error } 
+ * Verifies the Authorization Bearer access token
+ * - exchanges it for the authenticated user
+ * - injects req.context.authedUser and calls next() 
+ * @param req.headers.Authorization access JWT
+ * @returns failure: returns 401 JSON response { error } 
  */
 const requireAuthedUser = async (req, res, next) => {
   const { headers, context: { models, env } } = req;
