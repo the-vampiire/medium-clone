@@ -1,6 +1,12 @@
-const { addRequestContext, sanitizePaginationQuery, handleMalformedJSON  } = require('../index');
+const {
+  addRequestContext,
+  sanitizePaginationQuery,
+  handleMalformedJSON,
+  verifyContentType,
+} = require('../index');
 
 const nextMock = jest.fn();
+const resMock = { status: jest.fn(() => resMock), json: jest.fn() };
 
 describe('App custom middleware', () => {
   afterEach(() => jest.clearAllMocks());
@@ -65,7 +71,6 @@ describe('App custom middleware', () => {
 
     test('SyntaxError caught: returns 400 JSON response { error: "malformed data" }', () => {
       const error = new SyntaxError();
-      const resMock = { status: jest.fn(() => resMock), json: jest.fn() };
       
       handleMalformedJSON(error, null, resMock);
       expect(resMock.status).toHaveBeenCalledWith(400);
@@ -75,6 +80,34 @@ describe('App custom middleware', () => {
     test('no Syntax error: calls next()', () => {
       handleMalformedJSON(null, null, null, nextMock);
       expect(nextMock).toHaveBeenCalled();
+    });
+  });
+
+  describe('verifyContentType(): verifies content-type of incoming requests', () => {
+    const reqMock = { is: jest.fn() };
+
+    test('no content-type header: calls next()', () => {
+      reqMock.is.mockImplementationOnce(() => null);
+
+      verifyContentType(reqMock, resMock, nextMock);
+      expect(nextMock).toBeCalled();
+    });
+
+    test('content-type application/json: calls next()', () => {
+      reqMock.is.mockImplementationOnce(() => true);
+
+      verifyContentType(reqMock, resMock, nextMock);
+      expect(nextMock).toBeCalled();
+    });
+
+    test('content-type && not JSON: 415 JSON response { error }', () => {
+      reqMock.is.mockImplementationOnce(() => false);
+
+      verifyContentType(reqMock, resMock, nextMock);
+      expect(resMock.status).toBeCalledWith(415);
+      expect(resMock.json).toBeCalledWith({
+        error: 'invalid content-type. only application/json is accepted',
+      });
     });
   });
 });
