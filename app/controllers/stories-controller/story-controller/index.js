@@ -1,7 +1,7 @@
 const express = require('express');
 
 const { StoryClapsController } = require('./story-claps-controller');
-const { requireAuthedUser } = require('../../require-authed-user');
+const { requireAuthedUser } = require('../../auth-utils');
 const { exchangeSlugForStory, requireAuthorship } = require('./story-controller-middleware');
 const { storyRepliesHandler, createStoryReplyHandler } = require('./story-replies-handlers');
 const {

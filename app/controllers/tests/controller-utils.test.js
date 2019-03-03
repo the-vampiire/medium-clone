@@ -1,6 +1,7 @@
 const {
   extractFieldErrors,
   newResourceResponse,
+  failedAuthResponse,
 } = require('../controller-utils');
 
 const resMock = {

@@ -4,6 +4,7 @@ const controllers = require('./controllers');
 const { appMiddleware } = require('./app-middleware');
 
 const app = express();
+app.disable('x-powered-by');
 
 // -- SERVERWIDE MIDDLEWARE -- //
 app.use(...appMiddleware);

@@ -1,6 +1,6 @@
 const express = require('express');
 
-const { requireAuthedUser } = require('../../../../require-authed-user');
+const { requireAuthedUser } = require('../../../../auth-utils');
 const { isFollowingHandler, unfollowUserHandler } = require('./user-follower-route-handlers');
 const { requireFollowOwnership, exchangeSlugForFollower } = require('./user-follower-middleware');
 
