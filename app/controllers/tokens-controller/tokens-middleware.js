@@ -1,3 +1,4 @@
+const { decryptID } = require('./token-utils');
 const { failedAuthResponse } = require('../auth-utils');
 const { verifyRefreshToken } = require('./refresh-token-utils');
 
@@ -69,8 +70,27 @@ const validateRefreshToken = async (req, res, next) => {
   next();
 };
 
+/**
+ * Extracts and decrypts the authed user ID from the refresh token
+ * - success: injects req.context.authedUserID and calls next()
+ * @param req.context.refreshToken refresh JWT, { sub: <encryptedID> }
+ * @param req.context.env.ENCRYPTION_SECRET secret for decoding the ID
+ * @returns failure: 401 JSON failed auth response  
+ */
+const decryptAuthedUserID = (req, res, next) => {
+  const { refreshToken, env: { ENCRYPTION_SECRET } } = req.context;
+  const encryptedID = refreshToken.sub;
+  const decryptedID = decryptID(encryptedID, ENCRYPTION_SECRET);
+
+  if (!decryptedID) return failedAuthResponse(res);
+
+  req.context.authedUserID = decryptedID;
+  next();
+};
+
 module.exports = {
   verifyPayload,
+  decryptAuthedUserID,
   authenticateRequest,
   validateRefreshToken,
 };

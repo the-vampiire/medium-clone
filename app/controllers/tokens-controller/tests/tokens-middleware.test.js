@@ -1,6 +1,9 @@
+const { mockENV } = require('./mocks');
+const { decryptID } = require('../token-utils');
 const { failedAuthResponse } = require('../../auth-utils');
 const { verifyRefreshToken } = require('../refresh-token-utils');
 
+jest.mock('../token-utils.js', () => ({ decryptID: jest.fn() }));
 jest.mock('../../auth-utils.js', () => ({ failedAuthResponse: jest.fn() }));
 jest.mock('../refresh-token-utils.js', () => ({ verifyRefreshToken: jest.fn() }));
 
@@ -8,6 +11,7 @@ const {
   verifyPayload,
   authenticateRequest,
   validateRefreshToken,
+  decryptAuthedUserID,
 } = require('../tokens-middleware');
 
 const resMock = {
@@ -99,6 +103,28 @@ describe('Token Controller Middleware', () => {
       await validateRefreshToken(reqMock, resMock, nextMock);
       expect(resMock.status).toBeCalledWith(401);
       expect(resMock.json).toBeCalledWith({ error: 'revoked token' });
+    });
+  });
+
+  describe('decryptAuthedUserID(): extracts and decrypts the authed user ID', () => {
+    const refreshToken = { sub: 'userID' };
+    const reqMock = { context: { refreshToken, env: mockENV } };
+
+    afterEach(() => jest.clearAllMocks());
+
+    test('decryption success: injects req.context.authedUserID and calls next()', () => {
+      decryptID.mockImplementationOnce(() => 'decrypted');
+
+      decryptAuthedUserID(reqMock, resMock, nextMock);
+      expect(reqMock.context.authedUserID).toBe('decrypted');
+      expect(nextMock).toBeCalled();
+    });
+
+    test('decryption failure: returns 401 failed auth response', () => {
+      decryptID.mockImplementationOnce(() => null);
+
+      decryptAuthedUserID(reqMock, resMock);
+      expect(failedAuthResponse).toBeCalled();
     });
   });
 });
