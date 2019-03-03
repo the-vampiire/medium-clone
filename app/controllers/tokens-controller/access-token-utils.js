@@ -2,18 +2,18 @@ const { createToken, verifyToken } = require('./token-utils');
 
 /**
  * Creates an access JWT for the authed user
- * @param {User} authedUser authenticated user 
+ * @param {User} authedUserID authenticated user ID 
  * @param {object} env environment variables
  * @param {string} env.ACCESS_TOKEN_SECRET access token signing secret 
  * @param {string} env.ACCESS_TOKEN_LIFESPAN refresh token expiresIn
  */
-const createAccessToken = (authedUser, env) => {
+const createAccessToken = (authedUserID, env) => {
   const options = {
     expiresIn: env.ACCESS_TOKEN_LIFESPAN,
     signingSecret: env.ACCESS_TOKEN_SECRET,
   };
 
-  return createToken(authedUser, env, options);
+  return createToken(authedUserID, env, options);
 };
 
 /**

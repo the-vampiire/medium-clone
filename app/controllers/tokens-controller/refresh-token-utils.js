@@ -2,18 +2,18 @@ const { createToken, verifyToken } = require('./token-utils');
 
 /**
  * Creates a refresh JWT for the authed user
- * @param {User} authedUser authenticated user
+ * @param {User} authedUserID authenticated user ID
  * @param {object} env environment variables
  * @param {string} env.REFRESH_TOKEN_SECRET refresh token signing secret
  * @param {string} env.REFRESH_TOKEN_LIFESPAN refresh token expiresIn
  */
-const createRefreshToken = (authedUser, env) => {
+const createRefreshToken = (authedUserID, env) => {
   const options = {
     expiresIn: env.REFRESH_TOKEN_LIFESPAN,
     signingSecret: env.REFRESH_TOKEN_SECRET,
   };
 
-  return createToken(authedUser, env, options);
+  return createToken(authedUserID, env, options);
 };
 
 /**

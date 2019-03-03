@@ -35,30 +35,30 @@ const decryptID = (encryptedID, encryptionSecret) => {
 
 /**
  * Creates a JWT { sub } payload
- * @param {User} authedUser Authenticated User from request
+ * @param {User} authedUserID Authenticated user ID
  * @param {string} encryptionSecret encryption secret
  * @returns {object} { sub: <encrypted ID> }
  */
-const createTokenPayload = (authedUser, encryptionSecret) => {
-  const encryptedID = encryptID(authedUser.id, encryptionSecret);
+const createTokenPayload = (authedUserID, encryptionSecret) => {
+  const encryptedID = encryptID(authedUserID, encryptionSecret);
   return { sub: encryptedID };
 }; 
 
 /**
  * Creates a signed JWT using HS256 signing algorithm
  * - generates a unique (uuID) jwtID/jti token field
- * @param {User} authedUser the authenticated User
+ * @param {User} authedUserID the authenticated User ID
  * @param {string} env.DOMAIN for the issuer field of the JWT
  * @param {string} env.ENCRYPTION_SECRET for encrypting the { sub } JWT payload 
  * @param {string} options.expiresIn JWT lifespan
  * @param {string} options.signingSecret JWT signing secret
  * @returns signed JWT
  */
-const createToken = (authedUser, env, options) => {
+const createToken = (authedUserID, env, options) => {
   const { DOMAIN, ENCRYPTION_SECRET } = env;
   const { signingSecret, expiresIn } = options;
 
-  const payload = createTokenPayload(authedUser, ENCRYPTION_SECRET);
+  const payload = createTokenPayload(authedUserID, ENCRYPTION_SECRET);
 
   const tokenOptions = {
     expiresIn,
