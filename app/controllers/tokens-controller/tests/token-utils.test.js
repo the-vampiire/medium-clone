@@ -22,14 +22,14 @@ describe('Authentication Token utilities', () => {
   });
 
   test('createTokenPayload(): creates a JWT token payload with an encrypted User ID', () => {
-    const output = createTokenPayload(authedUserMock, mockENV.ENCRYPTION_SECRET);
+    const output = createTokenPayload(authedUserMock.id, mockENV.ENCRYPTION_SECRET);
     expect(output.sub).toBeDefined();
     expect(decryptID(output.sub, mockENV.ENCRYPTION_SECRET)).toBe(authedUserMock.id);
   });
 
   describe('createToken(): creates a signed JWT', () => {
     const options = { signingSecret: 'test', expiresIn: '5m' };
-    const token = createToken(authedUserMock, mockENV, options);
+    const token = createToken(authedUserMock.id, mockENV, options);
     const decoded = jwt.decode(token);
 
     test('sets the [sub] field to the encrypted authedUser ID', () => {
@@ -50,7 +50,7 @@ describe('Authentication Token utilities', () => {
   describe('verifyToken(): verifies a JWT given its secret and issuer', () => {
     test('valid secret and issuer: returns the decoded token', () => {
       const options = { signingSecret: 'test', expiresIn: '5m' };
-      const token = createToken(authedUserMock, mockENV, options);
+      const token = createToken(authedUserMock.id, mockENV, options);
 
       const decoded = verifyToken(token, options.signingSecret, mockENV.DOMAIN);
       expect(decoded).not.toBeNull();
@@ -58,7 +58,7 @@ describe('Authentication Token utilities', () => {
 
     test('invalid options: returns null', () => {
       const options = { signingSecret: 'test', expiresIn: '5m' };
-      const token = createToken(authedUserMock, mockENV, options);
+      const token = createToken(authedUserMock.id, mockENV, options);
 
       const decoded = verifyToken(token, 'bad secret', mockENV.DOMAIN);
       expect(decoded).toBeNull();
