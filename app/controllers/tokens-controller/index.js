@@ -2,6 +2,7 @@ const express = require('express');
 
 const {
   verifyPayload,
+  decryptAuthedUserID,
   authenticateRequest,
   validateRefreshToken,
 } = require('./tokens-middleware');
@@ -18,6 +19,6 @@ TokensController.post('/', verifyPayload, authenticateRequest, createRefreshToke
 
 TokensController.delete('/', validateRefreshToken, revokeRefreshTokenHandler);
 
-TokensController.get('/access_token', validateRefreshToken, createAccessTokenHandler);
+TokensController.post('/access_token', validateRefreshToken, decryptAuthedUserID, createAccessTokenHandler);
 
 module.exports = TokensController;

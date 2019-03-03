@@ -14,12 +14,12 @@ const {
  * @returns JSON response { access_token, expiration, type }
  */
 const createAccessTokenHandler = (req, res) => {
-  const { authedUser, env } = req.context;
+  const { authedUserID, env } = req.context;
 
-  const access_token = createAccessToken(authedUser, env);
+  const access_token = createAccessToken(authedUserID, env);
   const expiration = Date.now() + Number(env.ACCESS_TOKEN_LIFESPAN);
 
-  const refreshToken = createRefreshToken(authedUser, env);
+  const refreshToken = createRefreshToken(authedUserID, env);
   attachRefreshCookie(res, refreshToken, env);
   
   return res.json({
