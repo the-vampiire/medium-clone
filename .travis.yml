@@ -5,11 +5,11 @@ before_install:
   - npm i
 cache:
   - directories:
-    - node_modules
+      - node_modules
 services:
   - mongodb
 jobs:
   include:
     - stage: test
       script:
-        - npm test:travis
+        - npm run test:travis
