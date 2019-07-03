@@ -88,7 +88,7 @@ module.exports = {
   // export as Array to spread. order matters, dont touch!  
   appMiddleware: [
     cors(corsOptions),
-    cookieParser(env.COOKIE_SECRET),
+    cookieParser(env.COOKIE_SECRET || process.env.COOKIE_SECRET),
     verifyContentType,
     bodyParser.json(),
     bodyParser.urlencoded({ extended: false }),
