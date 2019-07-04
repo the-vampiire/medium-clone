@@ -9,7 +9,7 @@ const {
  * Signs a short-lived access JWT
  * - extends the refresh token duration by signing a new one
  *  - attaches the new refresh JWT in the response cookie
- * @param {User} req.context.authedUser the authenticated User
+ * @param {User} req.context.authedUserID the authenticated User's ID
  * @param {object} req.context.env environment variables
  * @returns JSON response { access_token, expiration, type }
  */
@@ -37,8 +37,7 @@ const createAccessTokenHandler = (req, res) => {
  */
 const createRefreshTokenHandler = (req, res) => {
   const { authedUser, env } = req.context;
-
-  const refreshToken = createRefreshToken(authedUser, env);
+  const refreshToken = createRefreshToken(authedUser.id, env);
 
   attachRefreshCookie(res, refreshToken, env);
   return res.sendStatus(204);

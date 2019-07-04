@@ -19,7 +19,6 @@ const resMock = {
 
 describe('Tokens Controller handlers', () => {
   describe('createRefreshTokenHandler(): POST /tokens', () => {
-    const refreshToken = 'tokie';
     const reqMock = { context: { authedUser: authedUserMock, env: mockENV} };
 
     beforeAll(() => createRefreshTokenHandler(reqMock, resMock));
