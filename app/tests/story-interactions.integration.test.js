@@ -70,7 +70,6 @@ describe('Integration Tests: Story/Reply Interactions', () => {
     beforeAll(async () => { response = await request(app).get(newStoryData.storyURL); });
 
     test('returns the Story in Story Response Shape', () => {
-      if (response.body.error) console.log({ body: response.body, newStoryData });
       Object.keys(storyExpectedShape)
       .forEach(field => expect(response.body).toHaveProperty(field));
     });
