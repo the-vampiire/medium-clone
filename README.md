@@ -1,4 +1,4 @@
-[![travis build](https://api.travis-ci.org/the-vampiire/medium-clone.svg?branch=master)](https://travis-ci.org/the-vampiire/medium-clone) [![Coverage Status](https://coveralls.io/repos/github/the-vampiire/medium-clone/badge.svg?branch=master)](https://coveralls.io/github/the-vampiire/medium-clone?branch=master)
+[![travis build](https://api.travis-ci.org/the-vampiire/medium-clone.svg?branch=master)](https://travis-ci.org/the-vampiire/medium-clone)|[![Coverage Status](https://coveralls.io/repos/github/the-vampiire/medium-clone/badge.svg?branch=master)](https://coveralls.io/github/the-vampiire/medium-clone?branch=master)
 
 # Medium.com backend explored as a REST API
 
