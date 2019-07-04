@@ -2,13 +2,13 @@
 
 # Medium.com backend explored as a REST API
 
-As an avid user of [medium.com](https://medium.com/@vampiire) I decided to explore how their API could be cloned. Recently I have been spending a tremendous amount of time learning and implementing GraphQL servers but not nearly as much exploring RESTful design. While Medium is one of the many high profile services to migrate to GraphQL ([see the lovely Sasha's awesome talk](https://www.youtube.com/watch?v=3Ermkejz0iE)) I thought this would be a good opportunity to explore a REST API approach using NodeJS.
+As an avid user of [medium.com](https://medium.com/@vampiire) I decided to explore how their API could be built using NodeJS. I have been spending the past 2 years learning and implementing GraphQL servers but not nearly as much exploring (true) RESTful design. While Medium is one of the many high profile services to migrate to GraphQL ([see the lovely Sasha's awesome talk](https://www.youtube.com/watch?v=3Ermkejz0iE)) I thought this would be a good opportunity to explore an OpenAPI REST approach using NodeJS.
 
 Most of the REST APIs you see these days use the Swagger CLI. In an effort to cement a deep understanding in RESTful design and implementation I chose to research and write this project by hand using a minimal number of packages. My goals for this project are to gain a hollistic understanding of RESTful design to provide a more meaningful and less biased comparison against the GraphQL API design I adore.
 
 I also wanted to dig deeper into MongoDB and Mongoose to gain an equally hollistic understanding of how a document DBMS compares to the PostgreSQL choice I usually opt for.
 
-Long term I hope to finish this project and explore a GraphQL wrapping design next. As GraphQL grows in popularity it will be increasingly valuable to understand how to migrate an older REST API to a modern GraphQL API. Alright enough rambling...
+Long term I hope to finish this project and explore a GraphQL wrapping design next. As GraphQL grows in popularity it will be increasingly valuable to understand how to migrate existing REST APIs to GraphQL. Alright enough rambling...
 
 ## Requirements
 
@@ -26,7 +26,7 @@ DEV_DB_URI=
 TEST_DB_URI=
 
 PORT=
-DOMAIN=http://localhost:PORT
+DOMAIN=localhost
 
 COOKIE_SECRET=
 
@@ -51,7 +51,9 @@ REFRESH_TOKEN_LIFESPAN=604800000
 # Usage
 
 - all request and response payloads enforce `application/json` encoding
+  - any request with a body that does not have the `Content-Type` header as `application/json` will be rejected
 - all errors will be sent with the noted status code and an `{ error }` JSON response describing the request error (unless otherwise specified)
+  - some error responses will include additional fields in the JSON body
 
 ## Authentication
 
@@ -62,9 +64,9 @@ REFRESH_TOKEN_LIFESPAN=604800000
 
 ## Exploring the Authentication Flow
 
-Authentication is separated into a usage of two JWTs that provide stateless authentication and complementary protection from both CSRF and XSS attacks. The pair is formed by a refresh token, transmitted via fortified cookie, and an access token, transmitted over an Authorization header. This system emerges from a modification of a typical server to server API authentication mechanism where both the refresh and access token are left to the consumer to protect. Authorization is controlled on each endpoint, token claims, or mixture of both.
+Authentication is separated into a usage of two JWTs that provide authentication and protection from both CSRF and XSS attacks. The pair is formed by a refresh token, transmitted via fortified cookie, and an access token, transmitted over an Authorization header. This system emerges from a modification of a typical server to server API authentication mechanism where both the refresh and access token are left to the consumer to protect. Authorization is controlled on each endpoint, token claims, or mixture of both.
 
-The refresh token is stored in a signed, httpOnly, sameSite, secure, and path bound cookie. These cookie flags provide robust security from CSRF and XSS attacks (when consumed by modern browsers) and ensure a narrow usage space. The short-lived access token, being bound to the header, adds supplementary protection against CSRF attacks. The access token is to be restricted to in-memory use of the client application to prevent the most common and simplistic sort of XSS attacks that target browser storage.
+The refresh token is stored in a signed, httpOnly, sameSite, secure, and path bound cookie `#fortified`. These cookie flags provide robust security from CSRF and XSS attacks (when consumed by modern browsers) and ensure a narrow usage space. The short-lived access token, being bound to the header, adds supplementary protection against CSRF attacks. The access token is to be restricted to in-memory use of the client application to prevent the most common and simplistic sort of XSS attacks that target browser storage.
 
 The two tokens, their transport, and their usage provide a balance to each other across their respective transport medium risks. Together they form a cohesive unit with short (access token lifespan) windows of opportunity for authentication abuse.
 
