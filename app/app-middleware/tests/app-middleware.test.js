@@ -84,26 +84,27 @@ describe('App custom middleware', () => {
   });
 
   describe('verifyContentType(): verifies content-type of incoming requests', () => {
-    const reqMock = { is: jest.fn() };
+    const reqMock = { is: jest.fn(), headers: {} };
 
-    test('no content-type header: calls next()', () => {
-      reqMock.is.mockImplementationOnce(() => null);
-
-      verifyContentType(reqMock, resMock, nextMock);
-      expect(nextMock).toBeCalled();
-    });
-
-    test('content-type application/json: calls next()', () => {
+    test('req.body defined and content-type is application/json: calls next()', () => {
       reqMock.is.mockImplementationOnce(() => true);
 
       verifyContentType(reqMock, resMock, nextMock);
       expect(nextMock).toBeCalled();
     });
 
-    test('content-type && not JSON: 415 JSON response { error }', () => {
+    test('req.body not defined: calls next()', () => {
       reqMock.is.mockImplementationOnce(() => false);
 
       verifyContentType(reqMock, resMock, nextMock);
+      expect(nextMock).toBeCalled();
+    });
+
+    test('req.body defined and content-type is not JSON: 415 JSON response { error }', () => {
+      reqMock.is.mockImplementationOnce(() => false);
+      const reqWithBody = Object.assign({ body: {} }, reqMock);
+
+      verifyContentType(reqWithBody, resMock, nextMock);
       expect(resMock.status).toBeCalledWith(415);
       expect(resMock.json).toBeCalledWith({
         error: 'invalid content-type. only application/json is accepted',
