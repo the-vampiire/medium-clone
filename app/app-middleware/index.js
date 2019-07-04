@@ -60,7 +60,7 @@ const handleMalformedJSON = (error, req, res, next) => {
 const verifyContentType = (req, res, next) => {
   const isJSON = req.is("json"); // null if content-type empty
 
-  if (isJSON === false) {
+  if (isJSON === false && req.body) {
     // false if content-type && not application/json
     return res.status(415).json({
       error: "invalid content-type. only application/json is accepted",
