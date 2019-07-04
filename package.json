@@ -3,18 +3,17 @@
   "version": "0.0.1",
   "repository": "https://github.com/the-vampiire/medium-clone",
   "description": "Medium API REST clone",
-  "main": "index.js",
+  "main": "app",
   "scripts": {
     "test": "NODE_ENV=test jest --runInBand",
-    "test:verbose": "NODE_ENV=test jest --runInBand --verbose",
-    "test:coverage": "NODE_ENV=test jest --runInBand --coverage > COVERAGE.md",
-    "dev": "NODE_ENV=development nodemon ./app",
+    "test:travis": "npm test -- --no-cache --coverage && cat ./coverage/lcov.info | coveralls",
+    "dev": "NODE_ENV=development nodemon",
     "start": "NODE_ENV=production node ./app"
   },
   "author": "the-vampiire",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
-    "bcrypt": "^3.0.3",
+    "bcrypt": "^3.0.6",
     "body-parser": "^1.18.3",
     "cookie-parser": "^1.4.4",
     "cors": "^2.8.5",
@@ -27,6 +26,7 @@
     "sanitize-html": "^1.20.0"
   },
   "devDependencies": {
+    "coveralls": "^3.0.4",
     "jest": "^24.1.0",
     "nodemon": "^1.18.9",
     "supertest": "^3.4.2"

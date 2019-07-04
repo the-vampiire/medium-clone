@@ -27,7 +27,7 @@ const getAuthedUser = async (bearerToken, models, env) => {
   const token = verifyAccessToken(bearerToken, env);
   if (!token) return null;
 
-  const userID = decryptID(token.sub);
+  const userID = decryptID(token.sub, env.ENCRYPTION_SECRET);
   return models.User.findById(userID);
 };
 

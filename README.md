@@ -1,13 +1,17 @@
+[![travis build](https://api.travis-ci.org/the-vampiire/medium-clone.svg?branch=master)](https://travis-ci.org/the-vampiire/medium-clone) [![Coverage Status](https://coveralls.io/repos/github/the-vampiire/medium-clone/badge.svg?branch=master)](https://coveralls.io/github/the-vampiire/medium-clone?branch=master)
+
 # Medium.com backend explored as a REST API
+
 As an avid user of [medium.com](https://medium.com/@vampiire) I decided to explore how their API could be cloned. Recently I have been spending a tremendous amount of time learning and implementing GraphQL servers but not nearly as much exploring RESTful design. While Medium is one of the many high profile services to migrate to GraphQL ([see the lovely Sasha's awesome talk](https://www.youtube.com/watch?v=3Ermkejz0iE)) I thought this would be a good opportunity to explore a REST API approach using NodeJS.
 
-Most of the REST APIs you see these days use the Swagger CLI. In an effort to cement a deep understanding in RESTful design and implementation I chose to research and write this project by hand using a minimal number of packages. My goals for this project are to gain a hollistic understanding of RESTful design to provide a more meaningful and less biased comparison against the GraphQL API design I adore. 
+Most of the REST APIs you see these days use the Swagger CLI. In an effort to cement a deep understanding in RESTful design and implementation I chose to research and write this project by hand using a minimal number of packages. My goals for this project are to gain a hollistic understanding of RESTful design to provide a more meaningful and less biased comparison against the GraphQL API design I adore.
 
 I also wanted to dig deeper into MongoDB and Mongoose to gain an equally hollistic understanding of how a document DBMS compares to the PostgreSQL choice I usually opt for.
 
 Long term I hope to finish this project and explore a GraphQL wrapping design next. As GraphQL grows in popularity it will be increasingly valuable to understand how to migrate an older REST API to a modern GraphQL API. Alright enough rambling...
 
 ## Requirements
+
 - a MongoDB database
   - test: `medium_clone_test`
   - dev: `medium_clone`
@@ -16,6 +20,7 @@ Long term I hope to finish this project and explore a GraphQL wrapping design ne
   - add these in a `.env` in the top level directory of the project
   - feel free to set your own values, these are the test values I've been using
   - **note that the `_LIFESPAN` env vars must be in ms**
+
 ```sh
 DEV_DB_URI=
 TEST_DB_URI=
@@ -37,31 +42,35 @@ REFRESH_TOKEN_LIFESPAN=604800000
 ```
 
 ## Testing: [Jest](https://jestjs.io)
+
 - `npm i`: install dependencies
 - `npm test`: run all tests
 - `npm run test:verbose`: run all tests with the fancy Jest output full of the checkmarks that I'm addicted to...
 - `npm run test:coverage`: run tests and produce the Jest coverage report
 
 # Usage
+
 - all request and response payloads enforce `application/json` encoding
 - all errors will be sent with the noted status code and an `{ error }` JSON response describing the request error (unless otherwise specified)
 
 ## Authentication
+
 - All endpoints that require authentication must include an `Authorization` header with an access token
 - If an access token is invalid you will receive the following JSON response
   - `401` status code `{ error: failed to authenticate }`
 - Authorization is endpoint dependent and errors will be listed under the respective endpoint description
 
 ## Exploring the Authentication Flow
+
 Authentication is separated into a usage of two JWTs that provide stateless authentication and complementary protection from both CSRF and XSS attacks. The pair is formed by a refresh token, transmitted via fortified cookie, and an access token, transmitted over an Authorization header. This system emerges from a modification of a typical server to server API authentication mechanism where both the refresh and access token are left to the consumer to protect. Authorization is controlled on each endpoint, token claims, or mixture of both.
 
-The refresh token is stored in a signed, httpOnly, sameSite, secure, and path bound cookie. These cookie flags provide robust security from CSRF and XSS attacks (when consumed by modern browsers) and ensure a narrow usage space. The short-lived access token, being bound to the header, adds supplementary protection against CSRF attacks. The access token is to be restricted to in-memory use of the client application to prevent the most common and simplistic sort of XSS attacks that target browser storage. 
+The refresh token is stored in a signed, httpOnly, sameSite, secure, and path bound cookie. These cookie flags provide robust security from CSRF and XSS attacks (when consumed by modern browsers) and ensure a narrow usage space. The short-lived access token, being bound to the header, adds supplementary protection against CSRF attacks. The access token is to be restricted to in-memory use of the client application to prevent the most common and simplistic sort of XSS attacks that target browser storage.
 
 The two tokens, their transport, and their usage provide a balance to each other across their respective transport medium risks. Together they form a cohesive unit with short (access token lifespan) windows of opportunity for authentication abuse.
 
 The authentication process begins with the exchange of user credentials, a username and password, for a 7 day lifespan refresh token. The refresh token is identified, signed, and returned in a response cookie. A second request, carrying the refresh token cookie, can then be made to create an access token with a lifespan of 30 minutes. When an access token expires, or is near expiration, the client application can perform a transparent attempt at creating a new one - extending the user activity for 30 more minutes. The access token handler validates the refresh token and returns the access token in a JSON paylaod. When the new access token is created a new refresh token is also created and attached to the response to extend the authenticated session an additional 7 days.
 
-This refreshing process can revolve until a user remains inactive for 7 days from the last moment of client activity (when the last refresh token was signed). At this point the user must re-authenticate and create a new refresh token to begin the cycle again. 
+This refreshing process can revolve until a user remains inactive for 7 days from the last moment of client activity (when the last refresh token was signed). At this point the user must re-authenticate and create a new refresh token to begin the cycle again.
 
 As with all articles on stateless authentication mechanisms the a major question is always "how is revocation controlled?". The revocation process can be separated by its two actors - the user and the server. The user uses its mechanism to "log out" while the server uses revocation to manage system security and abuse.
 
@@ -78,14 +87,15 @@ The choice of server revocation mechanism is dependent on the application. For m
 The flow can be modified to return the refresh token / access token directly to the consumer in the case of allowing 3rd party access on behalf of a user. Instead of sending the refresh token in the cookie it is now left to the consumer to protect the tokens.
 
 ### `/tokens`: Authentication Token entry point
-- requesting a refresh token: `POST` `/tokens` 
+
+- requesting a refresh token: `POST` `/tokens`
   - request payload: `{ username: String, password: String }`
   - success response
     - `204` no-content
     - attaches: refresh token cookie
       - flags: `httpOnly`, `secure`, `sameSite: 'strict'`
       - `domain: API domain`
-      - `path: /tokens`, 
+      - `path: /tokens`,
   - errors
     - missing username or password: 400 status code
     - failed credential authentication: 401 status code
@@ -103,13 +113,14 @@ The flow can be modified to return the refresh token / access token directly to 
   - requires: `refresh_token` cookie
   - request payload: none
     - success response
-      -  `204` no-content
+      - `204` no-content
       - removes: refresh token cookie
   - errors
     - already revoked: 409 status code
     - failed to revoke: 500 status code
 
 ### Authentication Sample Flow
+
 - `POST` `/tokens`: receive refresh token cookie in response
 - `POST` `/tokens/access_token`: receive access token JSON response
 - use the access token in the Authorization header for authentication required requests
@@ -117,7 +128,9 @@ The flow can be modified to return the refresh token / access token directly to 
 - make new requests to `/tokens/access_token` to retrieve access tokens when the old one expires
 
 ## Pagination
+
 - paginable resources will contain a `pagination` field of the following shape:
+
 ```js
 {
   ...resource payload...,
@@ -129,6 +142,7 @@ The flow can be modified to return the refresh token / access token directly to 
   },
 }
 ```
+
 - you can continue to paginate by requesting to `nextPageURL`
 - if `hasNext` is `false` then the final page has been reached
 - you can manually adjust the pagination parameters by modifying `limit` and / or `currentPage` query parameters in the request URL
@@ -139,9 +153,13 @@ The flow can be modified to return the refresh token / access token directly to 
 # Entities
 
 ## User
+
 Represents a member of the community
+
 - aliases: `author, reader`
+
 ### User Schema
+
 ```js
 {
   slug: String,
@@ -159,11 +177,13 @@ Represents a member of the community
   },
 }
 ```
+
 - the `slug` field is the user identifier
 - the `links` field contains resource links to the user's owned resources
 
 ### `/users/`: Users Collection entry point
-- register a new user account: `POST` `/users` 
+
+- register a new user account: `POST` `/users`
   - request payload: `{ username: String, password: String, verifyPassword: String }`
     - username restrictions: [3-20 chars] alpha, numeric, `-`, and `_`
     - password restrictions: [6+ chars]
@@ -179,6 +199,7 @@ Represents a member of the community
         - ex: `{ error, fields: { password: 'must be at least 6 characters long' } }`
 
 ### `/users/:userSlug/`: User Entity entry point
+
 - the `userSlug` is the `slug` field of the User entity
   - slug shape: `@username`
 - global errors
@@ -234,7 +255,9 @@ Represents a member of the community
     - not following: `400` status code
 
 ## Story
+
 ### Story Schema
 
 ## Clap
+
 ### Clap Schema

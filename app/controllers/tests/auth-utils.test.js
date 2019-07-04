@@ -25,6 +25,7 @@ const nextMock = jest.fn();
 
 const userMock = { id: 'someID' };
 const modelsMock = { User: { findById: () => userMock } };
+const envMock = { ENCRYPTION_SECRET: 'secret' };
 
 describe('Required Authed User utilities', () => {
   afterEach(() => jest.clearAllMocks());
@@ -69,7 +70,7 @@ describe('Required Authed User utilities', () => {
       decryptID.mockImplementationOnce(() => 'id');
 
       const failModels = { User: { findById: () => null } };
-      const output = await getAuthedUser('a tokie', failModels);
+      const output = await getAuthedUser('a tokie', failModels, envMock);
       expect(output).toBeNull();
     });
 
@@ -77,7 +78,7 @@ describe('Required Authed User utilities', () => {
       verifyAccessToken.mockImplementationOnce(() => true);
       decryptID.mockImplementationOnce(() => 'id');
 
-      const output = await getAuthedUser('a tokie', modelsMock);
+      const output = await getAuthedUser('a tokie', modelsMock, envMock);
       expect(output).toEqual(userMock);
     });
   });
@@ -88,7 +89,7 @@ describe('Required Authed User utilities', () => {
       decryptID.mockImplementationOnce(() => 'id');
       
       const reqMock = { 
-        context: { models: modelsMock },
+        context: { models: modelsMock, env: envMock },
         headers: { authorization: 'Bearer atokie' },
       };
       
