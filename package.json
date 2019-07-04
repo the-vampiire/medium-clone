@@ -6,7 +6,7 @@
   "main": "app",
   "scripts": {
     "test": "NODE_ENV=test jest --runInBand",
-    "test:travis": "npm run test -- --no-cache --coverage && cat ./coverage/lcov.info | coveralls",
+    "test:travis": "npm test -- --no-cache --coverage && cat ./coverage/lcov.info | coveralls",
     "dev": "NODE_ENV=development nodemon",
     "start": "NODE_ENV=production node ./app"
   },
