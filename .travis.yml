@@ -3,8 +3,8 @@ language: node_js
 node_js:
   - "10.15.3"
 before_install:
-  - brew install mongodb-community
-  - brew services start mongodb-community
+  - brew install mongodb-community@4.0
+  - brew services start mongodb-community@4.0
   - npm i
 jobs:
   include:
