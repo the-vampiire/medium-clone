@@ -5,19 +5,16 @@ const { DOMAIN } = process.env;
 
 /**
  * --------------------------
- * COVERS: registration and authentication
+ * COVERS: registration and user lookup
  * --------------------------
  * Users Controller [/users]
  * - POST: register new user
  * 
  * User Controller [/users/@username]
  * - GET: retrieve path user's details
- * 
- * Tokens Controller [/tokens]
- * - POST: create authentication token
  */
 
-describe('Integration Tests: Registration and Authentication Interactions', () => {
+describe('Integration Tests: Registration and User Lookup Interactions', () => {
   beforeAll(()=> tm.dbConnect());
   afterAll(() => tm.teardown());
 
@@ -39,18 +36,6 @@ describe('Integration Tests: Registration and Authentication Interactions', () =
 
         expect(username).toBe(user.username);
         expect(links).toBeDefined();
-      }),
-    );
-  });
-
-  describe('POST /tokens: authenticating a user', () => {
-    tm.users.forEach(
-      user => test(`authenticates: ${user.username}`, async () => {
-        const { username, password } = user;
-        const res = await request(app).post('/tokens').send({ username, password });
-        const { body } = res;
-        expect(body.token).toBeDefined();
-        user.token = body.token;
       }),
     );
   });
