@@ -23,7 +23,7 @@
     "faker": "^4.1.0",
     "jsonwebtoken": "^8.4.0",
     "mongoose": "^5.4.9",
-    "sanitize-html": "^1.20.0"
+    "sanitize-html": "^2.3.2"
   },
   "devDependencies": {
     "coveralls": "^3.0.4",
